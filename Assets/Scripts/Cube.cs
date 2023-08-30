@@ -3,7 +3,7 @@ using UnityEngine;
 public struct Cube //TODO: check heredity
 {
     private float weight;
-    private bool isCarveable;
+    private bool isWall;
     private bool isDeletable;
     private GameObject CubeObj;
     private int x;
@@ -24,7 +24,7 @@ public struct Cube //TODO: check heredity
         CubeObj.transform.parent = Parent.transform;
         CubeObj.transform.localPosition = GetCubePosition(Parent.transform.localScale);
     
-        if(isCarveable)
+        if(isWall)
         {
             CubeObj.GetComponent<Renderer>().material.color = Color.red;
         }
@@ -37,13 +37,13 @@ public struct Cube //TODO: check heredity
     {
         this.weight = weight;
     }
-    public bool GetIsCarveable()
+    public bool GetIsWall()
     {
-        return isCarveable;
+        return isWall;
     }
-    public void SetIsCarveable(bool isCarveable)
+    public void SetIsWall(bool isCarveable)
     {
-        this.isCarveable = isCarveable;
+        this.isWall = isCarveable;
     }
     public bool GetIsDeletable()
     {

@@ -65,11 +65,11 @@ public class MazeGeneration : ScriptableObject
                     switch (mode)
                     {
                         case 0:
-                            // Mode 0: Initiating carveability and setting cube properties
+                            // Mode 0: Initiating all walls and setting cube properties
                             if (IsBoundaryCube(width, height, depth))
                             {
                                 // Set cube properties for boundary cubes
-                                mazeArray[width, height, depth].SetIsCarveable(true);
+                                mazeArray[width, height, depth].SetIsWall(true);
                                 mazeArray[width, height, depth].SetIsDeletable(false);
                                 mazeArray[width, height, depth].SetPos(width, height, depth);
                                 mazeArray[width, height, depth].SetWeight(Random.Range(1, 199));
@@ -77,23 +77,28 @@ public class MazeGeneration : ScriptableObject
                             else
                             {
                                 // Set cube properties for non-boundary cubes
-                                mazeArray[width, height, depth].SetIsCarveable(false);
+                                mazeArray[width, height, depth].SetIsWall(false);
                                 mazeArray[width, height, depth].SetIsDeletable(true);
                             }
                             break;
                         case 1:
-                            // Mode 1: Collect valid carveable cubes
-                            if (mazeArray[width, height, depth].GetIsCarveable())
+                            // Mode 1: Collect valid wall cubes
+                            if (mazeArray[width, height, depth].GetIsWall())
                             {
                                 possibleNextCubes.Add(mazeArray[width, height, depth]);
                                 count++;
                             }
                             break;
                         case 2:
-                            // Mode 2: Generate cubes for carveable positions
-                            if (mazeArray[width, height, depth].GetIsCarveable())
+                            // Mode 2: Create walls, cubes with isWall == false make up the path
+                            if (mazeArray[width, height, depth].GetIsWall())
                             {
                                 mazeArray[width, height, depth].Generate(MazeObj);
+                            }
+                            else if(!startPosSet)
+                            {
+                                startPosSet = true;
+                                GenerateStartField(mazeArray[width, height, depth]);
                             }
                             break;
                         default:
@@ -113,16 +118,16 @@ public class MazeGeneration : ScriptableObject
 
         // Return a placeholder cube for invalid cases
         Cube badSearch = new Cube();
-        badSearch.SetIsCarveable(false);
+        badSearch.SetIsWall(false);
         return badSearch;
     }
 
     private void Cutout(Cube cube)
     {
-        if (cube.GetIsCarveable() == true)
+        if (cube.GetIsWall() == true)
         {
             cubeList.Add(mazeArray[cube.GetX(), cube.GetY(), cube.GetZ()]);
-            mazeArray[cube.GetX(), cube.GetY(), cube.GetZ()].SetIsCarveable(false); 
+            mazeArray[cube.GetX(), cube.GetY(), cube.GetZ()].SetIsWall(false); 
         }
     }
 
@@ -140,7 +145,7 @@ public class MazeGeneration : ScriptableObject
                         case 0:
                             if (IsValidNeighbor(xi, yi, zi, pointX, pointY, pointZ))
                             {
-                                if (mazeArray[pointX + xi, pointY + yi, pointZ + zi].GetIsCarveable())
+                                if (mazeArray[pointX + xi, pointY + yi, pointZ + zi].GetIsWall())
                                 {
                                     possibleNextCubes.Clear();
                                     GetNeighborCubes(pointX + xi, pointY + yi, pointZ + zi, 1);
@@ -156,7 +161,7 @@ public class MazeGeneration : ScriptableObject
                         case 1:
                             if (IsValidNonDiagonalNeighbor(xi, yi, zi) && IsValidNeighbor(xi, yi, zi, pointX, pointY, pointZ))
                             {
-                                if (!mazeArray[pointX + xi, pointY + yi, pointZ + zi].GetIsCarveable() && !mazeArray[pointX + xi, pointY + yi, pointZ + zi].GetIsDeletable())
+                                if (!mazeArray[pointX + xi, pointY + yi, pointZ + zi].GetIsWall() && !mazeArray[pointX + xi, pointY + yi, pointZ + zi].GetIsDeletable())
                                 {
                                     possibleNextCubes.Add(mazeArray[pointX, pointY, pointZ]);
                                 }
@@ -199,7 +204,7 @@ public class MazeGeneration : ScriptableObject
             Cube temp = GetNeighborCubes(cube.GetX(), cube.GetY(), cube.GetZ(), 0);
             float tempWeight = mazeArray[temp.GetX(), temp.GetY(), temp.GetZ()].GetWeight();
 
-            if (temp.GetIsCarveable() && tempWeight < bestWeight)
+            if (temp.GetIsWall() && tempWeight < bestWeight)
             {
                 targetCube = temp;
                 bestWeight = tempWeight;
