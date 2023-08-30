@@ -29,7 +29,6 @@ public class MazeGeneration : ScriptableObject
 
     public void Build(Vector3 position, Vector3 scale)
     {
-        Debug.Log("hier kommen wir durch");
         MazeObj = new GameObject();
         MazeObj.transform.position = position;
         MazeObj.transform.localScale = scale;
@@ -110,8 +109,6 @@ public class MazeGeneration : ScriptableObject
         {
             // Mode 1: Return a random valid next cube
             int random = Random.Range(0, count);
-            Debug.Log(count);
-            Debug.Log(random);
             return possibleNextCubes[random];
         }
 
@@ -130,37 +127,6 @@ public class MazeGeneration : ScriptableObject
         }
     }
 
-    private bool IsDiagonalOrSelf(int x, int y, int z)
-    {
-        return (x * x == 1 && y * y == 1) || (x * x == 1 && z * z == 1) || (z * z == 1 && y * y == 1);
-    }
-
-    private bool IsOutOfBounds(int x, int y, int z)
-    {
-        return this.x < 0 || this.x >= x || this.y < 0 || this.y >= y || this.z < 0 || this.z >= z;
-    }
-
-    private Cube FindPossibleCube(int pointX, int pointY, int pointZ, int xi, int yi, int zi)
-    {
-        if (IsDiagonalOrSelf(xi, yi, zi) || IsOutOfBounds(pointX + xi, pointY + yi, pointZ + zi))
-            return null;
-
-        Cube cube = mazeArray[pointX + xi, pointY + yi, pointZ + zi];
-
-        if (cube.GetIsCarveable())
-        {
-            possibleNextCubes.Clear();
-            GetNeighborCubes(pointX + xi, pointY + yi, pointZ + zi, 1);
-            if (possibleNextCubes.Count == 1)
-            {
-                possibleNextCubes.Clear();
-                return cube;
-            }
-        }
-
-        return null;
-    }
-
     private Cube GetNeighborCubes(int pointX, int pointY, int pointZ, int mode)
     {
         for (int xi = -1; xi <= 1; xi++)
@@ -169,19 +135,59 @@ public class MazeGeneration : ScriptableObject
             {
                 for (int zi = -1; zi <= 1; zi++)
                 {
-                    if (mode == 0)
+                    switch (mode)
                     {
-                        Cube possibleCube = FindPossibleCube(pointX, pointY, pointZ, xi, yi, zi);
-                        if (possibleCube != null)
-                            return possibleCube;
+                        // Initial check for adjacent neighbor squares
+                        case 0:
+                            if (IsValidNeighbor(xi, yi, zi, pointX, pointY, pointZ))
+                            {
+                                if (mazeArray[pointX + xi, pointY + yi, pointZ + zi].GetIsCarveable())
+                                {
+                                    possibleNextCubes.Clear();
+                                    GetNeighborCubes(pointX + xi, pointY + yi, pointZ + zi, 1);
+                                    if (possibleNextCubes.Count == 1)
+                                    {
+                                        possibleNextCubes.Clear();
+                                        return mazeArray[pointX + xi, pointY + yi, pointZ + zi];
+                                    }
+                                }
+                            }
+                            break;
+                        // Check for possible cubes that only one active neighbor adjacent
+                        case 1:
+                            if (IsValidNonDiagonalNeighbor(xi, yi, zi) && IsValidNeighbor(xi, yi, zi, pointX, pointY, pointZ))
+                            {
+                                if (!mazeArray[pointX + xi, pointY + yi, pointZ + zi].GetIsCarveable() && !mazeArray[pointX + xi, pointY + yi, pointZ + zi].GetIsDeletable())
+                                {
+                                    possibleNextCubes.Add(mazeArray[pointX, pointY, pointZ]);
+                                }
+                            }
+                            break;
+                        default:
+                            Debug.Log("Mode Input Error");
+                            break;
                     }
                 }
             }
         }
 
+        // If no valid cube found, return a placeholder
         Cube badSearch = new Cube();
         badSearch.SetWeight(999);
         return badSearch;
+    }
+    
+    // Check if a neighboring cube is valid
+    private bool IsValidNeighbor(int xi, int yi, int zi, int pointX, int pointY, int pointZ)
+    {
+        return pointX + xi >= 0 && pointX + xi < x && pointY + yi >= 0 && pointY + yi < y && pointZ + zi >= 0 &&
+               pointZ + zi < z && !(pointX == 0 && pointY == 0 && pointZ == 0);
+    }
+
+    private bool IsValidNonDiagonalNeighbor(int xi, int yi, int zi)
+    {
+        return !(Mathf.Pow(xi, 2) == 1 && Mathf.Pow(yi, 2) == 1 || Mathf.Pow(xi, 2) == 1 && Mathf.Pow(zi, 2) == 1 || Mathf.Pow(zi, 2) == 1 && Mathf.Pow(yi, 2) == 1)
+               && !(xi == 0 && yi == 0 && zi == 0);
     }
 
     private Cube FindBestCube()
@@ -206,7 +212,7 @@ public class MazeGeneration : ScriptableObject
     
     private void PrimsAlgorithm()
     {
-        // Set starting block
+        // Get valid carveable cubes
         Cutout(SearchArray(1));
 
         while (true)
