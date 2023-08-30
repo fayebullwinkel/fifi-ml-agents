@@ -1,8 +1,6 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
-public class Cube: ScriptableObject //TODO: check heredity
+public struct Cube //TODO: check heredity
 {
     private float weight;
     private bool isCarveable;

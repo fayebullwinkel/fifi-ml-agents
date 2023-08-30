@@ -24,10 +24,10 @@ public class MazeGeneration : ScriptableObject
 
         SearchArray(0);
         PrimsAlgorithm();
-        Build(position, scale);
+        BuildMaze(position, scale);
     }
 
-    public void Build(Vector3 position, Vector3 scale)
+    public void BuildMaze(Vector3 position, Vector3 scale)
     {
         MazeObj = new GameObject();
         MazeObj.transform.position = position;
@@ -66,7 +66,6 @@ public class MazeGeneration : ScriptableObject
                     {
                         case 0:
                             // Mode 0: Initiating carveability and setting cube properties
-                            mazeArray[width, height, depth] = new Cube();
                             if (IsBoundaryCube(width, height, depth))
                             {
                                 // Set cube properties for boundary cubes
@@ -123,7 +122,7 @@ public class MazeGeneration : ScriptableObject
         if (cube.GetIsCarveable() == true)
         {
             cubeList.Add(mazeArray[cube.GetX(), cube.GetY(), cube.GetZ()]);
-            mazeArray[cube.GetX(), cube.GetY(), cube.GetZ()].SetIsCarveable(false); // TODO: why not just cube.SetIsCarveable(false)?
+            mazeArray[cube.GetX(), cube.GetY(), cube.GetZ()].SetIsCarveable(false); 
         }
     }
 
@@ -190,9 +189,9 @@ public class MazeGeneration : ScriptableObject
                && !(xi == 0 && yi == 0 && zi == 0);
     }
 
-    private Cube FindBestCube()
+    private Nullable<Cube> FindBestCube()
     {
-        Cube targetCube = null;
+        Nullable<Cube> targetCube = null;
         float bestWeight = float.MaxValue;
 
         foreach (Cube cube in cubeList)
@@ -212,16 +211,16 @@ public class MazeGeneration : ScriptableObject
     
     private void PrimsAlgorithm()
     {
-        // Get valid carveable cubes
+        // Cut start cube
         Cutout(SearchArray(1));
 
         while (true)
         {
-            Cube bestCube = FindBestCube();
-            if (bestCube == null)
+            Nullable<Cube> bestCube = FindBestCube();
+            if (!bestCube.HasValue)
                 break;
 
-            Cutout(bestCube);
+            Cutout(bestCube.Value);
         }
     }
 }
