@@ -95,11 +95,6 @@ public class MazeGeneration : ScriptableObject
                             {
                                 mazeArray[width, height, depth].Generate(MazeObj);
                             }
-                            else if(!startPosSet)
-                            {
-                                startPosSet = true;
-                                GenerateStartField(mazeArray[width, height, depth]);
-                            }
                             break;
                         default:
                             Debug.Log("Mode Input Error");
