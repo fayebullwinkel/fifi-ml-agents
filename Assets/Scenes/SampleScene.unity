@@ -312,7 +312,7 @@ GameObject:
   - component: {fileID: 1233207294}
   - component: {fileID: 1233207293}
   m_Layer: 0
-  m_Name: Test
+  m_Name: MazeController
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -330,7 +330,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b2aee7930d1fd0e49a43ca7b9ac3a166, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  TestCube: {fileID: 11400000, guid: f883070d82e742243aaa10e034ccc2a5, type: 2}
+  MazeGenerator: {fileID: 11400000, guid: f883070d82e742243aaa10e034ccc2a5, type: 2}
 --- !u!4 &1233207294
 Transform:
   m_ObjectHideFlags: 0

@@ -223,4 +223,9 @@ public class MazeGeneration : ScriptableObject
             Cutout(bestCube.Value);
         }
     }
+    
+    public GameObject GetMazeObj()
+    {
+        return MazeObj;
+    }
 }
