@@ -6,12 +6,15 @@ using Random = UnityEngine.Random;
 public class MazeGeneration : ScriptableObject
 {
     private Cube[,,] mazeArray;
-    private List<Cube> cubeList;
     private int x;
     private int y;
     private int z;
+    private List<Cube> cubeList;
     private GameObject MazeObj;
     private List<Cube> possibleNextCubes;
+    private List<Cube> path;
+    private Cube startCube;
+    private Cube endCube;
 
     public void Generate(Vector3 position, Vector3 scale)
     {
@@ -21,6 +24,7 @@ public class MazeGeneration : ScriptableObject
         mazeArray = new Cube[x, y, z];
         possibleNextCubes = new List<Cube>();
         cubeList = new List<Cube>();
+        path = new List<Cube>();
 
         SearchArray(0);
         PrimsAlgorithm();
@@ -38,6 +42,7 @@ public class MazeGeneration : ScriptableObject
         MazeBase.transform.parent = MazeObj.transform;
         MazeBase.transform.localPosition = new Vector3(0, 0, 0);
         MazeBase.transform.localScale = new Vector3(0.9f, 0.9f, 0.9f);
+        MazeBase.GetComponent<Renderer>().material.color = new Color32(168, 119, 90, 255);
     }
 
     public void Delete()
@@ -95,6 +100,10 @@ public class MazeGeneration : ScriptableObject
                             {
                                 mazeArray[width, height, depth].Generate(MazeObj);
                             }
+                            else
+                            {
+                                path.Add(mazeArray[width, height, depth]);
+                            }
                             break;
                         default:
                             Debug.Log("Mode Input Error");
@@ -106,9 +115,30 @@ public class MazeGeneration : ScriptableObject
 
         if (mode == 1)
         {
-            // Mode 1: Return a random valid next cube
+            // Return a random valid next cube
             int random = Random.Range(0, count);
             return possibleNextCubes[random];
+        }
+
+        if (mode == 2)
+        {
+            List<Cube> toGenerate = new List<Cube>();   
+            int random = Random.Range(0, path.Count - 1);
+            startCube = path[random];
+            path.RemoveAt(random);
+            
+            random = Random.Range(0, path.Count - 1);
+            endCube = path[random];
+            toGenerate.Add(startCube);
+            toGenerate.Add(endCube);
+
+            foreach (Cube cube in toGenerate)
+            {
+                GameObject CubeObj = GameObject.CreatePrimitive(PrimitiveType.Cube);
+                CubeObj.transform.parent = MazeObj.transform;
+                CubeObj.transform.localPosition = cube.GetCubePosition(MazeObj.transform.localScale);
+                CubeObj.GetComponent<Renderer>().material.color = Color.red;
+            }
         }
 
         // Return a placeholder cube for invalid cases
@@ -227,5 +257,15 @@ public class MazeGeneration : ScriptableObject
     public GameObject GetMazeObj()
     {
         return MazeObj;
+    }
+    
+    public Cube GetStartCube()
+    {
+        return startCube;
+    }
+    
+    public Cube GetEndCube()
+    {
+        return endCube;
     }
 }

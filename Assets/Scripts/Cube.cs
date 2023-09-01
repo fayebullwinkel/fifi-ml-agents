@@ -26,7 +26,7 @@ public struct Cube //TODO: check heredity
     
         if(isWall)
         {
-            CubeObj.GetComponent<Renderer>().material.color = Color.red;
+            CubeObj.GetComponent<Renderer>().material = Resources.Load("Materials/Brick_Wall", typeof(Material)) as Material;
         }
     }
     public float GetWeight()
