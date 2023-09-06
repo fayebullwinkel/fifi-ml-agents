@@ -1,44 +1,56 @@
-using System.Collections;
-using System.Collections.Generic;
-using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.Serialization;
 
 public class MazeController : MonoBehaviour
 {
-    [FormerlySerializedAs("TestCube")] public MazeGeneration MazeGenerator;
-    private bool isFirst = true;
-    private float rotationSpeed = 30f;
-    private Quaternion currentRotation;
-    private GameObject Maze;
-    private bool isNew = false;
+    [FormerlySerializedAs("MazeGenerator")] [FormerlySerializedAs("TestCube")] public MazeGeneration mazeGenerator; // TODO: implement new scriptable object
+    private readonly float _rotationSpeed = 30f;
+    private Quaternion _currentRotation;
+    private GameObject _maze;
+
+    public MazeAgent mazeAgent;
+
+    private void Start()
+    {
+        ResetArea();
+    }
+
+    private void ResetArea()
+    {
+        mazeGenerator.Delete();
+        GenerateMaze();
+        PlaceMazeAgent();
+    }
+
+    private void GenerateMaze()
+    {
+        mazeGenerator.Generate(transform.position, transform.localScale); 
+        
+        _maze = mazeGenerator.GetMazeObj();
+    }
+
+    private void PlaceMazeAgent()
+    {
+        GameObject start = mazeGenerator.GetStartCube();
+        start.GetComponent<Renderer>().material.color = Color.green;
+        start.AddComponent<MazeAgent>();
+    }
 
     void Update()
     {
         if (Input.GetKeyDown(KeyCode.Space))
         {
-            if (isFirst)
-            {
-
-                isFirst = false;
-                MazeGenerator.Generate(transform.position, transform.localScale);
-
-            }
-            else
-            {
-                currentRotation = Maze.transform.rotation;
-                
-                MazeGenerator.Delete();
-                MazeGenerator.Generate(transform.position, transform.localScale);
-                
-                MazeGenerator.GetMazeObj().transform.rotation = currentRotation;
-            }
+            _currentRotation = _maze.transform.rotation;
+            ResetArea();
+            mazeGenerator.GetMazeObj().transform.rotation = _currentRotation;
         }
         
-        Maze = MazeGenerator.GetMazeObj();
-        if (Maze)
+        // rotate the maze, just for fun
+        _maze = mazeGenerator.GetMazeObj();
+        if (_maze)
         {
-            Maze.transform.Rotate(Vector3.up, rotationSpeed * Time.deltaTime, Space.World);
+            _maze.transform.Rotate(Vector3.up, _rotationSpeed * Time.deltaTime, Space.World);
         }
     }
+
 }
