@@ -68,9 +68,4 @@ public struct Cube
         _y = y;
         _z = z;
     }
-    
-    public Vector3 GetPos()
-    {
-        return new Vector3(_x, _y, _z);
-    }
 }
