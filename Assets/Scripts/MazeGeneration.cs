@@ -15,7 +15,7 @@ public class MazeGeneration : ScriptableObject
     private List<Cube> _path;
     private GameObject _startCubeObj;
     private GameObject _endCubeObj;
-    
+
     public void Generate(Vector3 position, Vector3 scale)
     {
         _x = Mathf.RoundToInt(scale.x);
@@ -25,6 +25,9 @@ public class MazeGeneration : ScriptableObject
         _possibleNextCubes = new List<Cube>();
         _cubeList = new List<Cube>();
         _path = new List<Cube>();
+
+        _startCubeObj = GameObject.CreatePrimitive(PrimitiveType.Cube);
+        _endCubeObj = GameObject.CreatePrimitive(PrimitiveType.Cube);
 
         SearchArray(0);
         PrimsAlgorithm();
@@ -85,6 +88,7 @@ public class MazeGeneration : ScriptableObject
                                 _mazeArray[width, height, depth].SetIsWall(false);
                                 _mazeArray[width, height, depth].SetIsDeletable(true);
                             }
+
                             break;
                         case 1:
                             // Mode 1: Collect valid wall cubes
@@ -93,6 +97,7 @@ public class MazeGeneration : ScriptableObject
                                 _possibleNextCubes.Add(_mazeArray[width, height, depth]);
                                 count++;
                             }
+
                             break;
                         case 2:
                             // Mode 2: Create walls, cubes with isWall == false make up the _path
@@ -104,6 +109,7 @@ public class MazeGeneration : ScriptableObject
                             {
                                 _path.Add(_mazeArray[width, height, depth]);
                             }
+
                             break;
                         default:
                             Debug.Log("Mode Input Error");
@@ -122,18 +128,11 @@ public class MazeGeneration : ScriptableObject
 
         if (mode == 2)
         {
-            _startCubeObj = GameObject.CreatePrimitive(PrimitiveType.Cube);
-            _endCubeObj = GameObject.CreatePrimitive(PrimitiveType.Cube);
-            
-            int random = Random.Range(0, _path.Count);
-            Cube randomCube = _path[random];
-            
-            _path.RemoveAt(random);
-            PlaceCube(_startCubeObj, randomCube, Color.blue);
-            
-            random = Random.Range(0, _path.Count);
-            randomCube = _path[random];
-            PlaceCube(_endCubeObj, randomCube, Color.red);
+            // Place the start cube at the beginning of the path
+            PlaceCube(_startCubeObj, _path[0], Color.blue);
+
+            // Place the end cube at the end of the path
+            PlaceCube(_endCubeObj, _path[_path.Count - 1], Color.red);
         }
 
         // Return a placeholder cube for invalid cases
@@ -154,7 +153,7 @@ public class MazeGeneration : ScriptableObject
         if (cube.GetIsWall())
         {
             _cubeList.Add(_mazeArray[cube.GetX(), cube.GetY(), cube.GetZ()]);
-            _mazeArray[cube.GetX(), cube.GetY(), cube.GetZ()].SetIsWall(false); 
+            _mazeArray[cube.GetX(), cube.GetY(), cube.GetZ()].SetIsWall(false);
         }
     }
 
@@ -183,16 +182,20 @@ public class MazeGeneration : ScriptableObject
                                     }
                                 }
                             }
+
                             break;
                         // Check for possible cubes that only one active neighbor adjacent
                         case 1:
-                            if (IsValidNonDiagonalNeighbor(xi, yi, zi) && IsValidNeighbor(xi, yi, zi, pointX, pointY, pointZ))
+                            if (IsValidNonDiagonalNeighbor(xi, yi, zi) &&
+                                IsValidNeighbor(xi, yi, zi, pointX, pointY, pointZ))
                             {
-                                if (!_mazeArray[pointX + xi, pointY + yi, pointZ + zi].GetIsWall() && !_mazeArray[pointX + xi, pointY + yi, pointZ + zi].GetIsDeletable())
+                                if (!_mazeArray[pointX + xi, pointY + yi, pointZ + zi].GetIsWall() &&
+                                    !_mazeArray[pointX + xi, pointY + yi, pointZ + zi].GetIsDeletable())
                                 {
                                     _possibleNextCubes.Add(_mazeArray[pointX, pointY, pointZ]);
                                 }
                             }
+
                             break;
                         default:
                             Debug.Log("Mode Input Error");
@@ -207,7 +210,7 @@ public class MazeGeneration : ScriptableObject
         badSearch.SetWeight(999);
         return badSearch;
     }
-    
+
     // Check if a neighboring cube is valid
     private bool IsValidNeighbor(int xi, int yi, int zi, int pointX, int pointY, int pointZ)
     {
@@ -217,7 +220,8 @@ public class MazeGeneration : ScriptableObject
 
     private bool IsValidNonDiagonalNeighbor(int xi, int yi, int zi)
     {
-        return !(Mathf.Pow(xi, 2) == 1 && Mathf.Pow(yi, 2) == 1 || Mathf.Pow(xi, 2) == 1 && Mathf.Pow(zi, 2) == 1 || Mathf.Pow(zi, 2) == 1 && Mathf.Pow(yi, 2) == 1)
+        return !(Mathf.Pow(xi, 2) == 1 && Mathf.Pow(yi, 2) == 1 || Mathf.Pow(xi, 2) == 1 && Mathf.Pow(zi, 2) == 1 ||
+                 Mathf.Pow(zi, 2) == 1 && Mathf.Pow(yi, 2) == 1)
                && !(xi == 0 && yi == 0 && zi == 0);
     }
 
@@ -240,7 +244,7 @@ public class MazeGeneration : ScriptableObject
 
         return targetCube;
     }
-    
+
     private void PrimsAlgorithm()
     {
         // Cut start cube
@@ -255,12 +259,12 @@ public class MazeGeneration : ScriptableObject
             Cutout(bestCube.Value);
         }
     }
-    
+
     public GameObject GetMazeObj()
     {
         return _mazeObj;
     }
-    
+
     public GameObject GetStartCube()
     {
         return _startCubeObj;

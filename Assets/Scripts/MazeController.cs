@@ -8,8 +8,6 @@ public class MazeController : MonoBehaviour
     private Quaternion _currentRotation;
     private GameObject _maze;
 
-    public MazeAgent mazeAgent;
-
     private void Start()
     {
         ResetArea();
@@ -33,7 +31,7 @@ public class MazeController : MonoBehaviour
     {
         GameObject start = mazeGenerator.GetStartCube();
         start.GetComponent<Renderer>().material.color = Color.green;
-        start.AddComponent<MazeAgent>();
+        //start.AddComponent<MazeAgent>();
     }
 
     void Update()
