@@ -7,13 +7,16 @@ public class MazeController : MonoBehaviour
     private readonly float _rotationSpeed = 30f;
     private Quaternion _currentRotation;
     private GameObject _maze;
+    
+    private MazeAgent _mazeAgent;
+    private GameObject _mazeAgentObj;
 
     private void Start()
     {
         ResetArea();
     }
 
-    private void ResetArea()
+    public void ResetArea()
     {
         mazeGenerator.Delete();
         GenerateMaze();
@@ -29,9 +32,9 @@ public class MazeController : MonoBehaviour
 
     private void PlaceMazeAgent()
     {
-        GameObject start = mazeGenerator.GetStartCube();
-        start.GetComponent<Renderer>().material.color = Color.green;
-        //start.AddComponent<MazeAgent>();
+        _mazeAgentObj = GameObject.FindGameObjectWithTag("MazeAgent");
+        _mazeAgent = _mazeAgentObj.GetComponent<MazeAgent>();
+        _mazeAgentObj.GetComponent<Renderer>().material.color = Color.green;
     }
 
     void Update()

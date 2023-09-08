@@ -15,6 +15,8 @@ public class MazeGeneration : ScriptableObject
     private List<Cube> _path;
     private GameObject _startCubeObj;
     private GameObject _endCubeObj;
+    
+    public GameObject agentPrefab;
 
     public void Generate(Vector3 position, Vector3 scale)
     {
@@ -26,7 +28,7 @@ public class MazeGeneration : ScriptableObject
         _cubeList = new List<Cube>();
         _path = new List<Cube>();
 
-        _startCubeObj = GameObject.CreatePrimitive(PrimitiveType.Cube);
+        _startCubeObj = Instantiate(agentPrefab);
         _endCubeObj = GameObject.CreatePrimitive(PrimitiveType.Cube);
 
         SearchArray(0);
@@ -129,6 +131,8 @@ public class MazeGeneration : ScriptableObject
         if (mode == 2)
         {
             // Place the start cube at the beginning of the path
+            _startCubeObj.GetComponent<Rigidbody>().isKinematic = true;
+            _startCubeObj.transform.localScale = _endCubeObj.transform.localScale;
             PlaceCube(_startCubeObj, _path[0], Color.blue);
 
             // Place the end cube at the end of the path

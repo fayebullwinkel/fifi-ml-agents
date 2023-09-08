@@ -330,7 +330,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b2aee7930d1fd0e49a43ca7b9ac3a166, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  MazeGenerator: {fileID: 11400000, guid: f883070d82e742243aaa10e034ccc2a5, type: 2}
+  mazeGenerator: {fileID: 11400000, guid: f883070d82e742243aaa10e034ccc2a5, type: 2}
+  mazeAgent: {fileID: 3389492275363718248, guid: 1b9322bdbff7c00449e6458bd4f4b31b, type: 3}
 --- !u!4 &1233207294
 Transform:
   m_ObjectHideFlags: 0
