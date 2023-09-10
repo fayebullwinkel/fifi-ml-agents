@@ -4,7 +4,7 @@ using UnityEngine.Serialization;
 public class MazeController : MonoBehaviour
 {
     [FormerlySerializedAs("MazeGenerator")] [FormerlySerializedAs("TestCube")] public MazeGeneration mazeGenerator; // TODO: implement new scriptable object
-    private readonly float _rotationSpeed = 30f;
+    //private readonly float _rotationSpeed = 30f;
     private Quaternion _currentRotation;
     private GameObject _maze;
 
@@ -38,7 +38,7 @@ public class MazeController : MonoBehaviour
         _mazeAgentObj.GetComponent<Renderer>().material.color = Color.green;
     }
 
-    void Update()
+    /*void Update()
     {
         if (Input.GetKeyDown(KeyCode.Space))
         {
@@ -53,6 +53,6 @@ public class MazeController : MonoBehaviour
         {
             _maze.transform.Rotate(Vector3.up, _rotationSpeed * Time.deltaTime, Space.World);
         }
-    }
+    }*/
 
 }
