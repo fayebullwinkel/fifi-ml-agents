@@ -7,7 +7,7 @@ public class MazeController : MonoBehaviour
     private readonly float _rotationSpeed = 30f;
     private Quaternion _currentRotation;
     private GameObject _maze;
-    
+
     private MazeAgent _mazeAgent;
     private GameObject _mazeAgentObj;
 
@@ -25,8 +25,9 @@ public class MazeController : MonoBehaviour
 
     private void GenerateMaze()
     {
-        mazeGenerator.Generate(transform.position, transform.localScale); 
-        
+        var transform1 = transform;
+        mazeGenerator.Generate(transform1.position, transform1.localScale);
+
         _maze = mazeGenerator.GetMazeObj();
     }
 

@@ -17,6 +17,7 @@ public class MazeGeneration : ScriptableObject
     private GameObject _endCubeObj;
     
     public GameObject agentPrefab;
+    public GameObject wallPrefab;
 
     public void Generate(Vector3 position, Vector3 scale)
     {
@@ -30,6 +31,7 @@ public class MazeGeneration : ScriptableObject
 
         _startCubeObj = Instantiate(agentPrefab);
         _endCubeObj = GameObject.CreatePrimitive(PrimitiveType.Cube);
+        _endCubeObj.tag = "EndCube";
 
         SearchArray(0);
         PrimsAlgorithm();
@@ -44,6 +46,7 @@ public class MazeGeneration : ScriptableObject
 
         SearchArray(2);
         GameObject mazeBase = GameObject.CreatePrimitive(PrimitiveType.Cube);
+        Destroy(mazeBase.GetComponent<BoxCollider>());
         mazeBase.transform.parent = _mazeObj.transform;
         mazeBase.transform.localPosition = new Vector3(0, 0, 0);
         mazeBase.transform.localScale = new Vector3(0.9f, 0.9f, 0.9f);
@@ -105,7 +108,10 @@ public class MazeGeneration : ScriptableObject
                             // Mode 2: Create walls, cubes with isWall == false make up the _path
                             if (_mazeArray[width, height, depth].GetIsWall())
                             {
-                                _mazeArray[width, height, depth].Generate(_mazeObj);
+                                GameObject wall = Instantiate(wallPrefab);
+                                wall.transform.localScale = _endCubeObj.transform.localScale;
+                                wall.transform.parent = _mazeObj.transform;
+                                wall.transform.localPosition = _mazeArray[width, height, depth].GetCubePosition(_mazeObj.transform.localScale);
                             }
                             else
                             {

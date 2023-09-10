@@ -13,3 +13,4 @@ MonoBehaviour:
   m_Name: MazeGeneration
   m_EditorClassIdentifier: 
   agentPrefab: {fileID: 5701045522921290284, guid: 1b9322bdbff7c00449e6458bd4f4b31b, type: 3}
+  wallPrefab: {fileID: 1159499436702975217, guid: 8615a674f13137940ab64e5dc8107046, type: 3}
