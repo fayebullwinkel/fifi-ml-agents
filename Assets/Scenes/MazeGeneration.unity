@@ -236,8 +236,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 44335da4a82e33c4eb160c7e5acab847, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  x_Size: 10
-  z_Size: 10
+  xSize: 10
+  zSize: 10
   cellSize: 2
   wallPrefab: {fileID: 6953688038259257717, guid: a4391d18c43172646adabba00e2fcf8b, type: 3}
   mazeBoundsPrefab: {fileID: 5475356583517691170, guid: ab7d9e4222691e643af432f35250bc71, type: 3}
