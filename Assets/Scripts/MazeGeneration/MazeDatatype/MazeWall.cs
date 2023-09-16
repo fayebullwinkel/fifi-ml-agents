@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using Unity.VisualScripting;
+using UnityEngine;
 
 namespace MazeDatatype
 {
@@ -24,6 +25,16 @@ namespace MazeDatatype
         public void DestroyWall()
         {
             Destroy(gameObject);
+        }
+
+        private void OnCollisionEnter(Collision other)
+        {
+            if (other.gameObject.CompareTag("MazeGenerationAgent"))
+            {
+                DestroyWall();
+                // TODO: Remove wall from graph
+                // TODO: Set Cell Corner Count
+            }
         }
     }
 }

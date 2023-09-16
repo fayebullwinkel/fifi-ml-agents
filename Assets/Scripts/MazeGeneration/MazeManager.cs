@@ -68,7 +68,7 @@ public class MazeManager : MonoBehaviour
             return;
         }
         var position = GetWallPosition(cell, wall);
-        var existingWall = GetExistingWall(position);
+        var existingWall = mazeGraph.GetExistingWall(position);
 
         if (existingWall == null)
         {
@@ -104,11 +104,6 @@ public class MazeManager : MonoBehaviour
         }
 
         return new Vector3(cell.GetX() * cellSize + xOffset, 0, cell.GetZ() * cellSize + zOffset);
-    }
-
-    private MazeWall GetExistingWall(Vector3 position)
-    {
-        return mazeGraph.Walls.Find(x => x.gameObject.transform.localPosition == position);
     }
 
     private void CreateNewWall(MazeCell cell, Vector3 position, GameObject wallParent, MazeWall.WallType wallType)

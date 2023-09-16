@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using UnityEngine;
 
 namespace MazeDatatype
 {
@@ -35,6 +36,17 @@ namespace MazeDatatype
         public void SetCell(int x, int z, MazeCell cell)
         {
             Cells[x, z] = cell;
+        }
+        
+        public MazeWall GetExistingWall(Vector3 position)
+        {
+            return Walls.Find(x => x.gameObject.transform.localPosition == position);
+        }
+        
+        public void UpdateCornerWallCounts(MazeCell cell)
+        {
+            var neighbors = cell.GetNeighbours();
+            // TODO
         }
     }
 }
