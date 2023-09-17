@@ -297,6 +297,11 @@ namespace MazeDatatype
             {
                 return false;
             }
+            // Check if maze has a start and end cell
+            if (StartCell == null || EndCell == null)
+            {
+                return false;
+            }
             // Check if there is a path from start to end cell -> maze is solvable
             var path = FindPath(StartCell, EndCell);
             return path.Contains(StartCell) && path.Contains(EndCell);
@@ -343,6 +348,17 @@ namespace MazeDatatype
             path.Add(startCell);
             path.Reverse();
             return path;
+        }
+        
+        public bool MazeMeetsRequirements()
+        {
+            // Check if all corners have at least one wall -> maze is not empty
+            if (Corners.Any(corner => corner.Walls.Count == 0))
+            {
+                return false;
+            }
+            // TODO: add more requirements
+            return true;
         }
         
         public MazeCell GetCell(int x, int z)

@@ -45,6 +45,10 @@ namespace MazeDatatype
                 mazeManager.mazeGraph.MarkCellVisited(cell.X, cell.Z);
             }
             
+            // Check if the maze still meets the requirements
+            var meetsRequirements = mazeManager.mazeGraph.MazeMeetsRequirements();
+            Debug.Log("Maze meets requirements: " + meetsRequirements);
+            
             Destroy(gameObject);
         }
 
