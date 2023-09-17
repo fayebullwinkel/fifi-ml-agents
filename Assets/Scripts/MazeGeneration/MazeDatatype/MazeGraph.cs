@@ -1,5 +1,7 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using UnityEngine;
+using Object = UnityEngine.Object;
 
 namespace MazeDatatype
 {
@@ -10,21 +12,225 @@ namespace MazeDatatype
 
         public MazeCell[,] Cells { get; }
         public List<MazeWall> Walls { get; }
+        public List<MazeCorner> Corners { get; }
+        
+        private MazeManager mazeManager = MazeManager.Singleton;
 
-        public MazeGraph(int width, int height, bool withWalls = true)
+        public MazeGraph(int width, int height)
         {
             Width = width;
             Height = height;
             Cells = new MazeCell[width, height];
             Walls = new List<MazeWall>();
+            Corners = new List<MazeCorner>();
             
             // Initialize the maze cells
             for (var x = 0; x < Width; x++)
             {
                 for (var z = 0; z < Height; z++)
                 {
-                    Cells[x, z] = new MazeCell(x, z, withWalls);
+                    Cells[x, z] = new MazeCell(x, z);
                 }
+            }
+            
+            InitializeNeighbours();
+            InitializeWalls();
+            InitializeCorners();
+        }
+        
+        private void InitializeNeighbours()
+        {
+            for (var x = 0; x < Width; x++)
+            {
+                for (var z = 0; z < Height; z++)
+                {
+                    var cell = Cells[x, z];
+                    // if the cell is not on the left edge, add the cell to the left as a neighbour
+                    if (x > 0)
+                    {
+                        cell.Neighbours.Add(Cells[x - 1, z]);
+                    }
+                    // if the cell is not on the right edge, add the cell to the right as a neighbour
+                    if (x < Width - 1)
+                    {
+                        cell.Neighbours.Add(Cells[x + 1, z]);
+                    }
+                    // if the cell is not on the bottom edge, add the cell to the bottom as a neighbour
+                    if (z > 0)
+                    {
+                        cell.Neighbours.Add(Cells[x, z - 1]);
+                    }
+                    // if the cell is not on the top edge, add the cell to the top as a neighbour
+                    if (z < Height - 1)
+                    {
+                        cell.Neighbours.Add(Cells[x, z + 1]);
+                    }
+                }
+            }
+        }
+
+        private void InitializeWalls()
+        {
+            var wallParent = new GameObject("wallParent");
+            wallParent.transform.parent = mazeManager.transform;
+            wallParent.transform.localPosition = new Vector3(0, 0.5f, 0);
+            
+            for (var x = 0; x < Width; x++)
+            {
+                for (var z = 0; z < Height; z++)
+                {
+                    var cell = Cells[x, z];
+                    // if the cell is not on the left edge, add the left wall
+                    if (x > 0)
+                    {
+                        PlaceWall(cell, WallOrientation.Left, WallType.Vertical, wallParent);
+                    }
+                    // if the cell is not on the right edge, add the right wall
+                    if (x < Width - 1)
+                    {
+                        PlaceWall(cell, WallOrientation.Right, WallType.Vertical, wallParent);
+                    }
+                    // if the cell is not on the bottom edge, add the bottom wall
+                    if (z > 0)
+                    {
+                        PlaceWall(cell, WallOrientation.Bottom, WallType.Horizontal, wallParent);
+                    }
+                    // if the cell is not on the top edge, add the top wall
+                    if (z < Height - 1)
+                    {
+                        PlaceWall(cell, WallOrientation.Top, WallType.Horizontal, wallParent);
+                    }
+                }
+            }
+        }
+        
+        private void InitializeCorners()
+        {
+            for (var x = 0; x < Width - 1; x++)
+            {
+                for (var z = 0; z < Height - 1; z++)
+                {
+                    var cells = new List<MazeCell>
+                    {
+                        Cells[x, z],
+                        Cells[x + 1, z],
+                        Cells[x, z + 1],
+                        Cells[x + 1, z + 1]
+                    };
+                    var walls = new List<MazeWall>
+                    {
+                        Cells[x, z].TopWall,
+                        Cells[x, z].RightWall,
+                        Cells[x + 1, z + 1].BottomWall,
+                        Cells[x + 1, z + 1].LeftWall
+                    };
+                    var corner = new MazeCorner(cells, walls);
+                    Corners.Add(corner);
+                    
+                    Cells[x, z].TopRightCorner = corner;
+                    Cells[x + 1, z].TopLeftCorner = corner;
+                    Cells[x, z + 1].BottomRightCorner = corner;
+                    Cells[x + 1, z + 1].BottomLeftCorner = corner;
+                }
+            }
+        }
+
+        private void PlaceWall(MazeCell currentCell, WallOrientation orientation, WallType wallType,
+            GameObject wallParent)
+        {
+            var neighborCell = GetNeighborCell(currentCell, orientation);
+            var position = GetWallPosition(currentCell, orientation);
+            var existingWall = GetExistingWall(position);
+
+            if (existingWall != null)
+            {
+                return;
+            }
+            var wallObject = Object.Instantiate(mazeManager.wallPrefab, wallParent.transform);
+            wallObject.transform.localPosition = position;
+            wallObject.transform.localScale = GetWallScale(wallType);
+            var wall = wallObject.GetComponent<MazeWall>();
+            wall.InitMazeWall(wallType, currentCell, neighborCell);
+            currentCell.SetWall(orientation, wall);
+            neighborCell.SetWall(GetOppositeOrientation(orientation), wall);
+            Walls.Add(wall);
+        }
+        
+        public MazeWall GetExistingWall(Vector3 position)
+        {
+            return Walls.Find(x => x.gameObject.transform.localPosition == position);
+        }
+        
+        private Vector3 GetWallPosition(MazeCell cell, WallOrientation wall)
+        {
+            var cellSize = mazeManager.GetCellSize();
+            float xOffset = 0;
+            float zOffset = 0;
+
+            switch (wall)
+            {
+                case WallOrientation.Top:
+                    zOffset = cellSize / 2;
+                    break;
+                case WallOrientation.Bottom:
+                    zOffset = -cellSize / 2;
+                    break;
+                case WallOrientation.Left:
+                    xOffset = -cellSize / 2;
+                    break;
+                case WallOrientation.Right:
+                    xOffset = cellSize / 2;
+                    break;
+                default:
+                    throw new ArgumentOutOfRangeException(nameof(wall), wall, null);
+            }
+
+            return new Vector3(cell.X * cellSize + xOffset, 0, cell.Z * cellSize + zOffset);
+        }
+        
+        private Vector3 GetWallScale(WallType type)
+        {
+            return type == WallType.Horizontal ? new Vector3(mazeManager.GetCellSize(), 1, 0.1f) : new Vector3(0.1f, 1, mazeManager.GetCellSize());
+        }
+
+        private MazeCell GetNeighborCell(MazeCell currentCell, WallOrientation orientation)
+        {
+            var (x, z) = GetNeighborCoordinates(currentCell.X, currentCell.Z, orientation);
+            var cell = Cells[x, z];
+            return cell;
+        }
+
+        private (int, int) GetNeighborCoordinates(int x, int z, WallOrientation orientation)
+        {
+            switch (orientation)
+            {
+                case WallOrientation.Left:
+                    return (x - 1, z);
+                case WallOrientation.Right:
+                    return (x + 1, z);
+                case WallOrientation.Bottom:
+                    return (x, z - 1);
+                case WallOrientation.Top:
+                    return (x, z + 1);
+                default:
+                    throw new ArgumentException("Invalid wall orientation");
+            }
+        }
+
+        private WallOrientation GetOppositeOrientation(WallOrientation orientation)
+        {
+            switch (orientation)
+            {
+                case WallOrientation.Left:
+                    return WallOrientation.Right;
+                case WallOrientation.Right:
+                    return WallOrientation.Left;
+                case WallOrientation.Bottom:
+                    return WallOrientation.Top;
+                case WallOrientation.Top:
+                    return WallOrientation.Bottom;
+                default:
+                    throw new ArgumentException("Invalid wall orientation");
             }
         }
 
@@ -36,17 +242,6 @@ namespace MazeDatatype
         public void SetCell(int x, int z, MazeCell cell)
         {
             Cells[x, z] = cell;
-        }
-        
-        public MazeWall GetExistingWall(Vector3 position)
-        {
-            return Walls.Find(x => x.gameObject.transform.localPosition == position);
-        }
-        
-        public void UpdateCornerWallCounts(MazeCell cell)
-        {
-            var neighbors = cell.GetNeighbours();
-            // TODO
         }
     }
 }
