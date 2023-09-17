@@ -304,7 +304,12 @@ namespace MazeDatatype
             }
             // Check if there is a path from start to end cell -> maze is solvable
             var path = FindPath(StartCell, EndCell);
-            return path.Contains(StartCell) && path.Contains(EndCell);
+            var isSolvable = path.Count > 0 && path.First() == StartCell && path.Last() == EndCell;
+            if (isSolvable)
+            {
+                ShowPath(path);
+            }
+            return isSolvable;
         }
         
         // Find a path from start to end cell using the breadth-first search algorithm
@@ -348,6 +353,26 @@ namespace MazeDatatype
             path.Add(startCell);
             path.Reverse();
             return path;
+        }
+
+        private void ShowPath(List<MazeCell> path)
+        {
+            if (!mazeManager.showPath)
+            {
+                return;
+            }
+            foreach (var cell in path)
+            {
+                // skip start and end cell
+                if (cell == StartCell || cell == EndCell)
+                {
+                    continue;
+                }
+                var cellSize = mazeManager.GetCellSize();
+                var pathCellObject = Object.Instantiate(mazeManager.pathCellPrefab, mazeManager.transform);
+                pathCellObject.transform.localPosition = new Vector3(cell.X * cellSize, 0, cell.Z * cellSize);
+                pathCellObject.transform.localScale = new Vector3(cellSize, 0.01f, cellSize);
+            }
         }
         
         public bool MazeMeetsRequirements()

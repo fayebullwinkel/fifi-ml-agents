@@ -236,11 +236,15 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 44335da4a82e33c4eb160c7e5acab847, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  xSize: 10
-  zSize: 10
+  xSize: 5
+  zSize: 5
   cellSize: 2
+  showPath: 1
   wallPrefab: {fileID: 6953688038259257717, guid: a4391d18c43172646adabba00e2fcf8b, type: 3}
   mazeBoundsPrefab: {fileID: 5475356583517691170, guid: ab7d9e4222691e643af432f35250bc71, type: 3}
+  startCellPrefab: {fileID: 7904931680188470924, guid: 8785553ee5b182041862e2b71570d952, type: 3}
+  goalCellPrefab: {fileID: 7904931680188470924, guid: b3787cf688cafad47b62a6f58309f51c, type: 3}
+  pathCellPrefab: {fileID: 7904931680188470924, guid: 1a246fd2f71780f4693882d13c9e48f0, type: 3}
   camera: {fileID: 63424797}
   agentPrefab: {fileID: 1946312899393052249, guid: 70ffdfcd496ba414ab2e00de047e1495, type: 3}
 --- !u!4 &1741485064

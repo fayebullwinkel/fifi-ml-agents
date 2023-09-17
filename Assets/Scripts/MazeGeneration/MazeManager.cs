@@ -14,6 +14,9 @@ public class MazeManager : MonoBehaviour
     [SerializeField]
     private float cellSize;
 
+    [SerializeField]
+    internal bool showPath;
+
     [Header("Resources")]
     [SerializeField]
     internal GameObject wallPrefab;
@@ -26,6 +29,9 @@ public class MazeManager : MonoBehaviour
     
     [SerializeField]
     internal GameObject goalCellPrefab;
+    
+    [SerializeField]
+    internal GameObject pathCellPrefab;
 
     [SerializeField]
     private GameObject camera;
