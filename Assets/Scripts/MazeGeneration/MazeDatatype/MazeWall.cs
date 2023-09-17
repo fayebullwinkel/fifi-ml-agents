@@ -20,26 +20,23 @@ namespace MazeDatatype
     public class MazeWall : MonoBehaviour
     {
         public WallType Type { get; set; }
-        public MazeCell Cell1 { get; set; }
-        public MazeCell Cell2 { get; set; }
+        public List<MazeCell> Cells { get; private set; }
 
-        public void InitMazeWall(WallType type, MazeCell cell1, MazeCell cell2)
+        public void InitMazeWall(WallType type, List<MazeCell> cells)
         {
             Type = type;
-            Cell1 = cell1;
-            Cell2 = cell2;
+            Cells = cells;
         }
         
-        public List<MazeCell> GetCells()
+        public void AddCell(MazeCell cell)
         {
-            var cells = new List<MazeCell>();
-            if (Cell1 != null) cells.Add(Cell1);
-            if (Cell2 != null) cells.Add(Cell2);
-            return cells;
+            Cells.Add(cell);
         }
 
         private void DestroyWall()
         {
+            var mazeManager = MazeManager.Singleton;
+            mazeManager.mazeGraph.RemoveWall(this);
             Destroy(gameObject);
         }
 
@@ -48,8 +45,6 @@ namespace MazeDatatype
             if (other.gameObject.CompareTag("MazeGenerationAgent"))
             {
                 DestroyWall();
-                // TODO: Remove wall from graph
-                // TODO: Set Cell Corner Count
             }
         }
     }

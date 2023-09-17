@@ -117,13 +117,13 @@ namespace MazeDatatype
                         Cells[x, z + 1],
                         Cells[x + 1, z + 1]
                     };
-                    var walls = new List<MazeWall>
-                    {
-                        Cells[x, z].TopWall,
-                        Cells[x, z].RightWall,
-                        Cells[x + 1, z + 1].BottomWall,
-                        Cells[x + 1, z + 1].LeftWall
-                    };
+                    // find all walls that are in the corner
+                    var walls = new List<MazeWall>();
+                    walls.Add(Walls.Find(x => x.Cells.Contains(cells[0]) && x.Cells.Contains(cells[1])));
+                    walls.Add(Walls.Find(x => x.Cells.Contains(cells[0]) && x.Cells.Contains(cells[2])));
+                    walls.Add(Walls.Find(x => x.Cells.Contains(cells[1]) && x.Cells.Contains(cells[3])));
+                    walls.Add(Walls.Find(x => x.Cells.Contains(cells[2]) && x.Cells.Contains(cells[3])));
+                    
                     var corner = new MazeCorner(cells, walls);
                     Corners.Add(corner);
                     
@@ -150,9 +150,10 @@ namespace MazeDatatype
             wallObject.transform.localPosition = position;
             wallObject.transform.localScale = GetWallScale(wallType);
             var wall = wallObject.GetComponent<MazeWall>();
-            wall.InitMazeWall(wallType, currentCell, neighborCell);
-            currentCell.SetWall(orientation, wall);
-            neighborCell.SetWall(GetOppositeOrientation(orientation), wall);
+            var cells = new List<MazeCell> {currentCell, neighborCell};
+            wall.InitMazeWall(wallType, cells);
+            currentCell.AddWall(wall);
+            neighborCell.AddWall(wall);
             Walls.Add(wall);
         }
         
@@ -217,20 +218,19 @@ namespace MazeDatatype
             }
         }
 
-        private WallOrientation GetOppositeOrientation(WallOrientation orientation)
+        public void RemoveWall(MazeWall wall)
         {
-            switch (orientation)
+            Walls.Remove(wall);
+            // Remove wall from cells
+            foreach (var cell in wall.Cells)
             {
-                case WallOrientation.Left:
-                    return WallOrientation.Right;
-                case WallOrientation.Right:
-                    return WallOrientation.Left;
-                case WallOrientation.Bottom:
-                    return WallOrientation.Top;
-                case WallOrientation.Top:
-                    return WallOrientation.Bottom;
-                default:
-                    throw new ArgumentException("Invalid wall orientation");
+                cell.Walls.Remove(wall);
+            }
+            // Remove wall from corners
+            var corner = Corners.FindAll(x => x.Walls.Contains(wall));
+            foreach (var c in corner)
+            {
+                c.Walls.Remove(wall);
             }
         }
 

@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 
 namespace MazeDatatype
 {
@@ -8,10 +7,8 @@ namespace MazeDatatype
         public int X { get; }
         public int Z { get; }
 
-        public MazeWall LeftWall { get; set; }
-        public MazeWall RightWall { get; set; }
-        public MazeWall TopWall { get; set; }
-        public MazeWall BottomWall { get; set; }
+        public List<MazeCell> Neighbours { get; }
+        public List<MazeWall> Walls { get; }
         
         public MazeCorner TopLeftCorner { get; set; }
         public MazeCorner TopRightCorner { get; set; }
@@ -19,47 +16,19 @@ namespace MazeDatatype
         public MazeCorner BottomRightCorner { get; set; }
         
         private bool Visited;
-        public List<MazeCell> Neighbours { get; }
-        
+
         public MazeCell(int x, int z)
         {
             X = x;
             Z = z;
-            Visited = false;
+            Walls = new List<MazeWall>();
             Neighbours = new List<MazeCell>();
+            Visited = false;
         }
 
-        public MazeWall GetWall(WallOrientation orientation)
+        public void AddWall(MazeWall wall)
         {
-            return orientation switch
-            {
-                WallOrientation.Left => LeftWall,
-                WallOrientation.Right => RightWall,
-                WallOrientation.Top => TopWall,
-                WallOrientation.Bottom => BottomWall,
-                _ => throw new ArgumentOutOfRangeException(nameof(orientation), orientation, null)
-            };
-        }
-        
-        public void SetWall(WallOrientation orientation, MazeWall wall)
-        {
-            switch (orientation)
-            {
-                case WallOrientation.Left:
-                    LeftWall = wall;
-                    break;
-                case WallOrientation.Right:
-                    RightWall = wall;
-                    break;
-                case WallOrientation.Top:
-                    TopWall = wall;
-                    break;
-                case WallOrientation.Bottom:
-                    BottomWall = wall;
-                    break;
-                default:
-                    throw new ArgumentOutOfRangeException(nameof(orientation), orientation, null);
-            }
+            Walls.Add(wall);
         }
 
         public void AddNeighbour(MazeCell mazeCell)
