@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 
 namespace MazeDatatype
@@ -37,6 +38,13 @@ namespace MazeDatatype
         {
             var mazeManager = MazeManager.Singleton;
             mazeManager.mazeGraph.RemoveWall(this);
+
+            // Mark all cells that this wall was connected to as visited
+            foreach (var cell in Cells.Where(cell => !cell.Visited))
+            {
+                mazeManager.mazeGraph.MarkCellVisited(cell.X, cell.Z);
+            }
+            
             Destroy(gameObject);
         }
 

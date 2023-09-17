@@ -63,9 +63,12 @@ public class MazeManager : MonoBehaviour
 
     private void PlaceAgent()
     {
+        var randomX = Random.Range(0, xSize);
+        var randomZ = Random.Range(0, zSize);
         var agent = Instantiate(agentPrefab);
         agent.transform.localPosition =
-            new Vector3(Random.Range(0, xSize) * cellSize, 0.6f, Random.Range(0, zSize) * cellSize);
+            new Vector3( randomX * cellSize, 0.6f, randomZ * cellSize);
+        mazeGraph.MarkCellVisited(randomX, randomZ);
     }
     
     public int GetCellSize()

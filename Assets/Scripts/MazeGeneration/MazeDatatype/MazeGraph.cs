@@ -233,7 +233,11 @@ namespace MazeDatatype
                 c.Walls.Remove(wall);
             }
         }
-
+        
+        public void MarkCellVisited(int x, int z)
+        {
+            Cells[x, z].Visited = true;
+        }
         public MazeCell GetCell(int x, int z)
         {
             return Cells[x, z];

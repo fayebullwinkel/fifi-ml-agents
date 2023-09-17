@@ -15,7 +15,7 @@ namespace MazeDatatype
         public MazeCorner BottomLeftCorner { get; set; }
         public MazeCorner BottomRightCorner { get; set; }
         
-        private bool Visited;
+        public bool Visited { get; set; }
 
         public MazeCell(int x, int z)
         {
