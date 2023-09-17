@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 using Object = UnityEngine.Object;
 
@@ -284,7 +285,64 @@ namespace MazeDatatype
                 var goalCellObject = Object.Instantiate(mazeManager.goalCellPrefab, mazeManager.transform);
                 goalCellObject.transform.localPosition = new Vector3(cell.X * cellSize, 0, cell.Z * cellSize);
                 goalCellObject.transform.localScale = new Vector3(cellSize, 0.01f, cellSize);
+                
+                Debug.Log("Maze is valid: " + IsMazeValid());
             }
+        }
+
+        public bool IsMazeValid()
+        {
+            // Check if all cells are visited -> maze is connected
+            if (Cells.Cast<MazeCell>().Any(cell => !cell.Visited))
+            {
+                return false;
+            }
+            // Check if there is a path from start to end cell -> maze is solvable
+            var path = FindPath(StartCell, EndCell);
+            return path.Contains(StartCell) && path.Contains(EndCell);
+        }
+        
+        // Find a path from start to end cell using the breadth-first search algorithm
+        public List<MazeCell> FindPath(MazeCell startCell, MazeCell endCell)
+        {
+            var queue = new Queue<MazeCell>();
+            var visited = new HashSet<MazeCell>();
+            var parent = new Dictionary<MazeCell, MazeCell>();
+            queue.Enqueue(startCell);
+            visited.Add(startCell);
+            while (queue.Count > 0)
+            {
+                var currentCell = queue.Dequeue();
+                if (currentCell == endCell)
+                {
+                    break;
+                }
+                foreach (var neighbour in currentCell.Neighbours)
+                {
+                    if (!visited.Contains(neighbour))
+                    {
+                        // check if there is a wall between the current cell and the neighbour
+                        var wall = Walls.Find(x => x.Cells.Contains(currentCell) && x.Cells.Contains(neighbour));
+                        if (wall != null)
+                        {
+                            continue;
+                        }
+                        queue.Enqueue(neighbour);
+                        visited.Add(neighbour);
+                        parent[neighbour] = currentCell;
+                    }
+                }
+            }
+            var path = new List<MazeCell>();
+            var cell = endCell;
+            while (cell != startCell)
+            {
+                path.Add(cell);
+                cell = parent[cell];
+            }
+            path.Add(startCell);
+            path.Reverse();
+            return path;
         }
         
         public MazeCell GetCell(int x, int z)
