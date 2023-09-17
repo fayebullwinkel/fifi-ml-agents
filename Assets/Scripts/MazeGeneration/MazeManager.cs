@@ -20,6 +20,12 @@ public class MazeManager : MonoBehaviour
 
     [SerializeField]
     private GameObject mazeBoundsPrefab;
+    
+    [SerializeField]
+    internal GameObject startCellPrefab;
+    
+    [SerializeField]
+    internal GameObject goalCellPrefab;
 
     [SerializeField]
     private GameObject camera;
@@ -69,6 +75,7 @@ public class MazeManager : MonoBehaviour
         agent.transform.localPosition =
             new Vector3( randomX * cellSize, 0.6f, randomZ * cellSize);
         mazeGraph.MarkCellVisited(randomX, randomZ);
+        mazeGraph.PlaceStart(agent.transform.localPosition);
     }
     
     public int GetCellSize()

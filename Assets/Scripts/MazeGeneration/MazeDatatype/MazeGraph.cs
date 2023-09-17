@@ -15,6 +15,9 @@ namespace MazeDatatype
         public List<MazeCorner> Corners { get; }
         
         private MazeManager mazeManager = MazeManager.Singleton;
+        
+        public MazeCell StartCell { get; private set; }
+        public MazeCell EndCell { get; private set; }
 
         public MazeGraph(int width, int height)
         {
@@ -238,6 +241,52 @@ namespace MazeDatatype
         {
             Cells[x, z].Visited = true;
         }
+
+        public MazeCell GetCellFromAgentPosition(Vector3 position)
+        {
+            var cellSize = mazeManager.GetCellSize();
+            foreach (var cell in Cells)
+            {
+                var minX = cell.X * cellSize - cellSize / 2;
+                var maxX = cell.X * cellSize + cellSize / 2;
+                var isInRangeX = minX <= position.x && position.x <= maxX;
+                var minZ = cell.Z * cellSize - cellSize / 2;
+                var maxZ = cell.Z * cellSize + cellSize / 2;
+                var isInRangeZ = minZ <= position.z && position.z <= maxZ;
+                if (isInRangeX && isInRangeZ)
+                {
+                    return cell;
+                }
+            }
+            return null;
+        }
+        
+        public void PlaceStart(Vector3 position)
+        {
+            var cell = GetCellFromAgentPosition(position);
+            if (cell != null && StartCell == null)
+            {
+                StartCell = cell;
+                var cellSize = mazeManager.GetCellSize();
+                var startCellObject = Object.Instantiate(mazeManager.startCellPrefab, mazeManager.transform);
+                startCellObject.transform.localPosition = new Vector3(cell.X * cellSize, 0, cell.Z * cellSize);
+                startCellObject.transform.localScale = new Vector3(cellSize, 0.01f, cellSize);
+            }
+        }
+        
+        public void PlaceGoal(Vector3 position)
+        {
+            var cell = GetCellFromAgentPosition(position);
+            if (cell != null && EndCell == null && StartCell != cell)
+            {
+                EndCell = cell;
+                var cellSize = mazeManager.GetCellSize();
+                var goalCellObject = Object.Instantiate(mazeManager.goalCellPrefab, mazeManager.transform);
+                goalCellObject.transform.localPosition = new Vector3(cell.X * cellSize, 0, cell.Z * cellSize);
+                goalCellObject.transform.localScale = new Vector3(cellSize, 0.01f, cellSize);
+            }
+        }
+        
         public MazeCell GetCell(int x, int z)
         {
             return Cells[x, z];

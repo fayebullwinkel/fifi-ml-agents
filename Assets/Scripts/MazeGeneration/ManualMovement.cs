@@ -20,5 +20,11 @@ public class ManualMovement: MonoBehaviour
         moveVector.x = Input.GetAxis("Horizontal");
         moveVector.z = Input.GetAxis("Vertical");
         rb.AddForce(moveVector * speed);
+        
+        // manually place End Cell
+        if (Input.GetKeyDown(KeyCode.Space))
+        {
+            MazeManager.Singleton.mazeGraph.PlaceGoal(transform.localPosition);
+        }
     }
 }
