@@ -15,8 +15,8 @@ public class MazeGeneration : ScriptableObject
     private List<Cube> _path;
     private GameObject _startCubeObj;
     private GameObject _endCubeObj;
+    private GameObject _mazeBase;
     
-    public GameObject agentPrefab;
     public GameObject wallPrefab;
 
     public void Generate(Vector3 position, Vector3 scale)
@@ -29,7 +29,7 @@ public class MazeGeneration : ScriptableObject
         _cubeList = new List<Cube>();
         _path = new List<Cube>();
 
-        _startCubeObj = Instantiate(agentPrefab);
+        //_startCubeObj = Instantiate(agentPrefab);
         _endCubeObj = GameObject.CreatePrimitive(PrimitiveType.Cube);
         _endCubeObj.tag = "EndCube";
 
@@ -45,12 +45,12 @@ public class MazeGeneration : ScriptableObject
         _mazeObj.transform.localScale = scale;
 
         SearchArray(2);
-        GameObject mazeBase = GameObject.CreatePrimitive(PrimitiveType.Cube);
-        Destroy(mazeBase.GetComponent<BoxCollider>());
-        mazeBase.transform.parent = _mazeObj.transform;
-        mazeBase.transform.localPosition = new Vector3(0, 0, 0);
-        mazeBase.transform.localScale = new Vector3(0.9f, 0.9f, 0.9f);
-        mazeBase.GetComponent<Renderer>().material.color = new Color32(168, 119, 90, 255);
+        _mazeBase = GameObject.CreatePrimitive(PrimitiveType.Cube);
+        Destroy(_mazeBase.GetComponent<BoxCollider>());
+        _mazeBase.transform.parent = _mazeObj.transform;
+        _mazeBase.transform.localPosition = new Vector3(0, 0, 0);
+        _mazeBase.transform.localScale = new Vector3(0.9f, 0.9f, 0.9f);
+        _mazeBase.GetComponent<Renderer>().material.color = new Color32(168, 119, 90, 255);
     }
 
     public void Delete()
@@ -136,11 +136,6 @@ public class MazeGeneration : ScriptableObject
 
         if (mode == 2)
         {
-            // Place the start cube at the beginning of the path
-            _startCubeObj.GetComponent<Rigidbody>().isKinematic = true;
-            _startCubeObj.transform.localScale = _endCubeObj.transform.localScale;
-            PlaceCube(_startCubeObj, _path[0], Color.blue);
-
             // Place the end cube at the end of the path
             PlaceCube(_endCubeObj, _path[_path.Count - 1], Color.red);
         }
@@ -275,13 +270,18 @@ public class MazeGeneration : ScriptableObject
         return _mazeObj;
     }
 
-    public GameObject GetStartCube()
+    public GameObject GetMazeBase()
     {
-        return _startCubeObj;
+        return _mazeBase;
     }
-
+    
     public GameObject GetEndCube()
     {
         return _endCubeObj;
+    }
+    
+    public Cube[,,] GetMazeArray()
+    {
+        return _mazeArray;
     }
 }

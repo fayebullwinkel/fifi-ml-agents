@@ -331,6 +331,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   mazeGenerator: {fileID: 11400000, guid: f883070d82e742243aaa10e034ccc2a5, type: 2}
+  agentPrefab: {fileID: 5701045522921290284, guid: 1b9322bdbff7c00449e6458bd4f4b31b, type: 3}
 --- !u!4 &1233207294
 Transform:
   m_ObjectHideFlags: 0

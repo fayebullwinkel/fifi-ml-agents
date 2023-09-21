@@ -18,14 +18,7 @@ public struct Cube
                 (_z + 0.5f - (localScale.z / 2)) / localScale.z
             );
     }
-    public void Generate(GameObject parent)
-    {
-        _cubeObj = GameObject.CreatePrimitive(PrimitiveType.Cube);
-        _cubeObj.transform.parent = parent.transform;
-        _cubeObj.transform.localPosition = GetCubePosition(parent.transform.localScale);
-        
-        _cubeObj.GetComponent<Renderer>().material = Resources.Load("Materials/Brick_Wall", typeof(Material)) as Material;
-    }
+    
     public float GetWeight()
     {
         return _weight;

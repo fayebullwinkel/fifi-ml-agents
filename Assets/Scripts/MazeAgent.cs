@@ -51,13 +51,8 @@ public class MazeAgent : Agent
         }
 
         // Move the agent
-        //_rb.MovePosition(transform.position + moveDirection * (_moveSpeed * Time.fixedDeltaTime));
         RaycastHit hit;
-        if (Physics.Raycast(transform.position, transform.forward, out hit, 0.9f, LayerMask.GetMask("Wall")))
-        {
-            Debug.Log("Hit something on the Wall layer: " + hit.collider.gameObject.name);
-        }
-        else
+        if (!Physics.Raycast(transform.position, transform.forward, out hit, 0.9f, LayerMask.GetMask("Wall")))
         {
             transform.position += moveDirection * (_moveSpeed * Time.fixedDeltaTime);
         }
@@ -69,7 +64,7 @@ public class MazeAgent : Agent
         }
     }
 
-    /*public override void Heuristic(in ActionBuffers actionsOut)
+    public override void Heuristic(in ActionBuffers actionsOut)
     {
         var discreteActionsOut = actionsOut.DiscreteActions;
 
@@ -108,7 +103,7 @@ public class MazeAgent : Agent
         var transform2 = transform;
         transform2.forward = forwardDir;
         transform2.right = rightDir;
-    }*/
+    }
 
     public override void OnEpisodeBegin()
     {
