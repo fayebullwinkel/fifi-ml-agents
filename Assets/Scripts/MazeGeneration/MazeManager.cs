@@ -51,6 +51,8 @@ public class MazeManager : MonoBehaviour
     
     private GameObject agent;
 
+    private GameObject maze;
+
     private void Awake()
     {
         Singleton = this;
@@ -70,14 +72,15 @@ public class MazeManager : MonoBehaviour
     public void GenerateGrid()
     {
         // Create a graph with walls in horizontal and vertical direction
-        mazeGraph = new MazeGraph(xSize, zSize);
+        maze = new GameObject("Maze");
+        mazeGraph = new MazeGraph(xSize, zSize, maze);
         SetOuterWalls();
         SetCameraPosition();
     }
 
     private void SetOuterWalls()
     {
-        var mazeBounds = Instantiate(mazeBoundsPrefab, transform);
+        var mazeBounds = Instantiate(mazeBoundsPrefab, maze.transform);
         var size = mazeBounds.transform.localScale;
         size = new Vector3(size.x * cellSize * xSize, size.y, size.z * cellSize * zSize);
         mazeBounds.transform.localScale = size;
@@ -110,6 +113,15 @@ public class MazeManager : MonoBehaviour
         agent.GetComponent<MazeGenerationAgent>().enabled = false;
         agent.GetComponent<BehaviorParameters>().enabled = false;
         agent.AddComponent<ManualMovement>();
+    }
+    
+    public void ClearMaze()
+    {
+        if (maze != null)
+        {
+            Destroy(maze);
+        }
+        mazeGraph = null!;
     }
     
     public int GetCellSize()

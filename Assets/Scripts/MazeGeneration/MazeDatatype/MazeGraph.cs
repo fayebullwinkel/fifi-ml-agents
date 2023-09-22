@@ -19,14 +19,17 @@ namespace MazeDatatype
         
         public MazeCell StartCell { get; private set; }
         public MazeCell EndCell { get; private set; }
+        
+        private GameObject MazeParent;
 
-        public MazeGraph(int width, int height)
+        public MazeGraph(int width, int height, GameObject mazeParent)
         {
             Width = width;
             Height = height;
             Cells = new MazeCell[width, height];
             Walls = new List<MazeWall>();
             Corners = new List<MazeCorner>();
+            MazeParent = mazeParent;
             
             // Initialize the maze cells
             for (var x = 0; x < Width; x++)
@@ -76,7 +79,7 @@ namespace MazeDatatype
         private void InitializeWalls()
         {
             var wallParent = new GameObject("wallParent");
-            wallParent.transform.parent = mazeManager.transform;
+            wallParent.transform.parent = MazeParent.transform;
             wallParent.transform.localPosition = new Vector3(0, 0.5f, 0);
             
             for (var x = 0; x < Width; x++)
@@ -269,7 +272,7 @@ namespace MazeDatatype
             {
                 StartCell = cell;
                 var cellSize = mazeManager.GetCellSize();
-                var startCellObject = Object.Instantiate(mazeManager.startCellPrefab, mazeManager.transform);
+                var startCellObject = Object.Instantiate(mazeManager.startCellPrefab, MazeParent.transform);
                 startCellObject.transform.localPosition = new Vector3(cell.X * cellSize, 0, cell.Z * cellSize);
                 startCellObject.transform.localScale = new Vector3(cellSize, 0.01f, cellSize);
             }
@@ -282,15 +285,15 @@ namespace MazeDatatype
             {
                 EndCell = cell;
                 var cellSize = mazeManager.GetCellSize();
-                var goalCellObject = Object.Instantiate(mazeManager.goalCellPrefab, mazeManager.transform);
+                var goalCellObject = Object.Instantiate(mazeManager.goalCellPrefab, MazeParent.transform);
                 goalCellObject.transform.localPosition = new Vector3(cell.X * cellSize, 0, cell.Z * cellSize);
                 goalCellObject.transform.localScale = new Vector3(cellSize, 0.01f, cellSize);
                 
-                Debug.Log("Maze is valid: " + IsMazeValid());
+                Debug.Log("Maze is valid: " + MazeIsValid());
             }
         }
 
-        public bool IsMazeValid()
+        public bool MazeIsValid()
         {
             // Check if all cells are visited -> maze is connected
             if (Cells.Cast<MazeCell>().Any(cell => !cell.Visited))
@@ -369,7 +372,7 @@ namespace MazeDatatype
                     continue;
                 }
                 var cellSize = mazeManager.GetCellSize();
-                var pathCellObject = Object.Instantiate(mazeManager.pathCellPrefab, mazeManager.transform);
+                var pathCellObject = Object.Instantiate(mazeManager.pathCellPrefab, MazeParent.transform);
                 pathCellObject.transform.localPosition = new Vector3(cell.X * cellSize, 0, cell.Z * cellSize);
                 pathCellObject.transform.localScale = new Vector3(cellSize, 0.01f, cellSize);
             }
