@@ -1,10 +1,16 @@
 using MazeDatatype;
+using Unity.MLAgents.Policies;
 using UnityEngine;
 using Random = UnityEngine.Random;
 
 public class MazeManager : MonoBehaviour
 {
     [Header("Maze Settings")]
+    
+    [SerializeField]
+    [Tooltip("If true, the agent can be played manually to generate the maze.")]
+    private bool manualGeneration;
+    
     [SerializeField]
     private int xSize;
 
@@ -42,19 +48,31 @@ public class MazeManager : MonoBehaviour
     public MazeGraph mazeGraph { get; private set; }
     
     public static MazeManager Singleton { get; private set; } = null!;
+    
+    private GameObject agent;
 
     private void Awake()
     {
         Singleton = this;
+        agent = GameObject.FindGameObjectWithTag("MazeGenerationAgent");
+    }
+    
+    private void Start()
+    {
+        if (manualGeneration)
+        {
+            GenerateGrid();
+            PlaceAgent();
+            DeactivateAgentProperties();
+        }
     }
 
-    private void Start()
+    public void GenerateGrid()
     {
         // Create a graph with walls in horizontal and vertical direction
         mazeGraph = new MazeGraph(xSize, zSize);
         SetOuterWalls();
         SetCameraPosition();
-        PlaceAgent();
     }
 
     private void SetOuterWalls()
@@ -73,15 +91,25 @@ public class MazeManager : MonoBehaviour
         camera.transform.localPosition = new Vector3(xSize - cellSize / 2, (xSize - cellSize / 2) * 2, -cellSize / 2);
     }
 
-    private void PlaceAgent()
+    public void PlaceAgent()
     {
         var randomX = Random.Range(0, xSize);
         var randomZ = Random.Range(0, zSize);
-        var agent = Instantiate(agentPrefab);
+        if (agent == null)
+        {
+            agent = Instantiate(agentPrefab);
+        }
         agent.transform.localPosition =
             new Vector3( randomX * cellSize, 0.6f, randomZ * cellSize);
         mazeGraph.MarkCellVisited(randomX, randomZ);
         mazeGraph.PlaceStart(agent.transform.localPosition);
+    }
+    
+    private void DeactivateAgentProperties()
+    {
+        agent.GetComponent<MazeGenerationAgent>().enabled = false;
+        agent.GetComponent<BehaviorParameters>().enabled = false;
+        agent.AddComponent<ManualMovement>();
     }
     
     public int GetCellSize()
