@@ -246,6 +246,11 @@ namespace MazeDatatype
             Cells[x, z].Visited = true;
         }
 
+        public int GetVisitedCells()
+        {
+            return Cells.Cast<MazeCell>().Count(cell => cell.Visited);
+        }
+
         public MazeCell GetCellFromAgentPosition(Vector3 position)
         {
             var cellSize = mazeManager.GetCellSize();
@@ -357,6 +362,60 @@ namespace MazeDatatype
             path.Reverse();
             return path;
         }
+        
+        // Finds the longest path from the start cell without an end cell using the breadth-first search algorithm
+        public List<MazeCell> FindLongestPath(MazeCell startCell)
+        {
+            var queue = new Queue<MazeCell>();
+            var visited = new HashSet<MazeCell>();
+            var parent = new Dictionary<MazeCell, MazeCell>();
+            queue.Enqueue(startCell);
+            visited.Add(startCell);
+            while (queue.Count > 0)
+            {
+                var currentCell = queue.Dequeue();
+                foreach (var neighbour in currentCell.Neighbours)
+                {
+                    if (!visited.Contains(neighbour))
+                    {
+                        // check if there is a wall between the current cell and the neighbour
+                        var wall = Walls.Find(x => x.Cells.Contains(currentCell) && x.Cells.Contains(neighbour));
+                        if (wall != null)
+                        {
+                            continue;
+                        }
+                        queue.Enqueue(neighbour);
+                        visited.Add(neighbour);
+                        parent[neighbour] = currentCell;
+                    }
+                }
+            }
+            // build a path for each cell in the dictionary from that cell to the start cell
+            var paths = new List<List<MazeCell>>();
+            foreach (var cell in parent.Keys)
+            {
+                if(cell == startCell)
+                {
+                    continue;
+                }
+                var path = new List<MazeCell>();
+                var c = cell;
+                while (c != startCell)
+                {
+                    path.Add(c);
+                    c = parent[c];
+                }
+                path.Add(startCell);
+                path.Reverse();
+                paths.Add(path);
+            }
+            if(paths.Count == 0)
+            {
+                return new List<MazeCell>();
+            }
+            // return the longest path
+            return paths.OrderByDescending(x => x.Count).First();
+        }
 
         private void ShowPath(List<MazeCell> path)
         {
@@ -389,14 +448,15 @@ namespace MazeDatatype
             return true;
         }
         
-        public MazeCell GetCell(int x, int z)
+        public float GetPercentageOfVisitedCells()
         {
-            return Cells[x, z];
+            return (float) GetVisitedCells() / (Width * Height);
         }
-
-        public void SetCell(int x, int z, MazeCell cell)
+        
+        public float GetPercentageOfLongestPath()
         {
-            Cells[x, z] = cell;
+            var longestPath = FindLongestPath(StartCell);
+            return (float) longestPath.Count / (Width * Height);
         }
     }
 }
