@@ -45,9 +45,11 @@ public class MazeManager : MonoBehaviour
     [SerializeField]
     private GameObject agentPrefab;
 
+    public static MazeManager Singleton { get; private set; } = null!;
+    
     public MazeGraph mazeGraph { get; private set; }
     
-    public static MazeManager Singleton { get; private set; } = null!;
+    public GameObject OuterWalls { get; private set; } = null!;
     
     private GameObject agent;
 
@@ -80,13 +82,13 @@ public class MazeManager : MonoBehaviour
 
     private void SetOuterWalls()
     {
-        var mazeBounds = Instantiate(mazeBoundsPrefab, maze.transform);
-        var size = mazeBounds.transform.localScale;
+        OuterWalls = Instantiate(mazeBoundsPrefab, maze.transform);
+        var size = OuterWalls.transform.localScale;
         size = new Vector3(size.x * cellSize * xSize, size.y, size.z * cellSize * zSize);
-        mazeBounds.transform.localScale = size;
-        var position = mazeBounds.transform.localPosition;
+        OuterWalls.transform.localScale = size;
+        var position = OuterWalls.transform.localPosition;
         position = new Vector3(xSize - cellSize / 2, position.y, zSize - cellSize / 2);
-        mazeBounds.transform.localPosition = position;
+        OuterWalls.transform.localPosition = position;
     }
 
     private void SetCameraPosition()
@@ -127,5 +129,10 @@ public class MazeManager : MonoBehaviour
     public int GetCellSize()
     {
         return (int) cellSize;
+    }
+    
+    public int GetCellCount()
+    {
+        return xSize * zSize;
     }
 }
