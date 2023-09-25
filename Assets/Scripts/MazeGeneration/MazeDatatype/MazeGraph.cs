@@ -8,8 +8,18 @@ namespace MazeDatatype
 {
     public class MazeGraph
     {
-        public int Width { get; }
-        public int Height { get; }
+        protected static readonly Dictionary<CubeFace, Dictionary<Direction, CubeFace>> NeighbourMap = new()
+         {
+             { CubeFace.Front, new Dictionary<Direction, CubeFace> { { Direction.Left, CubeFace.Left }, { Direction.Right, CubeFace.Right }, { Direction.Top, CubeFace.Top }, { Direction.Bottom, CubeFace.Bottom } } },
+             { CubeFace.Back, new Dictionary<Direction, CubeFace> { { Direction.Left, CubeFace.Right }, { Direction.Right, CubeFace.Left }, { Direction.Top, CubeFace.Top }, { Direction.Bottom, CubeFace.Bottom } } },
+             { CubeFace.Left, new Dictionary<Direction, CubeFace> { { Direction.Left, CubeFace.Back }, { Direction.Right, CubeFace.Front }, { Direction.Top, CubeFace.Top }, { Direction.Bottom, CubeFace.Bottom } } },
+             { CubeFace.Right, new Dictionary<Direction, CubeFace> { { Direction.Left, CubeFace.Front }, { Direction.Right, CubeFace.Back }, { Direction.Top, CubeFace.Top }, { Direction.Bottom, CubeFace.Bottom } } },
+             { CubeFace.Top, new Dictionary<Direction, CubeFace> { { Direction.Left, CubeFace.Left }, { Direction.Right, CubeFace.Right }, { Direction.Top, CubeFace.Back }, { Direction.Bottom, CubeFace.Front } } },
+             { CubeFace.Bottom, new Dictionary<Direction, CubeFace> { { Direction.Left, CubeFace.Left }, { Direction.Right, CubeFace.Right }, { Direction.Top, CubeFace.Front }, { Direction.Bottom, CubeFace.Back } } },
+         };
+
+        private int Size { get; }
+        public CubeFace Face { get; }
 
         public MazeCell[,] Cells { get; }
         public List<MazeWall> Walls { get; }
@@ -19,27 +29,30 @@ namespace MazeDatatype
         
         public MazeCell StartCell { get; private set; }
         public MazeCell EndCell { get; private set; }
-        
-        private GameObject MazeParent;
 
-        public MazeGraph(int width, int height, GameObject mazeParent)
+        internal GameObject MazeParent;
+
+        public MazeGraph(int size, GameObject mazeParent, CubeFace face = CubeFace.None)
         {
-            Width = width;
-            Height = height;
-            Cells = new MazeCell[width, height];
+            Size = size;
+            Face = face;
+            Cells = new MazeCell[size, size];
             Walls = new List<MazeWall>();
             Corners = new List<MazeCorner>();
             MazeParent = mazeParent;
             
             // Initialize the maze cells
-            for (var x = 0; x < Width; x++)
+            for (var x = 0; x < Size; x++)
             {
-                for (var z = 0; z < Height; z++)
+                for (var z = 0; z < Size; z++)
                 {
-                    Cells[x, z] = new MazeCell(x, z);
+                    Cells[x, z] = new MazeCell(x, z, this);
                 }
             }
-            
+        }
+
+        public void SetupMazeGraph()
+        {
             InitializeNeighbours();
             InitializeWalls();
             InitializeCorners();
@@ -47,30 +60,55 @@ namespace MazeDatatype
         
         private void InitializeNeighbours()
         {
-            for (var x = 0; x < Width; x++)
+            for (var x = 0; x < Size; x++)
             {
-                for (var z = 0; z < Height; z++)
+                for (var z = 0; z < Size; z++)
                 {
                     var cell = Cells[x, z];
                     // if the cell is not on the left edge, add the cell to the left as a neighbour
                     if (x > 0)
                     {
-                        cell.Neighbours.Add(Cells[x - 1, z]);
+                        cell.AddNeighbour(Cells[x - 1, z]);
+                    }
+                    // if the cell is on the left edge, add the cell on the right edge from the left neighbour graph as a neighbour
+                    else if (x == 0 && mazeManager.mazeType == MazeType.ThreeDimensional)
+                    {
+                        var neighbourGraph = GetNeighbourGraph(this, Direction.Left);
+                        var neighbourCell = neighbourGraph.Cells[Size - 1, z];
+                        cell.AddNeighbour(neighbourCell);
                     }
                     // if the cell is not on the right edge, add the cell to the right as a neighbour
-                    if (x < Width - 1)
+                    if (x < Size - 1)
                     {
-                        cell.Neighbours.Add(Cells[x + 1, z]);
+                        cell.AddNeighbour(Cells[x + 1, z]);
+                    }
+                    else if (x == Size - 1 && mazeManager.mazeType == MazeType.ThreeDimensional)
+                    {
+                        var neighbourGraph = GetNeighbourGraph(this, Direction.Right);
+                        var neighbourCell = neighbourGraph.Cells[0, z];
+                        cell.AddNeighbour(neighbourCell);
                     }
                     // if the cell is not on the bottom edge, add the cell to the bottom as a neighbour
                     if (z > 0)
                     {
-                        cell.Neighbours.Add(Cells[x, z - 1]);
+                        cell.AddNeighbour(Cells[x, z - 1]);
+                    }
+                    else if (z == 0 && mazeManager.mazeType == MazeType.ThreeDimensional)
+                    {
+                        var neighbourGraph = GetNeighbourGraph(this, Direction.Bottom);
+                        var neighbourCell = neighbourGraph.Cells[x, Size - 1];
+                        cell.AddNeighbour(neighbourCell);
                     }
                     // if the cell is not on the top edge, add the cell to the top as a neighbour
-                    if (z < Height - 1)
+                    if (z < Size - 1)
                     {
-                        cell.Neighbours.Add(Cells[x, z + 1]);
+                        cell.AddNeighbour(Cells[x, z + 1]);
+                    }
+                    else if (z == Size - 1 && mazeManager.mazeType == MazeType.ThreeDimensional)
+                    {
+                        var neighbourGraph = GetNeighbourGraph(this, Direction.Top);
+                        var neighbourCell = neighbourGraph.Cells[x, 0];
+                        cell.AddNeighbour(neighbourCell);
                     }
                 }
             }
@@ -82,40 +120,24 @@ namespace MazeDatatype
             wallParent.transform.parent = MazeParent.transform;
             wallParent.transform.localPosition = new Vector3(0, 0.5f, 0);
             
-            for (var x = 0; x < Width; x++)
+            for (var x = 0; x < Size; x++)
             {
-                for (var z = 0; z < Height; z++)
+                for (var z = 0; z < Size; z++)
                 {
                     var cell = Cells[x, z];
-                    // if the cell is not on the left edge, add the left wall
-                    if (x > 0)
-                    {
-                        PlaceWall(cell, WallOrientation.Left, WallType.Vertical, wallParent);
-                    }
-                    // if the cell is not on the right edge, add the right wall
-                    if (x < Width - 1)
-                    {
-                        PlaceWall(cell, WallOrientation.Right, WallType.Vertical, wallParent);
-                    }
-                    // if the cell is not on the bottom edge, add the bottom wall
-                    if (z > 0)
-                    {
-                        PlaceWall(cell, WallOrientation.Bottom, WallType.Horizontal, wallParent);
-                    }
-                    // if the cell is not on the top edge, add the top wall
-                    if (z < Height - 1)
-                    {
-                        PlaceWall(cell, WallOrientation.Top, WallType.Horizontal, wallParent);
-                    }
+                    PlaceWall(cell, Direction.Left, WallType.Vertical, wallParent);
+                    PlaceWall(cell, Direction.Right, WallType.Vertical, wallParent);
+                    PlaceWall(cell, Direction.Bottom, WallType.Horizontal, wallParent);
+                    PlaceWall(cell, Direction.Top, WallType.Horizontal, wallParent);
                 }
             }
         }
         
         private void InitializeCorners()
         {
-            for (var x = 0; x < Width - 1; x++)
+            for (var x = 0; x < Size - 1; x++)
             {
-                for (var z = 0; z < Height - 1; z++)
+                for (var z = 0; z < Size - 1; z++)
                 {
                     var cells = new List<MazeCell>
                     {
@@ -141,15 +163,27 @@ namespace MazeDatatype
                 }
             }
         }
+        
+        private MazeGraph GetNeighbourGraph(MazeGraph graph, Direction direction)
+        {
+            var thisFace = graph.Face;
+            if (!NeighbourMap.TryGetValue(thisFace, out var neighbourMap) ||
+                !neighbourMap.TryGetValue(direction, out var neighbourFace))
+            {
+                throw new ArgumentOutOfRangeException(nameof(direction), direction, null);
+            }
 
-        private void PlaceWall(MazeCell currentCell, WallOrientation orientation, WallType wallType,
+            return mazeManager.cubeGraphs[neighbourFace];
+        }
+
+        private void PlaceWall(MazeCell currentCell, Direction orientation, WallType wallType,
             GameObject wallParent)
         {
             var neighborCell = GetNeighborCell(currentCell, orientation);
             var position = GetWallPosition(currentCell, orientation);
             var existingWall = GetExistingWall(position);
 
-            if (existingWall != null)
+            if (existingWall != null || neighborCell == null)
             {
                 return;
             }
@@ -157,7 +191,7 @@ namespace MazeDatatype
             wallObject.transform.localPosition = position;
             wallObject.transform.localScale = GetWallScale(wallType);
             var wall = wallObject.GetComponent<MazeWall>();
-            var cells = new List<MazeCell> {currentCell, neighborCell};
+            var cells = new List<MazeCell> {currentCell};
             wall.InitMazeWall(wallType, cells);
             currentCell.AddWall(wall);
             neighborCell.AddWall(wall);
@@ -169,28 +203,28 @@ namespace MazeDatatype
             return Walls.Find(x => x.gameObject.transform.localPosition == position);
         }
         
-        private Vector3 GetWallPosition(MazeCell cell, WallOrientation wall)
+        private Vector3 GetWallPosition(MazeCell cell, Direction direction)
         {
             var cellSize = mazeManager.GetCellSize();
             float xOffset = 0;
             float zOffset = 0;
 
-            switch (wall)
+            switch (direction)
             {
-                case WallOrientation.Top:
+                case Direction.Top:
                     zOffset = cellSize / 2;
                     break;
-                case WallOrientation.Bottom:
+                case Direction.Bottom:
                     zOffset = -cellSize / 2;
                     break;
-                case WallOrientation.Left:
+                case Direction.Left:
                     xOffset = -cellSize / 2;
                     break;
-                case WallOrientation.Right:
+                case Direction.Right:
                     xOffset = cellSize / 2;
                     break;
                 default:
-                    throw new ArgumentOutOfRangeException(nameof(wall), wall, null);
+                    throw new ArgumentOutOfRangeException(nameof(direction), direction, null);
             }
 
             return new Vector3(cell.X * cellSize + xOffset, 0, cell.Z * cellSize + zOffset);
@@ -201,24 +235,37 @@ namespace MazeDatatype
             return type == WallType.Horizontal ? new Vector3(mazeManager.GetCellSize(), 1, 0.1f) : new Vector3(0.1f, 1, mazeManager.GetCellSize());
         }
 
-        private MazeCell GetNeighborCell(MazeCell currentCell, WallOrientation orientation)
+        private MazeCell GetNeighborCell(MazeCell currentCell, Direction direction)
         {
-            var (x, z) = GetNeighborCoordinates(currentCell.X, currentCell.Z, orientation);
+            var (x, z) = GetNeighborCoordinates(currentCell.X, currentCell.Z, direction);
+            // check if coordinates are out of bounds
+            if (x < 0 || x >= Size || z < 0 || z >= Size)
+            {
+                // if the maze is three dimensional, get the neighbour cell from the neighbour graph
+                if (mazeManager.mazeType == MazeType.ThreeDimensional)
+                {
+                    var neighbourGraphFace = GetNeighbourGraph(currentCell.MazeGraph, direction).Face;
+                    var neighbour = currentCell.Neighbours.Find(c => c.MazeGraph.Face == neighbourGraphFace);
+                    return neighbour;
+                }
+                // if the maze is two dimensional, return null
+                return null;
+            }
             var cell = Cells[x, z];
             return cell;
         }
 
-        private (int, int) GetNeighborCoordinates(int x, int z, WallOrientation orientation)
+        private (int, int) GetNeighborCoordinates(int x, int z, Direction direction)
         {
-            switch (orientation)
+            switch (direction)
             {
-                case WallOrientation.Left:
+                case Direction.Left:
                     return (x - 1, z);
-                case WallOrientation.Right:
+                case Direction.Right:
                     return (x + 1, z);
-                case WallOrientation.Bottom:
+                case Direction.Bottom:
                     return (x, z - 1);
-                case WallOrientation.Top:
+                case Direction.Top:
                     return (x, z + 1);
                 default:
                     throw new ArgumentException("Invalid wall orientation");
@@ -450,13 +497,13 @@ namespace MazeDatatype
         
         public float GetPercentageOfVisitedCells()
         {
-            return (float) GetVisitedCells() / (Width * Height);
+            return (float) GetVisitedCells() / (Size * Size);
         }
         
         public float GetPercentageOfLongestPath()
         {
             var longestPath = FindLongestPath(StartCell);
-            return (float) longestPath.Count / (Width * Height);
+            return (float) longestPath.Count / (Size * Size);
         }
     }
 }

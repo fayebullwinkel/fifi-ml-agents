@@ -6,6 +6,8 @@ namespace MazeDatatype
     {
         public int X { get; }
         public int Z { get; }
+        
+        public MazeGraph MazeGraph { get; set; }
 
         public List<MazeCell> Neighbours { get; }
         public List<MazeWall> Walls { get; }
@@ -17,12 +19,13 @@ namespace MazeDatatype
         
         public bool Visited { get; set; }
 
-        public MazeCell(int x, int z)
+        public MazeCell(int x, int z, MazeGraph mazeGraph = null)
         {
             X = x;
             Z = z;
-            Walls = new List<MazeWall>();
+            MazeGraph = mazeGraph;
             Neighbours = new List<MazeCell>();
+            Walls = new List<MazeWall>();
             Visited = false;
         }
 

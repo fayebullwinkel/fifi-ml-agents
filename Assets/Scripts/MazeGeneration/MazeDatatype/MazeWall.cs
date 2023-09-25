@@ -9,15 +9,7 @@ namespace MazeDatatype
         Horizontal,
         Vertical
     }
-    
-    public enum WallOrientation
-    {
-        Left,
-        Right,
-        Top,
-        Bottom
-    }
-    
+
     public class MazeWall : MonoBehaviour
     {
         public WallType Type { get; set; }

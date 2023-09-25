@@ -2,22 +2,15 @@
 using Unity.MLAgents.Sensors;
 using UnityEngine;
 
-public class MazeGenerationAgent_Sphere : MazeGenerationAgent
+public sealed class MazeGenerationAgent3D: MazeGenerationAgent
 {
-    private Rigidbody rBody;
-
-    private void Awake()
+    private void Start()
     {
         mazeManager = MazeManager.Singleton;
-        rBody = GetComponent<Rigidbody>();
     }
-
+    
     public override void OnEpisodeBegin()
     {
-        // reset angel velocity
-        rBody.angularVelocity = Vector3.zero;
-        rBody.velocity = Vector3.zero;
-        
         SetupMaze();
     }
 
@@ -25,36 +18,39 @@ public class MazeGenerationAgent_Sphere : MazeGenerationAgent
     {
         // Agent position
         sensor.AddObservation(transform.localPosition);
-        // Agent velocity
-        sensor.AddObservation(rBody.velocity.x);
-        sensor.AddObservation(rBody.velocity.z);
         
         AddMazeObservations(sensor);
     }
 
     public override void OnActionReceived(ActionBuffers actions)
     {
-        // Perform Action to solve the task - Perform movement in x and z
         var controlSignal = Vector3.zero;
         controlSignal.x = actions.ContinuousActions[0];
         controlSignal.z = actions.ContinuousActions[1];
-        rBody.AddForce(controlSignal * speed);
-
+        
+        var movement = controlSignal * (speed * Time.deltaTime);
+        transform.Translate(movement);
+        // // look in movement direction
+        // if (controlSignal != Vector3.zero) {
+        //     var targetRotation = Quaternion.LookRotation(controlSignal);
+        //     transform.localRotation = Quaternion.Slerp(transform.rotation, targetRotation, 1 * Time.deltaTime);
+        // }
+        
         // Place End Cell
         var placeGoal = actions.DiscreteActions[0] > 0;
         if (placeGoal)
         {
             mazeManager.mazeGraph.PlaceGoal(transform.localPosition);
         }
-
+        
         GrantReward();
     }
-
+    
     public override void Heuristic(in ActionBuffers actionsOut)
     {
         var continuousActionsOut = actionsOut.ContinuousActions;
         var discreteActionsOut = actionsOut.DiscreteActions;
-
+        
         // Manual control of the agent
         continuousActionsOut[0] = Input.GetAxis("Horizontal");
         continuousActionsOut[1] = Input.GetAxis("Vertical");

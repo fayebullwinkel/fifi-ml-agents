@@ -25,8 +25,8 @@ public class MazeGenerationAgent : Agent
         {
             mazeManager.ClearMaze();
         }
-        mazeManager.GenerateGrid();
-        mazeManager.PlaceAgent();
+        // mazeManager.GenerateGrid();
+        // mazeManager.PlaceAgent();
     }
 
     protected void AddMazeObservations(VectorSensor sensor)

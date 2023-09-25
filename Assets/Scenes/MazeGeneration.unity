@@ -223,6 +223,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: MazeGenerationAgent_Cube
       objectReference: {fileID: 0}
+    - target: {fileID: 1946312899393052249, guid: fc2e1ac7a58dfd041b32309a78857f4b, type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 1947838829261988873, guid: fc2e1ac7a58dfd041b32309a78857f4b, type: 3}
       propertyPath: m_RootOrder
       value: 5
@@ -298,9 +302,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 44335da4a82e33c4eb160c7e5acab847, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  cubeAgent: 1
-  xSize: 5
-  zSize: 5
+  mazeType: 1
+  size: 5
   cellSize: 2
   showPath: 1
   wallPrefab: {fileID: 6953688038259257717, guid: a4391d18c43172646adabba00e2fcf8b, type: 3}
@@ -453,7 +456,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 1946312899393052249, guid: 70ffdfcd496ba414ab2e00de047e1495, type: 3}
       propertyPath: m_IsActive
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 1947838829261988873, guid: 70ffdfcd496ba414ab2e00de047e1495, type: 3}
       propertyPath: m_RootOrder
