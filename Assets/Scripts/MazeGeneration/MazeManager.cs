@@ -1,16 +1,18 @@
+using System.Collections.Generic;
+using System.Linq;
 using MazeDatatype;
 using Unity.MLAgents.Policies;
 using UnityEngine;
+using UnityEngine.Serialization;
 using Random = UnityEngine.Random;
 
 public class MazeManager : MonoBehaviour
 {
     [Header("Maze Settings")]
     
-    [SerializeField]
-    [Tooltip("If true, the agent can be played manually to generate the maze.")]
-    private bool manualGeneration;
-    
+    [Tooltip("If true, the agent will be a cube. If false, the agent will be a sphere.")]
+    public bool cubeAgent;
+
     [SerializeField]
     private int xSize;
 
@@ -41,9 +43,11 @@ public class MazeManager : MonoBehaviour
 
     [SerializeField]
     private GameObject camera;
-
+    
     [SerializeField]
-    private GameObject agentPrefab;
+    private GameObject agentSphere = null!;
+    [SerializeField]
+    private GameObject agentCube = null!;
 
     public static MazeManager Singleton { get; private set; } = null!;
     
@@ -58,17 +62,10 @@ public class MazeManager : MonoBehaviour
     private void Awake()
     {
         Singleton = this;
-        agent = GameObject.FindGameObjectWithTag("MazeGenerationAgent");
-    }
-    
-    private void Start()
-    {
-        if (manualGeneration)
-        {
-            GenerateGrid();
-            PlaceAgent();
-            DeactivateAgentProperties();
-        }
+        agent = cubeAgent ? agentCube : agentSphere;
+        agent.SetActive(true);
+        var otherAgent = cubeAgent ? agentSphere : agentCube;
+        otherAgent.SetActive(false);
     }
 
     public void GenerateGrid()
@@ -100,23 +97,13 @@ public class MazeManager : MonoBehaviour
     {
         var randomX = Random.Range(0, xSize);
         var randomZ = Random.Range(0, zSize);
-        if (agent == null)
-        {
-            agent = Instantiate(agentPrefab);
-        }
+
         agent.transform.localPosition =
             new Vector3( randomX * cellSize, 0.6f, randomZ * cellSize);
         mazeGraph.MarkCellVisited(randomX, randomZ);
         mazeGraph.PlaceStart(agent.transform.localPosition);
     }
-    
-    private void DeactivateAgentProperties()
-    {
-        agent.GetComponent<MazeGenerationAgent>().enabled = false;
-        agent.GetComponent<BehaviorParameters>().enabled = false;
-        agent.AddComponent<ManualMovement>();
-    }
-    
+
     public void ClearMaze()
     {
         if (maze != null)

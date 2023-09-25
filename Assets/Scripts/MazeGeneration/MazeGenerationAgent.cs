@@ -6,27 +6,17 @@ using UnityEngine;
 
 public class MazeGenerationAgent : Agent
 {
-    [SerializeField]
-    private float speed = 10f;
+    [SerializeField] 
+    protected float speed = 10f;
+    
+    protected MazeManager mazeManager;
+    
+    protected int visitedCells;
+    protected int notReachedNewCellCounter;
+    protected bool reachedNewCell;
 
-    private Rigidbody rBody;
-    private MazeManager mazeManager;
-    
-    private int visitedCells;
-    private int notVisitingNewCellsCounter;
-    private bool reachedNewCell;
-    
-    private void Start()
+    protected void SetupMaze()
     {
-        rBody = GetComponent<Rigidbody>();
-        mazeManager = MazeManager.Singleton;
-    }
-    
-    public override void OnEpisodeBegin()
-    {
-        // reset angel velocity
-        rBody.angularVelocity = Vector3.zero;
-        rBody.velocity = Vector3.zero;
         // reset visited cells
         visitedCells = 0;
         
@@ -38,14 +28,13 @@ public class MazeGenerationAgent : Agent
         mazeManager.GenerateGrid();
         mazeManager.PlaceAgent();
     }
-    
-    public override void CollectObservations(VectorSensor sensor)
+
+    protected void AddMazeObservations(VectorSensor sensor)
     {
-        // Agent position
-        sensor.AddObservation(transform.localPosition);
-        // Agent velocity
-        sensor.AddObservation(rBody.velocity.x);
-        sensor.AddObservation(rBody.velocity.z);
+        if (mazeManager == null)
+        {
+            return;
+        }
         // Maze Cells: 1 for visited, 0 for not visited
         foreach (var cell in mazeManager.mazeGraph.Cells)
         {
@@ -90,22 +79,9 @@ public class MazeGenerationAgent : Agent
         // reached a new cell: bool
         sensor.AddObservation(reachedNewCell);
     }
-    
-    public override void OnActionReceived(ActionBuffers actions)
+
+    protected void GrantReward()
     {
-        // Perform Action to solve the task - Perform movement in x and z
-        var controlSignal = Vector3.zero;
-        controlSignal.x = actions.ContinuousActions[0];
-        controlSignal.z = actions.ContinuousActions[1];
-        rBody.AddForce(controlSignal * speed);
-        
-        // Place End Cell
-        var placeGoal = actions.DiscreteActions[0] > 0;
-        if (placeGoal)
-        {
-            mazeManager.mazeGraph.PlaceGoal(transform.localPosition);
-        }
-        
         var mazeIsFinished = mazeManager.mazeGraph.EndCell != null;
         if (mazeIsFinished)
         {
@@ -140,17 +116,17 @@ public class MazeGenerationAgent : Agent
             if (visitedCellsDelta > 0)
             {
                 AddReward(visitedCellsDelta * 1.0f);
-                notVisitingNewCellsCounter = 0;
+                notReachedNewCellCounter = 0;
                 reachedNewCell = true;
             }
             // -0.01 reward for not reaching a new cell
             else
             {
                 AddReward(-0.01f);
-                notVisitingNewCellsCounter++;
+                notReachedNewCellCounter++;
                 reachedNewCell = false;
             }
-            if(notVisitingNewCellsCounter > 1000)
+            if(notReachedNewCellCounter > 1000)
             {
                 // Penalize the agent for not reaching a new cell for too long
                 var reward = -1.0f + percentageOfVisitedCells;
@@ -165,16 +141,5 @@ public class MazeGenerationAgent : Agent
             SetReward(reward);
             EndEpisode();
         }
-    }
-    
-    public override void Heuristic(in ActionBuffers actionsOut)
-    {
-        var continuousActionsOut = actionsOut.ContinuousActions;
-        var discreteActionsOut = actionsOut.DiscreteActions;
-        
-        // Manual control of the agent
-        continuousActionsOut[0] = Input.GetAxis("Horizontal");
-        continuousActionsOut[1] = Input.GetAxis("Vertical");
-        discreteActionsOut[0] = Input.GetKey(KeyCode.Space) ? 1 : 0;
     }
 }
