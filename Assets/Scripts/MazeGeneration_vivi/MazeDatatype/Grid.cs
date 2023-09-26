@@ -59,7 +59,9 @@ namespace MazeGeneration_vivi.MazeDatatype
                 ShowAllCells();
             }
         }
-        
+
+        #region InitializationMethods
+
         private void InitializeNeighbours()
         {
             for (var x = 0; x < Size; x++)
@@ -162,6 +164,10 @@ namespace MazeGeneration_vivi.MazeDatatype
             }
         }
         
+        #endregion
+        
+        #region NeighbourMethods
+
         private Grid GetNeighbourGraph(Grid graph, EDirection direction)
         {
             var thisFace = graph.Face;
@@ -260,6 +266,42 @@ namespace MazeGeneration_vivi.MazeDatatype
             return neighbourCell;
         }
 
+        private MazeCell GetNeighborCell(MazeCell currentCell, EDirection direction)
+        {
+            var (x, z) = GetNeighborCoordinates(currentCell.X, currentCell.Z, direction);
+            // check if coordinates are out of bounds
+            if (x < 0 || x >= Size || z < 0 || z >= Size)
+            {
+                // if the maze is three dimensional, get the neighbour cell from the neighbour graph
+                if (Maze.mazeType == EMazeType.ThreeDimensional)
+                {
+                    var neighbourGraphFace = GetNeighbourGraph(currentCell.Grid, direction).Face;
+                    var neighbour = currentCell.Neighbours.Find(c => c.Grid.Face == neighbourGraphFace);
+                    return neighbour;
+                }
+                // if the maze is two dimensional, return null
+                return null;
+            }
+            var cell = Cells[x, z];
+            return cell;
+        }
+
+        private (int, int) GetNeighborCoordinates(int x, int z, EDirection direction)
+        {
+            return direction switch
+            {
+                EDirection.Left => (x - 1, z),
+                EDirection.Right => (x + 1, z),
+                EDirection.Bottom => (x, z - 1),
+                EDirection.Top => (x, z + 1),
+                _ => throw new ArgumentException("Invalid wall orientation")
+            };
+        }
+        
+        #endregion
+
+        #region WallMethods
+
         private void PlaceWall(MazeCell currentCell, EDirection direction, WallType wallType,
             GameObject wallParent)
         {
@@ -319,38 +361,6 @@ namespace MazeGeneration_vivi.MazeDatatype
             return type == WallType.Horizontal ? new Vector3(Maze.cellSize, 1, 0.1f) : new Vector3(0.1f, 1, Maze.cellSize);
         }
 
-        private MazeCell GetNeighborCell(MazeCell currentCell, EDirection direction)
-        {
-            var (x, z) = GetNeighborCoordinates(currentCell.X, currentCell.Z, direction);
-            // check if coordinates are out of bounds
-            if (x < 0 || x >= Size || z < 0 || z >= Size)
-            {
-                // if the maze is three dimensional, get the neighbour cell from the neighbour graph
-                if (Maze.mazeType == EMazeType.ThreeDimensional)
-                {
-                    var neighbourGraphFace = GetNeighbourGraph(currentCell.Grid, direction).Face;
-                    var neighbour = currentCell.Neighbours.Find(c => c.Grid.Face == neighbourGraphFace);
-                    return neighbour;
-                }
-                // if the maze is two dimensional, return null
-                return null;
-            }
-            var cell = Cells[x, z];
-            return cell;
-        }
-
-        private (int, int) GetNeighborCoordinates(int x, int z, EDirection direction)
-        {
-            return direction switch
-            {
-                EDirection.Left => (x - 1, z),
-                EDirection.Right => (x + 1, z),
-                EDirection.Bottom => (x, z - 1),
-                EDirection.Top => (x, z + 1),
-                _ => throw new ArgumentException("Invalid wall orientation")
-            };
-        }
-
         public void RemoveWall(MazeWall wall)
         {
             Walls.Remove(wall);
@@ -367,16 +377,10 @@ namespace MazeGeneration_vivi.MazeDatatype
             }
         }
         
-        public void MarkCellVisited(int x, int z)
-        {
-            Cells[x, z].Visited = true;
-        }
+        #endregion
 
-        public int GetVisitedCells()
-        {
-            return Cells.Cast<MazeCell>().Count(cell => cell.Visited);
-        }
-
+        #region PositionMethods
+        
         public MazeCell GetCellFromPosition(Vector3 position)
         {
             var cellSize = Maze.cellSize;
@@ -438,6 +442,10 @@ namespace MazeGeneration_vivi.MazeDatatype
             }
         }
 
+        #endregion
+
+        #region MazeValidationMethods
+        
         public bool MazeIsValid()
         {
             // Check if all cells are visited -> maze is connected
@@ -459,6 +467,21 @@ namespace MazeGeneration_vivi.MazeDatatype
             }
             return isSolvable;
         }
+        
+        public bool MazeMeetsRequirements()
+        {
+            // Check if all corners have at least one wall -> maze is not empty
+            if (Corners.Any(corner => corner.Walls.Count == 0))
+            {
+                return false;
+            }
+            // TODO: add more requirements
+            return true;
+        }
+        
+        #endregion
+        
+        #region PathFindingMethods
         
         // Find a path from start to end cell using the breadth-first search algorithm
         public List<MazeCell> FindPath(MazeCell startCell, MazeCell endCell)
@@ -577,15 +600,16 @@ namespace MazeGeneration_vivi.MazeDatatype
             }
         }
         
-        public bool MazeMeetsRequirements()
+        #endregion
+
+        public void MarkCellVisited(int x, int z)
         {
-            // Check if all corners have at least one wall -> maze is not empty
-            if (Corners.Any(corner => corner.Walls.Count == 0))
-            {
-                return false;
-            }
-            // TODO: add more requirements
-            return true;
+            Cells[x, z].Visited = true;
+        }
+
+        public int GetVisitedCells()
+        {
+            return Cells.Cast<MazeCell>().Count(cell => cell.Visited);
         }
         
         public float GetPercentageOfVisitedCells()
@@ -599,6 +623,8 @@ namespace MazeGeneration_vivi.MazeDatatype
             return (float) longestPath.Count / (Size * Size);
         }
         
+        #region DebugMethods
+        
         public void PrintAllCells()
         {
             foreach (var cell in Cells)
@@ -609,7 +635,7 @@ namespace MazeGeneration_vivi.MazeDatatype
                 // Print neighbors
                 foreach (var neighbor in cell.Neighbours)
                 {
-                    Debug.Log($"Neighbor: ({neighbor.X}, {neighbor.Z}), Face: {neighbor.Grid.Face}");
+                    Debug.Log($"Neighbour: ({neighbor.X}, {neighbor.Z}), Face: {neighbor.Grid.Face}");
                 }
             }
         }
@@ -628,5 +654,7 @@ namespace MazeGeneration_vivi.MazeDatatype
                 textMesh.alignment = TextAlignmentOptions.Center;
             }
         }
+        
+        #endregion
     }
 }

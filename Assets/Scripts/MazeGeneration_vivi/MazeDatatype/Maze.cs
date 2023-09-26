@@ -68,7 +68,6 @@ namespace MazeGeneration_vivi.MazeDatatype
         private void Generate2DMaze()
         {
             // Position and scale the cube
-            // cube.transform.localPosition = new Vector3(size - cellSize / 2, 0, size - cellSize / 2);
             cube.transform.localScale = new Vector3(size * cellSize, 0.001f, size * cellSize);
             
             // Generate a grid
@@ -87,7 +86,6 @@ namespace MazeGeneration_vivi.MazeDatatype
         private void Generate3DMaze()
         {
             // Position and scale the cube
-            // cube.transform.localPosition = new Vector3(size - cellSize / 2, 0, size - cellSize / 2);
             cube.transform.localScale = new Vector3(size * cellSize, size * cellSize, size * cellSize);
             
             // Generate a grid for each face of the cube
@@ -153,7 +151,6 @@ namespace MazeGeneration_vivi.MazeDatatype
             scale = new Vector3(scale.x * cellSize * size, scale.y, scale.z * cellSize * size);
             outerWalls.transform.localScale = scale;
             var position = outerWalls.transform.localPosition;
-            // position = new Vector3(size - cellSize / 2, position.y, size - cellSize / 2);
             outerWalls.transform.localPosition = position;
         }
 
