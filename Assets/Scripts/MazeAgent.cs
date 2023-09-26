@@ -15,37 +15,30 @@ public class MazeAgent : Agent
 
     public override void OnActionReceived(ActionBuffers actionBuffers)
     {
-        // Get discrete actions
         int discreteAction = actionBuffers.DiscreteActions[0];
-
-        // Determine the agent's current orientation (relative to the larger cube's faces)
-        Vector3 upDir = transform.up;
-        Vector3 rightDir = transform.right;
-
-        // Define the cube size (adjust this based on your environment)
+        
         float cubeSize = _mazeController.GetReferenceCubeSize();
 
-        // Apply orientation adjustments based on the discrete action
         switch (discreteAction)
         {
             case 0:
-                // No action or default action, agent stays in place
+                // agent stays in place
                 break;
             case 1:
-                // Move forward along the surface
-                transform.position += upDir * cubeSize;
+                // forward in world space
+                MoveInGlobalDirection(Vector3.up, cubeSize);
                 break;
             case 2:
-                // Move backward along the surface
-                transform.position -= upDir * cubeSize;
+                // backward in world space
+                MoveInGlobalDirection(Vector3.down, cubeSize);
                 break;
             case 3:
-                // Move left along the surface
-                transform.position -= rightDir * cubeSize;
+                // left in world space
+                MoveInGlobalDirection(Vector3.left, cubeSize);
                 break;
             case 4:
-                // Move right along the surface
-                transform.position += rightDir * cubeSize;
+                // right in world space
+                MoveInGlobalDirection(Vector3.right, cubeSize);
                 break;
         }
 
@@ -54,6 +47,12 @@ public class MazeAgent : Agent
         {
             AddReward(-1f / MaxStep);
         }
+    }
+
+    void MoveInGlobalDirection(Vector3 globalDirection, float cubeSize)
+    {
+        // Move the agent in the global direction
+        transform.position += globalDirection * cubeSize;
     }
 
     public override void Heuristic(in ActionBuffers actionsOut)

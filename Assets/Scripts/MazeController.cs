@@ -20,18 +20,6 @@ public class MazeController : MonoBehaviour
     private GameObject _mazeAgentObj;
     private GameObject _startCubeObj;
 
-    private Surface _surface = Surface.Front;
-
-    public enum Surface
-    {
-        Right, 
-        Left, 
-        Front, 
-        Back,
-        Top, 
-        Bottom
-    }
-
     private void Start()
     {
         ResetArea();
@@ -70,16 +58,12 @@ public class MazeController : MonoBehaviour
             if (directionToStartCube.x > 0)
             {
                 // right
-                Debug.Log("right");
-                _maze.transform.Rotate(0.0f, 90.0f, 0.0f, Space.Self);
-                _surface = Surface.Right;
+                _maze.transform.Rotate(0.0f, 90.0f, 0.0f, Space.World);
             }
             else
             {
                 // left
-                Debug.Log("left");
-                _maze.transform.Rotate(0.0f, -90.0f, 0.0f, Space.Self);
-                _surface = Surface.Left;
+                _maze.transform.Rotate(0.0f, -90.0f, 0.0f, Space.World);
             }
         }
         else if (y >= x && y >= z)
@@ -87,16 +71,12 @@ public class MazeController : MonoBehaviour
             if (directionToStartCube.y > 0)
             {
                 // top
-                Debug.Log("top");
-                _maze.transform.Rotate(-90.0f, 0.0f, 0.0f, Space.Self);
-                _surface = Surface.Top;
+                _maze.transform.Rotate(-90.0f, 0.0f, 0.0f, Space.World);
             }
             else
             {
                 // bottom
-                Debug.Log("bottom");
-                _maze.transform.Rotate(90.0f, 0.0f, 0.0f, Space.Self);
-                _surface = Surface.Bottom;
+                _maze.transform.Rotate(90.0f, 0.0f, 0.0f, Space.World);
             }
         }
         else
@@ -104,9 +84,7 @@ public class MazeController : MonoBehaviour
             if (directionToStartCube.z > 0)
             {
                 // back
-                Debug.Log("back");
-                _maze.transform.Rotate(0.0f, 180.0f, 0.0f, Space.Self);
-                _surface = Surface.Back;
+                _maze.transform.Rotate(0.0f, 180.0f, 0.0f, Space.World);
             }
         }
     }
@@ -191,10 +169,5 @@ public class MazeController : MonoBehaviour
     public float GetReferenceCubeSize()
     {
         return _startCubeObj.transform.localScale.x;
-    }
-    
-    public Surface GetSurface()
-    {
-        return _surface;
     }
 }
