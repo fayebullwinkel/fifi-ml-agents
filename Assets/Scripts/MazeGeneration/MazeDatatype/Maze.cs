@@ -1,68 +1,55 @@
 using System;
 using System.Collections.Generic;
-using MazeDatatype;
+using MazeDatatype.Enums;
 using UnityEngine;
 using Color = UnityEngine.Color;
+using Grid = MazeDatatype.Grid;
 
-public enum MazeType
-{
-    TwoDimensional,
-    ThreeDimensional
-}
-
-public enum CubeFace
-{
-    None,
-    Front,
-    Back,
-    Left,
-    Right,
-    Top,
-    Bottom
-}
-
-public enum Direction
-{
-    Left,
-    Right,
-    Top,
-    Bottom
-}
-
-public class MazeManager : MonoBehaviour
+public class Maze : MonoBehaviour
 {
     [Header("Maze Settings")]
-    [Tooltip(
-        "If TwoDimensional, the maze will be generated on a plane. If ThreeDimensional, the maze will be generated on a cube.")]
-    public MazeType mazeType;
+    [Tooltip("If TwoDimensional, the maze will be generated on a plane. If ThreeDimensional, the maze will be generated on a cube.")]
+    public EMazeType mazeType;
 
-    [SerializeField] [Tooltip("The number of cells in vertical and horizontal direction on each face of the cube.")]
+    [SerializeField]
+    [Tooltip("The number of cells in vertical and horizontal direction on each face of the cube.")]
     private int size;
 
-    [SerializeField] private float cellSize;
+    [SerializeField]
+    private float cellSize;
 
-    [SerializeField] internal bool showPath;
+    [SerializeField]
+    internal bool showPath;
 
-    [Header("Resources")] [SerializeField] internal GameObject wallPrefab;
+    [Header("Resources")]
+    [SerializeField]
+    internal GameObject wallPrefab;
 
-    [SerializeField] private GameObject mazeBoundsPrefab;
+    [SerializeField]
+    private GameObject mazeBoundsPrefab;
 
-    [SerializeField] internal GameObject startCellPrefab;
+    [SerializeField]
+    internal GameObject startCellPrefab;
 
-    [SerializeField] internal GameObject goalCellPrefab;
+    [SerializeField]
+    internal GameObject goalCellPrefab;
 
-    [SerializeField] internal GameObject pathCellPrefab;
+    [SerializeField]
+    internal GameObject pathCellPrefab;
 
-    [SerializeField] private GameObject camera;
+    [SerializeField]
+    private GameObject camera;
 
-    [SerializeField] private GameObject agentSphere = null!;
-    [SerializeField] private GameObject agentCube = null!;
+    [SerializeField]
+    private GameObject agentSphere = null!;
+    [SerializeField]
+    private GameObject agentCube = null!;
 
-    public static MazeManager Singleton { get; private set; } = null!;
+    public static Maze Singleton { get; private set; } = null!;
 
-    public MazeGraph mazeGraph { get; private set; }
+    public Grid Grid { get; private set; }
 
-    public Dictionary<CubeFace, MazeGraph> cubeGraphs { get; private set; }
+    public Dictionary<ECubeFace, Grid> cubeGraphs { get; private set; }
 
     private GameObject cube;
 
@@ -75,7 +62,7 @@ public class MazeManager : MonoBehaviour
     private void Awake()
     {
         Singleton = this;
-        cubeGraphs = new Dictionary<CubeFace, MazeGraph>();
+        cubeGraphs = new Dictionary<ECubeFace, Grid>();
         // agent = cubeAgent ? agentCube : agentSphere;
         // agent.SetActive(true);
         // var otherAgent = cubeAgent ? agentSphere : agentCube;
@@ -89,15 +76,15 @@ public class MazeManager : MonoBehaviour
         maze = new GameObject("Maze");
         switch (mazeType)
         {
-            case MazeType.TwoDimensional:
+            case EMazeType.TwoDimensional:
                 var grid = new GameObject("Grid");
                 grid.transform.SetParent(maze.transform);
-                mazeGraph = new MazeGraph(size, grid);
-                mazeGraph.SetupMazeGraph();
+                Grid = new Grid(size, grid);
+                Grid.SetupMazeGraph();
                 SetOuterWalls();
                 SetCameraPosition();
                 break;
-            case MazeType.ThreeDimensional:
+            case EMazeType.ThreeDimensional:
                 // Generate a cube where each face is a grid with cells and walls in horizontal and vertical direction
                 cube = GameObject.CreatePrimitive(PrimitiveType.Cube);
                 cube.transform.SetParent(maze.transform);
@@ -106,9 +93,9 @@ public class MazeManager : MonoBehaviour
                 cube.transform.localPosition = position;
                 cube.transform.localScale = new Vector3(size * cellSize, size * cellSize, size * cellSize);
                 // Generate a grid for each face of the cube
-                foreach (CubeFace face in Enum.GetValues(typeof(CubeFace)))
+                foreach (ECubeFace face in Enum.GetValues(typeof(ECubeFace)))
                 {
-                    if (face.Equals(CubeFace.None))
+                    if (face.Equals(ECubeFace.None))
                     {
                         continue;
                     }
@@ -116,7 +103,7 @@ public class MazeManager : MonoBehaviour
                     faceGrid.transform.SetParent(maze.transform);
                     faceGrid.transform.localPosition = Vector3.zero;
                     faceGrid.transform.localScale = Vector3.one;
-                    var graph = new MazeGraph(size, faceGrid, face);
+                    var graph = new Grid(size, faceGrid, face);
                     cubeGraphs.Add(face, graph);
                 }
                 foreach (var graph in cubeGraphs.Values)
@@ -138,30 +125,30 @@ public class MazeManager : MonoBehaviour
             var mazeParent = graph.MazeParent;
             switch (graph.Face)
             {
-                case CubeFace.None:
+                case ECubeFace.None:
                     break;
-                case CubeFace.Front:
+                case ECubeFace.Front:
                     mazeParent.transform.localRotation = Quaternion.Euler(90, 0, 0);
                     mazeParent.transform.localPosition = new Vector3(0, size * cellSize / 2 - 1, -2);
                     break;
-                case CubeFace.Back:
+                case ECubeFace.Back:
                     mazeParent.transform.localRotation = Quaternion.Euler(90, 0, 0);
                     mazeParent.transform.localPosition = new Vector3(0, size * cellSize / 2 - 1, size * cellSize - 1);
                     break;
-                case CubeFace.Left:
+                case ECubeFace.Left:
                     mazeParent.transform.localRotation = Quaternion.Euler(90, 90, 0);
                     mazeParent.transform.localPosition = new Vector3(-2, size * cellSize / 2 - 1, size * cellSize - 2);
                     break;
-                case CubeFace.Right:
+                case ECubeFace.Right:
                     mazeParent.transform.localRotation = Quaternion.Euler(90, 90, 0);
                     mazeParent.transform.localPosition = new Vector3(size * cellSize - 1, size * cellSize / 2 - 1,
                         size * cellSize - 2);
                     break;
-                case CubeFace.Top:
+                case ECubeFace.Top:
                     mazeParent.transform.localRotation = Quaternion.Euler(0, 0, 0);
                     mazeParent.transform.localPosition = new Vector3(0, size * cellSize / 2, 0);
                     break;
-                case CubeFace.Bottom:
+                case ECubeFace.Bottom:
                     mazeParent.transform.localRotation = Quaternion.Euler(0, 0, 0);
                     mazeParent.transform.localPosition = new Vector3(0, -size * cellSize / 2 - 1, 0);
                     break;
@@ -205,7 +192,7 @@ public class MazeManager : MonoBehaviour
             Destroy(maze);
         }
 
-        mazeGraph = null!;
+        Grid = null!;
     }
 
     public int GetCellSize()

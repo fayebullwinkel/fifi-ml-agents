@@ -6,7 +6,7 @@ public sealed class MazeGenerationAgent3D: MazeGenerationAgent
 {
     private void Start()
     {
-        mazeManager = MazeManager.Singleton;
+        Maze = Maze.Singleton;
     }
     
     public override void OnEpisodeBegin()
@@ -40,7 +40,7 @@ public sealed class MazeGenerationAgent3D: MazeGenerationAgent
         var placeGoal = actions.DiscreteActions[0] > 0;
         if (placeGoal)
         {
-            mazeManager.mazeGraph.PlaceGoal(transform.localPosition);
+            Maze.Grid.PlaceGoal(transform.localPosition);
         }
         
         GrantReward();

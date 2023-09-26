@@ -28,17 +28,17 @@ namespace MazeDatatype
 
         private void DestroyWall()
         {
-            var mazeManager = MazeManager.Singleton;
-            mazeManager.mazeGraph.RemoveWall(this);
+            var mazeManager = Maze.Singleton;
+            mazeManager.Grid.RemoveWall(this);
 
             // Mark all cells that this wall was connected to as visited
             foreach (var cell in Cells.Where(cell => !cell.Visited))
             {
-                mazeManager.mazeGraph.MarkCellVisited(cell.X, cell.Z);
+                mazeManager.Grid.MarkCellVisited(cell.X, cell.Z);
             }
             
             // Check if the maze still meets the requirements
-            var meetsRequirements = mazeManager.mazeGraph.MazeMeetsRequirements();
+            var meetsRequirements = mazeManager.Grid.MazeMeetsRequirements();
             Debug.Log("Maze meets requirements: " + meetsRequirements);
             
             Destroy(gameObject);

@@ -8,7 +8,7 @@ public class MazeGenerationAgent2D : MazeGenerationAgent
 
     private void Awake()
     {
-        mazeManager = MazeManager.Singleton;
+        Maze = Maze.Singleton;
         rBody = GetComponent<Rigidbody>();
     }
 
@@ -44,7 +44,7 @@ public class MazeGenerationAgent2D : MazeGenerationAgent
         var placeGoal = actions.DiscreteActions[0] > 0;
         if (placeGoal)
         {
-            mazeManager.mazeGraph.PlaceGoal(transform.localPosition);
+            Maze.Grid.PlaceGoal(transform.localPosition);
         }
 
         GrantReward();
