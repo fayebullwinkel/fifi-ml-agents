@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using MazeGeneration_vivi.MazeDatatype.Enums;
 using UnityEngine;
 using Random = UnityEngine.Random;
@@ -32,6 +33,8 @@ namespace MazeGeneration_vivi.MazeDatatype
         private GameObject agent3D = null!;
 
         public Dictionary<ECubeFace, Grid> Grids { get; private set; }
+        public MazeCell StartCell { get; private set; }
+        public MazeCell EndCell { get; private set; }
         private GameObject maze;
         private GameObject cube;
         private GameObject agent;
@@ -41,13 +44,13 @@ namespace MazeGeneration_vivi.MazeDatatype
             Grids = new Dictionary<ECubeFace, Grid>();
             cube = transform.GetComponentInChildren<BoxCollider>().gameObject;
             maze = gameObject;
-            // agent = cubeAgent ? agentCube : agentSphere;
-            // agent.SetActive(true);
-            // var otherAgent = cubeAgent ? agentSphere : agentCube;
-            // otherAgent.SetActive(false);
+            agent = mazeType == EMazeType.ThreeDimensional ? agent3D : agent2D;
+            agent.SetActive(true);
+            var otherAgent = mazeType == EMazeType.ThreeDimensional ? agent2D : agent3D;
+            otherAgent.SetActive(false);
 
-            GenerateMaze();
-            PlaceAgent();
+            // GenerateMaze();
+            // PlaceAgent();
         }
 
         public void GenerateMaze()
@@ -73,6 +76,7 @@ namespace MazeGeneration_vivi.MazeDatatype
             // Generate a grid
             var gridParent = new GameObject("Grid");
             gridParent.transform.SetParent(maze.transform);
+            gridParent.tag = "Grid";
             var grid = new Grid(this, size, gridParent);
             Grids.Add(ECubeFace.None, grid);
             
@@ -97,6 +101,7 @@ namespace MazeGeneration_vivi.MazeDatatype
                 }
                 var gridParent = new GameObject("Grid" + face);
                 gridParent.transform.SetParent(maze.transform);
+                gridParent.tag = "Grid";
                 var grid = new Grid(this, size, gridParent, face);
                 Grids.Add(face, grid);
             }
@@ -173,20 +178,46 @@ namespace MazeGeneration_vivi.MazeDatatype
             var randomZ = Random.Range(0, size);
             var randomCell = grid.Cells[randomX, randomZ];
             var position = grid.GetPositionFromCell(randomCell);
-            // if (cubeFace is ECubeFace.Bottom or ECubeFace.Left or ECubeFace.Front)
-            // {
-            //     position.y = 1;
-            // }
 
-            // agent.transform.localPosition = position;
-            var c = GameObject.CreatePrimitive(PrimitiveType.Cube);
-            c.transform.SetParent(grid.Parent.transform);
-            c.transform.localPosition = position;
+            agent.transform.SetParent(grid.Parent.transform);
+            agent.transform.localPosition = position;
+            // var c = GameObject.CreatePrimitive(PrimitiveType.Cube);
+            // c.transform.SetParent(grid.Parent.transform);
+            // c.transform.localPosition = position;
             
             Debug.Log("Placed agent at " + position + " in grid " + cubeFace + " at cell " + randomX + ", " + randomZ + ".");
                 
             grid.MarkCellVisited(randomX, randomZ);
-            grid.PlaceStart(position);
+            PlaceStart(position);
+        }
+        
+        public void PlaceStart(Vector3 position)
+        {
+            var agentParentGrid = agent.transform.parent.gameObject;
+            var grid = Grids.Values.FirstOrDefault(x => x.Parent == agentParentGrid);
+            var cell = grid.GetCellFromPosition(position); 
+            if (cell != null && StartCell == null)
+            {
+                StartCell = cell;
+                var startCellObject = Instantiate(prefabCollection.startCellPrefab, grid.Parent.transform);
+                startCellObject.transform.localPosition = position;
+                startCellObject.transform.localScale = new Vector3(cellSize, 0.01f, cellSize);
+            }
+        }
+        
+        public void PlaceGoal(Vector3 position)
+        {
+            var grid = agent.transform.parent.GetComponent<Grid>();
+            var cell = grid.GetCellFromPosition(position); 
+            if (cell != null && EndCell == null && StartCell != cell)
+            {
+                EndCell = cell;
+                var goalCellObject = Instantiate(prefabCollection.goalCellPrefab, grid.Parent.transform);
+                goalCellObject.transform.localPosition = new Vector3(cell.X * cellSize, 0, cell.Z * cellSize);
+                goalCellObject.transform.localScale = new Vector3(cellSize, 0.01f, cellSize);
+                
+                Debug.Log("Maze is valid: " + MazeIsValid());
+            }
         }
 
         public void ClearMaze()
@@ -199,10 +230,184 @@ namespace MazeGeneration_vivi.MazeDatatype
             
             Grids = new Dictionary<ECubeFace, Grid>();
         }
+        
+        #region MazeValidationMethods
+        
+        public bool MazeIsValid()
+        {
+            // Check if all cells are visited -> maze is connected
+            if (Grids.Values.Any(grid => grid.GetVisitedCells() != grid.Cells.Length))
+            {
+                return false;
+            }
+            // Check if maze has a start and end cell
+            if (StartCell == null || EndCell == null)
+            {
+                return false;
+            }
+            // Check if there is a path from start to end cell -> maze is solvable
+            var path = FindPath(StartCell, EndCell);
+            var isSolvable = path.Count > 0 && path.First() == StartCell && path.Last() == EndCell;
+            if (isSolvable)
+            {
+                ShowPath(path);
+            }
+            return isSolvable;
+        }
+        
+        public bool MazeMeetsRequirements()
+        {
+            // Check if all corners have at least one wall -> maze is not empty
+            if (Grids.Values.Any(grid => grid.Corners.Any(corner => corner.Walls.Count == 0)))
+            {
+                return false;
+            }
+            // TODO: add more requirements
+            return true;
+        }
+        
+        #endregion
+        
+        #region PathFindingMethods
+        
+        // Find a path from start to end cell using the breadth-first search algorithm
+        public List<MazeCell> FindPath(MazeCell startCell, MazeCell endCell)
+        {
+            var queue = new Queue<MazeCell>();
+            var visited = new HashSet<MazeCell>();
+            var parent = new Dictionary<MazeCell, MazeCell>();
+            queue.Enqueue(startCell);
+            visited.Add(startCell);
+            while (queue.Count > 0)
+            {
+                var currentCell = queue.Dequeue();
+                if (currentCell == endCell)
+                {
+                    break;
+                }
+                foreach (var neighbour in currentCell.Neighbours)
+                {
+                    if (!visited.Contains(neighbour))
+                    {
+                        // check if there is a wall between the current cell and the neighbour
+                        var grid = currentCell.Grid;
+                        var neighbourGrid = neighbour.Grid;
+                        var wall = grid.Walls.Find(x => x.Cells.Contains(currentCell) && x.Cells.Contains(neighbour));
+                        var neighbourWall = neighbourGrid.Walls.Find(x => x.Cells.Contains(currentCell) && x.Cells.Contains(neighbour));
+                        if (wall != null || neighbourWall != null)
+                        {
+                            continue;
+                        }
+                        queue.Enqueue(neighbour);
+                        visited.Add(neighbour);
+                        parent[neighbour] = currentCell;
+                    }
+                }
+            }
+            var path = new List<MazeCell>();
+            var cell = endCell;
+            while (cell != startCell)
+            {
+                path.Add(cell);
+                cell = parent[cell];
+            }
+            path.Add(startCell);
+            path.Reverse();
+            return path;
+        }
+        
+        // Finds the longest path from the start cell without an end cell using the breadth-first search algorithm
+        public List<MazeCell> FindLongestPath(MazeCell startCell)
+        {
+            var queue = new Queue<MazeCell>();
+            var visited = new HashSet<MazeCell>();
+            var parent = new Dictionary<MazeCell, MazeCell>();
+            queue.Enqueue(startCell);
+            visited.Add(startCell);
+            while (queue.Count > 0)
+            {
+                var currentCell = queue.Dequeue();
+                foreach (var neighbour in currentCell.Neighbours)
+                {
+                    if (!visited.Contains(neighbour))
+                    {
+                        // check if there is a wall between the current cell and the neighbour
+                        var grid = currentCell.Grid;
+                        var neighbourGrid = neighbour.Grid;
+                        var wall = grid.Walls.Find(x => x.Cells.Contains(currentCell) && x.Cells.Contains(neighbour));
+                        var neighbourWall = neighbourGrid.Walls.Find(x => x.Cells.Contains(currentCell) && x.Cells.Contains(neighbour));
+                        if (wall != null || neighbourWall != null)
+                        {
+                            continue;
+                        }
+                        queue.Enqueue(neighbour);
+                        visited.Add(neighbour);
+                        parent[neighbour] = currentCell;
+                    }
+                }
+            }
+            // build a path for each cell in the dictionary from that cell to the start cell
+            var paths = new List<List<MazeCell>>();
+            foreach (var cell in parent.Keys)
+            {
+                if(cell == startCell)
+                {
+                    continue;
+                }
+                var path = new List<MazeCell>();
+                var c = cell;
+                while (c != startCell)
+                {
+                    path.Add(c);
+                    c = parent[c];
+                }
+                path.Add(startCell);
+                path.Reverse();
+                paths.Add(path);
+            }
+            if(paths.Count == 0)
+            {
+                return new List<MazeCell>();
+            }
+            // return the longest path
+            return paths.OrderByDescending(x => x.Count).First();
+        }
+
+        private void ShowPath(List<MazeCell> path)
+        {
+            if (!showPath)
+            {
+                return;
+            }
+            foreach (var cell in path)
+            {
+                // skip start and end cell
+                if (cell == StartCell || cell == EndCell)
+                {
+                    continue;
+                }
+
+                var grid = cell.Grid;
+                var pathCellObject = Instantiate(prefabCollection.pathCellPrefab, grid.Parent.transform);
+                pathCellObject.transform.localPosition = grid.GetPositionFromCell(cell);
+                pathCellObject.transform.localScale = new Vector3(cellSize, 0.01f, cellSize);
+            }
+        }
+        
+        #endregion
 
         public int GetCellCount()
         {
             return size * size * 6;
         }
+        
+        public int GetVisitedCells() => Grids.Values.Sum(grid => grid.GetVisitedCells());
+        
+        public float GetPercentageOfVisitedCells()
+        {
+            return (float) GetVisitedCells() / GetCellCount();
+        }
+        
+        public bool GetIsMazeEmpty() => Grids.Count == 0;
     }
 }

@@ -18,9 +18,6 @@ namespace MazeGeneration_vivi.MazeDatatype
         public List<MazeCorner> Corners { get; }
 
         public Maze Maze { get; }
-        
-        public MazeCell StartCell { get; private set; }
-        public MazeCell EndCell { get; private set; }
 
         internal GameObject Parent;
 
@@ -413,193 +410,7 @@ namespace MazeGeneration_vivi.MazeDatatype
 
             return new Vector3(xPos, 0f, zPos);
         }
-        
-        public void PlaceStart(Vector3 position)
-        {
-            var cell = GetCellFromPosition(position);
-            if (cell != null && StartCell == null)
-            {
-                StartCell = cell;
-                var cellSize = Maze.cellSize;
-                var startCellObject = Object.Instantiate(prefabCollection.startCellPrefab, Parent.transform);
-                startCellObject.transform.localPosition = position;
-                startCellObject.transform.localScale = new Vector3(cellSize, 0.01f, cellSize);
-            }
-        }
-        
-        public void PlaceGoal(Vector3 position)
-        {
-            var cell = GetCellFromPosition(position);
-            if (cell != null && EndCell == null && StartCell != cell)
-            {
-                EndCell = cell;
-                var cellSize = Maze.cellSize;
-                var goalCellObject = Object.Instantiate(prefabCollection.goalCellPrefab, Parent.transform);
-                goalCellObject.transform.localPosition = new Vector3(cell.X * cellSize, 0, cell.Z * cellSize);
-                goalCellObject.transform.localScale = new Vector3(cellSize, 0.01f, cellSize);
-                
-                Debug.Log("Maze is valid: " + MazeIsValid());
-            }
-        }
 
-        #endregion
-
-        #region MazeValidationMethods
-        
-        public bool MazeIsValid()
-        {
-            // Check if all cells are visited -> maze is connected
-            if (Cells.Cast<MazeCell>().Any(cell => !cell.Visited))
-            {
-                return false;
-            }
-            // Check if maze has a start and end cell
-            if (StartCell == null || EndCell == null)
-            {
-                return false;
-            }
-            // Check if there is a path from start to end cell -> maze is solvable
-            var path = FindPath(StartCell, EndCell);
-            var isSolvable = path.Count > 0 && path.First() == StartCell && path.Last() == EndCell;
-            if (isSolvable)
-            {
-                ShowPath(path);
-            }
-            return isSolvable;
-        }
-        
-        public bool MazeMeetsRequirements()
-        {
-            // Check if all corners have at least one wall -> maze is not empty
-            if (Corners.Any(corner => corner.Walls.Count == 0))
-            {
-                return false;
-            }
-            // TODO: add more requirements
-            return true;
-        }
-        
-        #endregion
-        
-        #region PathFindingMethods
-        
-        // Find a path from start to end cell using the breadth-first search algorithm
-        public List<MazeCell> FindPath(MazeCell startCell, MazeCell endCell)
-        {
-            var queue = new Queue<MazeCell>();
-            var visited = new HashSet<MazeCell>();
-            var parent = new Dictionary<MazeCell, MazeCell>();
-            queue.Enqueue(startCell);
-            visited.Add(startCell);
-            while (queue.Count > 0)
-            {
-                var currentCell = queue.Dequeue();
-                if (currentCell == endCell)
-                {
-                    break;
-                }
-                foreach (var neighbour in currentCell.Neighbours)
-                {
-                    if (!visited.Contains(neighbour))
-                    {
-                        // check if there is a wall between the current cell and the neighbour
-                        var wall = Walls.Find(x => x.Cells.Contains(currentCell) && x.Cells.Contains(neighbour));
-                        if (wall != null)
-                        {
-                            continue;
-                        }
-                        queue.Enqueue(neighbour);
-                        visited.Add(neighbour);
-                        parent[neighbour] = currentCell;
-                    }
-                }
-            }
-            var path = new List<MazeCell>();
-            var cell = endCell;
-            while (cell != startCell)
-            {
-                path.Add(cell);
-                cell = parent[cell];
-            }
-            path.Add(startCell);
-            path.Reverse();
-            return path;
-        }
-        
-        // Finds the longest path from the start cell without an end cell using the breadth-first search algorithm
-        public List<MazeCell> FindLongestPath(MazeCell startCell)
-        {
-            var queue = new Queue<MazeCell>();
-            var visited = new HashSet<MazeCell>();
-            var parent = new Dictionary<MazeCell, MazeCell>();
-            queue.Enqueue(startCell);
-            visited.Add(startCell);
-            while (queue.Count > 0)
-            {
-                var currentCell = queue.Dequeue();
-                foreach (var neighbour in currentCell.Neighbours)
-                {
-                    if (!visited.Contains(neighbour))
-                    {
-                        // check if there is a wall between the current cell and the neighbour
-                        var wall = Walls.Find(x => x.Cells.Contains(currentCell) && x.Cells.Contains(neighbour));
-                        if (wall != null)
-                        {
-                            continue;
-                        }
-                        queue.Enqueue(neighbour);
-                        visited.Add(neighbour);
-                        parent[neighbour] = currentCell;
-                    }
-                }
-            }
-            // build a path for each cell in the dictionary from that cell to the start cell
-            var paths = new List<List<MazeCell>>();
-            foreach (var cell in parent.Keys)
-            {
-                if(cell == startCell)
-                {
-                    continue;
-                }
-                var path = new List<MazeCell>();
-                var c = cell;
-                while (c != startCell)
-                {
-                    path.Add(c);
-                    c = parent[c];
-                }
-                path.Add(startCell);
-                path.Reverse();
-                paths.Add(path);
-            }
-            if(paths.Count == 0)
-            {
-                return new List<MazeCell>();
-            }
-            // return the longest path
-            return paths.OrderByDescending(x => x.Count).First();
-        }
-
-        private void ShowPath(List<MazeCell> path)
-        {
-            if (!Maze.showPath)
-            {
-                return;
-            }
-            foreach (var cell in path)
-            {
-                // skip start and end cell
-                if (cell == StartCell || cell == EndCell)
-                {
-                    continue;
-                }
-                var cellSize = Maze.cellSize;
-                var pathCellObject = Object.Instantiate(prefabCollection.pathCellPrefab, Parent.transform);
-                pathCellObject.transform.localPosition = new Vector3(cell.X * cellSize, 0, cell.Z * cellSize);
-                pathCellObject.transform.localScale = new Vector3(cellSize, 0.01f, cellSize);
-            }
-        }
-        
         #endregion
 
         public void MarkCellVisited(int x, int z)
@@ -611,18 +422,7 @@ namespace MazeGeneration_vivi.MazeDatatype
         {
             return Cells.Cast<MazeCell>().Count(cell => cell.Visited);
         }
-        
-        public float GetPercentageOfVisitedCells()
-        {
-            return (float) GetVisitedCells() / (Size * Size);
-        }
-        
-        public float GetPercentageOfLongestPath()
-        {
-            var longestPath = FindLongestPath(StartCell);
-            return (float) longestPath.Count / (Size * Size);
-        }
-        
+
         #region DebugMethods
         
         public void PrintAllCells()

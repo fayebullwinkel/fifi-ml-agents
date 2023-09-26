@@ -225,7 +225,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 1946312899393052249, guid: fc2e1ac7a58dfd041b32309a78857f4b, type: 3}
       propertyPath: m_IsActive
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 1947838829261988873, guid: fc2e1ac7a58dfd041b32309a78857f4b, type: 3}
       propertyPath: m_RootOrder
@@ -271,6 +271,10 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 3256450761852145635, guid: fc2e1ac7a58dfd041b32309a78857f4b, type: 3}
+      propertyPath: Maze
+      value: 
+      objectReference: {fileID: 1460981386}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: fc2e1ac7a58dfd041b32309a78857f4b, type: 3}
 --- !u!1 &814119483
@@ -400,7 +404,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   mazeType: 1
-  size: 2
+  size: 4
   cellSize: 2
   showPath: 1
   debugMode: 1
@@ -551,7 +555,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 1946312899393052249, guid: 70ffdfcd496ba414ab2e00de047e1495, type: 3}
       propertyPath: m_IsActive
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 1947838829261988873, guid: 70ffdfcd496ba414ab2e00de047e1495, type: 3}
       propertyPath: m_RootOrder
@@ -597,7 +601,8 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
-    m_RemovedComponents: []
+    m_RemovedComponents:
+    - {fileID: 8256047935148980071, guid: 70ffdfcd496ba414ab2e00de047e1495, type: 3}
   m_SourcePrefab: {fileID: 100100000, guid: 70ffdfcd496ba414ab2e00de047e1495, type: 3}
 --- !u!1 &2024610301 stripped
 GameObject:

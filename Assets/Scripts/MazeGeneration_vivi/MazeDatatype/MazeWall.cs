@@ -38,10 +38,6 @@ namespace MazeGeneration_vivi.MazeDatatype
                 Grid.MarkCellVisited(cell.X, cell.Z);
             }
             
-            // Check if the maze still meets the requirements
-            var meetsRequirements = Grid.MazeMeetsRequirements();
-            Debug.Log("Maze meets requirements: " + meetsRequirements);
-            
             Destroy(gameObject);
         }
 
