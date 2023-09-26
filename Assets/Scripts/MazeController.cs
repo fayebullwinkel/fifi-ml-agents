@@ -6,17 +6,31 @@ public class MazeController : MonoBehaviour
 {
     [FormerlySerializedAs("MazeGenerator")] [FormerlySerializedAs("TestCube")]
     public MazeGeneration mazeGenerator; // TODO: implement new scriptable object
-
+    
+    // for presenting the cube
     public bool rotateCube;
     private readonly float _rotationSpeed = 30f;
     private Quaternion _currentRotation;
     private GameObject _maze;
 
+    public GameObject agentPrefab;
+    public Camera mainCamera;
+
     private MazeAgent _mazeAgent;
     private GameObject _mazeAgentObj;
-
-    public GameObject agentPrefab;
     private GameObject _startCubeObj;
+
+    private Surface _surface = Surface.Front;
+
+    public enum Surface
+    {
+        Right, 
+        Left, 
+        Front, 
+        Back,
+        Top, 
+        Bottom
+    }
 
     private void Start()
     {
@@ -29,26 +43,72 @@ public class MazeController : MonoBehaviour
         Destroy(_startCubeObj);
         GenerateMaze();
         PlaceMazeAgent();
+        RotateMazeToFaceCamera();
     }
 
     private void GenerateMaze()
     {
         var transform1 = transform;
         mazeGenerator.Generate(transform1.position, transform1.localScale);
-
         _maze = mazeGenerator.GetMazeObj();
     }
 
-    private bool IsPointInWall(Vector3 point, float edgeLength)
+    private void RotateMazeToFaceCamera()
     {
-        Collider[] colliders = new Collider[10];
-        Vector3 halfExtents = new Vector3(edgeLength / 2f, edgeLength / 2f, edgeLength / 2f);
+        Vector3 startCubeCenter = _startCubeObj.transform.position;
+        Vector3 mazeCubeCenter = _maze.transform.position;
 
-        // Check for collisions within the box
-        int colliderCount = Physics.OverlapBoxNonAlloc(point, halfExtents, colliders, Quaternion.identity,
-            LayerMask.GetMask("Wall"));
+        // Direction from the startCube to the mazeCube
+        Vector3 directionToStartCube = startCubeCenter - mazeCubeCenter;
+        float x = Mathf.Abs(directionToStartCube.x);
+        float y = Mathf.Abs(directionToStartCube.y);
+        float z = Mathf.Abs(directionToStartCube.z);
 
-        return colliderCount > 0;
+        // Rotate cube so that face with startCube is facing the camera
+        if (x >= y && x >= z)
+        {
+            if (directionToStartCube.x > 0)
+            {
+                // right
+                Debug.Log("right");
+                _maze.transform.Rotate(0.0f, 90.0f, 0.0f, Space.Self);
+                _surface = Surface.Right;
+            }
+            else
+            {
+                // left
+                Debug.Log("left");
+                _maze.transform.Rotate(0.0f, -90.0f, 0.0f, Space.Self);
+                _surface = Surface.Left;
+            }
+        }
+        else if (y >= x && y >= z)
+        {
+            if (directionToStartCube.y > 0)
+            {
+                // top
+                Debug.Log("top");
+                _maze.transform.Rotate(-90.0f, 0.0f, 0.0f, Space.Self);
+                _surface = Surface.Top;
+            }
+            else
+            {
+                // bottom
+                Debug.Log("bottom");
+                _maze.transform.Rotate(90.0f, 0.0f, 0.0f, Space.Self);
+                _surface = Surface.Bottom;
+            }
+        }
+        else
+        {
+            if (directionToStartCube.z > 0)
+            {
+                // back
+                Debug.Log("back");
+                _maze.transform.Rotate(0.0f, 180.0f, 0.0f, Space.Self);
+                _surface = Surface.Back;
+            }
+        }
     }
 
     private List<Vector3Int> FindSurfaceCubePositions(Cube[,,] mazeArray)
@@ -126,5 +186,15 @@ public class MazeController : MonoBehaviour
         {
             _maze.transform.Rotate(Vector3.up, _rotationSpeed * Time.deltaTime, Space.World);
         }
+    }
+    
+    public float GetReferenceCubeSize()
+    {
+        return _startCubeObj.transform.localScale.x;
+    }
+    
+    public Surface GetSurface()
+    {
+        return _surface;
     }
 }

@@ -29,7 +29,6 @@ public class MazeGeneration : ScriptableObject
         _cubeList = new List<Cube>();
         _path = new List<Cube>();
 
-        //_startCubeObj = Instantiate(agentPrefab);
         _endCubeObj = GameObject.CreatePrimitive(PrimitiveType.Cube);
         _endCubeObj.tag = "EndCube";
 
@@ -268,11 +267,6 @@ public class MazeGeneration : ScriptableObject
     public GameObject GetMazeObj()
     {
         return _mazeObj;
-    }
-
-    public GameObject GetMazeBase()
-    {
-        return _mazeBase;
     }
     
     public GameObject GetEndCube()

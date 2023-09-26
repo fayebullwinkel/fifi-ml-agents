@@ -6,57 +6,49 @@ using Unity.MLAgents.Sensors;
 public class MazeAgent : Agent
 {
     private MazeController _mazeController;
-    private Rigidbody _rb;
-    private readonly float _moveSpeed = 5f;
 
     public override void Initialize()
     {
         base.Initialize();
         _mazeController = GameObject.Find("MazeController").GetComponent<MazeController>();
-        _rb = GetComponent<Rigidbody>();
-        
-        if (_mazeController == null)
-        {
-            Debug.LogError("MazeController not found. Make sure the MazeController object is in the scene.");
-        }
-
-        if (_rb == null)
-        {
-            Debug.LogError("Rigidbody component not found on the MazeAgent.");
-        }
     }
 
     public override void OnActionReceived(ActionBuffers actionBuffers)
     {
-        int moveAction = actionBuffers.DiscreteActions[0];
+        // Get discrete actions
+        int discreteAction = actionBuffers.DiscreteActions[0];
 
-        // Define movement directions based on actions
-        Vector3 moveDirection = Vector3.zero;
+        // Determine the agent's current orientation (relative to the larger cube's faces)
+        Vector3 upDir = transform.up;
+        Vector3 rightDir = transform.right;
 
-        // Apply movement based on moveAction
-        switch (moveAction)
+        // Define the cube size (adjust this based on your environment)
+        float cubeSize = _mazeController.GetReferenceCubeSize();
+
+        // Apply orientation adjustments based on the discrete action
+        switch (discreteAction)
         {
+            case 0:
+                // No action or default action, agent stays in place
+                break;
             case 1:
-                moveDirection = transform.forward;
+                // Move forward along the surface
+                transform.position += upDir * cubeSize;
                 break;
-            case 2: 
-                moveDirection = -transform.forward;
+            case 2:
+                // Move backward along the surface
+                transform.position -= upDir * cubeSize;
                 break;
-            case 3: 
-                moveDirection = transform.up;
+            case 3:
+                // Move left along the surface
+                transform.position -= rightDir * cubeSize;
                 break;
-            case 4: 
-                moveDirection = -transform.up;
+            case 4:
+                // Move right along the surface
+                transform.position += rightDir * cubeSize;
                 break;
         }
 
-        // Move the agent
-        RaycastHit hit;
-        if (!Physics.Raycast(transform.position, transform.forward, out hit, 0.9f, LayerMask.GetMask("Wall")))
-        {
-            transform.position += moveDirection * (_moveSpeed * Time.fixedDeltaTime);
-        }
-        
         // Apply a tiny negative reward every step to encourage action
         if (MaxStep > 0)
         {
@@ -71,29 +63,29 @@ public class MazeAgent : Agent
         // Initialize action values
         discreteActionsOut.Array[0] = 0;
 
-        // Determine the agent's current orientation (relative to the larger cube's faces)
+        // Determine the agent's current orientation (relative to the maze faces)
         var transform1 = transform;
-        Vector3 forwardDir = transform1.forward;
+        Vector3 upDir = transform1.up;
         Vector3 rightDir = transform1.right;
 
         // Check keyboard input to move along the surface
-        if (Input.GetKey(KeyCode.A))
+        if (Input.GetKey(KeyCode.W))
         {
             // Move forward along the surface
             discreteActionsOut.Array[0] = 1;
         }
-        else if (Input.GetKey(KeyCode.D))
+        else if (Input.GetKey(KeyCode.S))
         {
             // Move backward along the surface
             discreteActionsOut.Array[0] = 2;
         }
 
-        if (Input.GetKey(KeyCode.W))
+        if (Input.GetKey(KeyCode.A))
         {
             // Move left along the surface
             discreteActionsOut.Array[0] = 3;
         }
-        else if (Input.GetKey(KeyCode.S))
+        else if (Input.GetKey(KeyCode.D))
         {
             // Move right along the surface
             discreteActionsOut.Array[0] = 4;
@@ -101,7 +93,7 @@ public class MazeAgent : Agent
 
         // Apply orientation adjustments based on the movement
         var transform2 = transform;
-        transform2.forward = forwardDir;
+        transform2.up = upDir;
         transform2.right = rightDir;
     }
 
@@ -132,7 +124,7 @@ public class MazeAgent : Agent
             SetReward(10.0f);
             EndEpisode(); 
         }
-        else if (other.gameObject.CompareTag("Wall"))
+        else if (other.gameObject.CompareTag("Wall")) // won't work if we are not moving into walls! 
         {
             AddReward(-0.1f);
         }
