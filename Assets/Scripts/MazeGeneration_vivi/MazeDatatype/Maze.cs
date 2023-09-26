@@ -68,7 +68,7 @@ namespace MazeGeneration_vivi.MazeDatatype
         private void Generate2DMaze()
         {
             // Position and scale the cube
-            cube.transform.localPosition = new Vector3(size - cellSize / 2, 0, size - cellSize / 2);
+            // cube.transform.localPosition = new Vector3(size - cellSize / 2, 0, size - cellSize / 2);
             cube.transform.localScale = new Vector3(size * cellSize, 0.001f, size * cellSize);
             
             // Generate a grid
@@ -87,7 +87,7 @@ namespace MazeGeneration_vivi.MazeDatatype
         private void Generate3DMaze()
         {
             // Position and scale the cube
-            cube.transform.localPosition = new Vector3(size - cellSize / 2, 0, size - cellSize / 2);
+            // cube.transform.localPosition = new Vector3(size - cellSize / 2, 0, size - cellSize / 2);
             cube.transform.localScale = new Vector3(size * cellSize, size * cellSize, size * cellSize);
             
             // Generate a grid for each face of the cube
@@ -112,34 +112,34 @@ namespace MazeGeneration_vivi.MazeDatatype
         private void PositionGrid(Grid grid)
         {
             var gridParent = grid.Parent;
+            var posOffset = size * cellSize / 2;
             switch (grid.Face)
             {
                 case ECubeFace.None:
                     break;
                 case ECubeFace.Front:
-                    gridParent.transform.localRotation = Quaternion.Euler(90, 0, 0);
-                    gridParent.transform.localPosition = new Vector3(0, size * cellSize / 2 - 1, -2);
+                    gridParent.transform.localRotation = Quaternion.Euler(-90, 0, 0);
+                    gridParent.transform.localPosition = new Vector3(0, 0, -posOffset);
                     break;
                 case ECubeFace.Back:
-                    gridParent.transform.localRotation = Quaternion.Euler(90, 0, 0);
-                    gridParent.transform.localPosition = new Vector3(0, size * cellSize / 2 - 1, size * cellSize - 1);
+                    gridParent.transform.localRotation = Quaternion.Euler(-90, 0, 180);
+                    gridParent.transform.localPosition = new Vector3(0, 0, posOffset);
                     break;
                 case ECubeFace.Left:
-                    gridParent.transform.localRotation = Quaternion.Euler(90, 90, 0);
-                    gridParent.transform.localPosition = new Vector3(-2, size * cellSize / 2 - 1, size * cellSize - 2);
+                    gridParent.transform.localRotation = Quaternion.Euler(-90, 0, 90);
+                    gridParent.transform.localPosition = new Vector3(-posOffset, 0, 0);
                     break;
                 case ECubeFace.Right:
-                    gridParent.transform.localRotation = Quaternion.Euler(90, 90, 0);
-                    gridParent.transform.localPosition = new Vector3(size * cellSize - 1, size * cellSize / 2 - 1,
-                        size * cellSize - 2);
+                    gridParent.transform.localRotation = Quaternion.Euler(-90, 0, -90);
+                    gridParent.transform.localPosition = new Vector3(posOffset, 0, 0);
                     break;
                 case ECubeFace.Top:
                     gridParent.transform.localRotation = Quaternion.Euler(0, 0, 0);
-                    gridParent.transform.localPosition = new Vector3(0, size * cellSize / 2, 0);
+                    gridParent.transform.localPosition = new Vector3(0, posOffset, 0);
                     break;
                 case ECubeFace.Bottom:
-                    gridParent.transform.localRotation = Quaternion.Euler(0, 0, 0);
-                    gridParent.transform.localPosition = new Vector3(0, -size * cellSize / 2 - 1, 0);
+                    gridParent.transform.localRotation = Quaternion.Euler(180, 0, 0);
+                    gridParent.transform.localPosition = new Vector3(0, -posOffset, 0);
                     break;
                 default:
                     throw new ArgumentOutOfRangeException();
@@ -153,7 +153,7 @@ namespace MazeGeneration_vivi.MazeDatatype
             scale = new Vector3(scale.x * cellSize * size, scale.y, scale.z * cellSize * size);
             outerWalls.transform.localScale = scale;
             var position = outerWalls.transform.localPosition;
-            position = new Vector3(size - cellSize / 2, position.y, size - cellSize / 2);
+            // position = new Vector3(size - cellSize / 2, position.y, size - cellSize / 2);
             outerWalls.transform.localPosition = position;
         }
 

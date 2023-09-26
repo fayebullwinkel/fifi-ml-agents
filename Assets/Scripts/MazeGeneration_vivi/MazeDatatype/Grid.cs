@@ -209,28 +209,27 @@ namespace MazeGeneration_vivi.MazeDatatype
         private Vector3 GetWallPosition(MazeCell cell, EDirection direction)
         {
             var cellSize = Maze.cellSize;
-            float xOffset = 0;
-            float zOffset = 0;
+            var position = GetPositionFromCell(cell);
 
             switch (direction)
             {
                 case EDirection.Top:
-                    zOffset = cellSize / 2;
+                    position.z += cellSize / 2;
                     break;
                 case EDirection.Bottom:
-                    zOffset = -cellSize / 2;
+                    position.z -= cellSize / 2;
                     break;
                 case EDirection.Left:
-                    xOffset = -cellSize / 2;
+                    position.x -= cellSize / 2;
                     break;
                 case EDirection.Right:
-                    xOffset = cellSize / 2;
+                    position.x += cellSize / 2;
                     break;
                 default:
                     throw new ArgumentOutOfRangeException(nameof(direction), direction, null);
             }
 
-            return new Vector3(cell.X * cellSize + xOffset, 0, cell.Z * cellSize + zOffset);
+            return position;
         }
         
         private Vector3 GetWallScale(WallType type)
@@ -322,13 +321,16 @@ namespace MazeGeneration_vivi.MazeDatatype
 
         public Vector3 GetPositionFromCell(MazeCell cell)
         {
+            var size = Maze.size;
             var cellSize = Maze.cellSize;
-            const float y = 0.5f;
+            
+            var xOffset = size * cellSize / 2;
+            var zOffset = size * cellSize / 2;
 
-            var x = cell.X * cellSize;
-            var z = cell.Z * cellSize;
+            var xPos = cell.X * cellSize - xOffset + 1;
+            var zPos = cell.Z * cellSize - zOffset + 1;
 
-            return new Vector3(x, y, z);
+            return new Vector3(xPos, 0f, zPos);
         }
         
         public void PlaceStart(Vector3 position)
