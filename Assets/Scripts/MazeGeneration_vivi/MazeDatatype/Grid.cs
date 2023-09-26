@@ -75,8 +75,7 @@ namespace MazeGeneration_vivi.MazeDatatype
                     // if the cell is on the left edge, add the cell on the right edge from the left neighbour graph as a neighbour
                     else if (x == 0 && Maze.mazeType == EMazeType.ThreeDimensional)
                     {
-                        var neighbourGraph = GetNeighbourGraph(this, EDirection.Left);
-                        var neighbourCell = neighbourGraph.Cells[Size - 1, z];
+                        var neighbourCell = FindNeighbourCellFromNeighbourGrid(cell, EDirection.Left);
                         cell.AddNeighbour(neighbourCell);
                     }
                     // if the cell is not on the right edge, add the cell to the right as a neighbour
@@ -86,8 +85,7 @@ namespace MazeGeneration_vivi.MazeDatatype
                     }
                     else if (x == Size - 1 && Maze.mazeType == EMazeType.ThreeDimensional)
                     {
-                        var neighbourGraph = GetNeighbourGraph(this, EDirection.Right);
-                        var neighbourCell = neighbourGraph.Cells[0, z];
+                        var neighbourCell = FindNeighbourCellFromNeighbourGrid(cell, EDirection.Right);
                         cell.AddNeighbour(neighbourCell);
                     }
                     // if the cell is not on the bottom edge, add the cell to the bottom as a neighbour
@@ -97,8 +95,7 @@ namespace MazeGeneration_vivi.MazeDatatype
                     }
                     else if (z == 0 && Maze.mazeType == EMazeType.ThreeDimensional)
                     {
-                        var neighbourGraph = GetNeighbourGraph(this, EDirection.Bottom);
-                        var neighbourCell = neighbourGraph.Cells[x, Size - 1];
+                        var neighbourCell = FindNeighbourCellFromNeighbourGrid(cell, EDirection.Bottom);
                         cell.AddNeighbour(neighbourCell);
                     }
                     // if the cell is not on the top edge, add the cell to the top as a neighbour
@@ -108,8 +105,7 @@ namespace MazeGeneration_vivi.MazeDatatype
                     }
                     else if (z == Size - 1 && Maze.mazeType == EMazeType.ThreeDimensional)
                     {
-                        var neighbourGraph = GetNeighbourGraph(this, EDirection.Top);
-                        var neighbourCell = neighbourGraph.Cells[x, 0];
+                        var neighbourCell = FindNeighbourCellFromNeighbourGrid(cell, EDirection.Top);
                         cell.AddNeighbour(neighbourCell);
                     }
                 }
@@ -176,6 +172,92 @@ namespace MazeGeneration_vivi.MazeDatatype
             }
 
             return Maze.Grids[neighbourFace];
+        }
+
+        private MazeCell FindNeighbourCellFromNeighbourGrid(MazeCell cell, EDirection direction)
+        {
+            var neighbourGraph = GetNeighbourGraph(cell.Grid, direction);
+            var face = cell.Grid.Face;
+            var neighbourCell = neighbourGraph.Cells[cell.X, cell.Z];
+            switch (face)
+            {
+                case ECubeFace.None:
+                    break;
+                case ECubeFace.Front:
+                    neighbourCell = direction switch
+                    {
+                        EDirection.Left => neighbourGraph.Cells[Size - 1, cell.Z],
+                        EDirection.Right => neighbourGraph.Cells[0, cell.Z],
+                        EDirection.Top => neighbourGraph.Cells[cell.X, 0],
+                        EDirection.Bottom => neighbourGraph.Cells[cell.X, Size - 1],
+                        _ => throw new ArgumentOutOfRangeException(nameof(direction), direction, null)
+                    };
+                    break;
+                case ECubeFace.Back:
+                    neighbourCell = direction switch
+                    {
+                        EDirection.Left => neighbourGraph.Cells[Size - 1, cell.Z],
+                        EDirection.Right => neighbourGraph.Cells[0, cell.Z],
+                        // for top: z is size -1 and x is inverted (x = size - 1 - x)
+                        EDirection.Top => neighbourGraph.Cells[Size - 1 - cell.X, Size - 1],
+                        // for bottom: z is 0 and x is inverted (x = size - 1 - x)
+                        EDirection.Bottom => neighbourGraph.Cells[Size - 1 - cell.X, 0],
+                        _ => throw new ArgumentOutOfRangeException(nameof(direction), direction, null)
+                    };
+                    break;
+                case ECubeFace.Left:
+                    neighbourCell = direction switch
+                    {
+                        EDirection.Left => neighbourGraph.Cells[Size - 1, cell.Z],
+                        EDirection.Right => neighbourGraph.Cells[0, cell.Z],
+                        // for top: x is 0 and z is inverted (z = size - 1 - x)
+                        EDirection.Top => neighbourGraph.Cells[0, Size - 1 - cell.X],
+                        // for bottom: x is 0  and z is x
+                        EDirection.Bottom => neighbourGraph.Cells[0, cell.X],
+                    };
+                    break;
+                case ECubeFace.Right:
+                    neighbourCell = direction switch
+                    {
+                        EDirection.Left => neighbourGraph.Cells[Size - 1, cell.Z],
+                        EDirection.Right => neighbourGraph.Cells[0, cell.Z],
+                        // for top: x is size - 1 and z is x
+                        EDirection.Top => neighbourGraph.Cells[Size - 1, cell.X],
+                        // for bottom: x is size - 1 and z is inverted (z = size - 1 - x)
+                        EDirection.Bottom => neighbourGraph.Cells[Size - 1, Size - 1 - cell.X],
+                    };
+                    break;
+                case ECubeFace.Top:
+                    neighbourCell = direction switch
+                    {
+                        // for left: z is size - 1 and x is inverted (x = size - 1 - z)
+                        EDirection.Left => neighbourGraph.Cells[Size - 1 - cell.Z, Size - 1],
+                        // for right: z is size - 1 and x is z
+                        EDirection.Right => neighbourGraph.Cells[cell.Z, Size - 1],
+                        // for top: z is size - 1 and x is inverted (x = size - 1 - x)
+                        EDirection.Top => neighbourGraph.Cells[Size - 1 - cell.X, Size - 1],
+                        // for bottom: z is size - 1 and x is x
+                        EDirection.Bottom => neighbourGraph.Cells[cell.X, Size - 1],
+                    };
+                    break;
+                case ECubeFace.Bottom:
+                    neighbourCell = direction switch
+                    {
+                        // for left: z is 0 and x is z
+                        EDirection.Left => neighbourGraph.Cells[cell.Z, 0],
+                        // for right: z is 0 and x is inverted (x = size - 1 - z)
+                        EDirection.Right => neighbourGraph.Cells[Size - 1 - cell.Z, 0],
+                        // for top: z is 0 and x is x
+                        EDirection.Top => neighbourGraph.Cells[cell.X, 0],
+                        // for bottom: z is 0 and x is inverted (x = size - 1 - x)
+                        EDirection.Bottom => neighbourGraph.Cells[Size - 1 - cell.X, 0],
+                    };
+                    break;
+                default:
+                    throw new ArgumentOutOfRangeException();
+            }
+
+            return neighbourCell;
         }
 
         private void PlaceWall(MazeCell currentCell, EDirection direction, WallType wallType,
@@ -259,19 +341,14 @@ namespace MazeGeneration_vivi.MazeDatatype
 
         private (int, int) GetNeighborCoordinates(int x, int z, EDirection direction)
         {
-            switch (direction)
+            return direction switch
             {
-                case EDirection.Left:
-                    return (x - 1, z);
-                case EDirection.Right:
-                    return (x + 1, z);
-                case EDirection.Bottom:
-                    return (x, z - 1);
-                case EDirection.Top:
-                    return (x, z + 1);
-                default:
-                    throw new ArgumentException("Invalid wall orientation");
-            }
+                EDirection.Left => (x - 1, z),
+                EDirection.Right => (x + 1, z),
+                EDirection.Bottom => (x, z - 1),
+                EDirection.Top => (x, z + 1),
+                _ => throw new ArgumentException("Invalid wall orientation")
+            };
         }
 
         public void RemoveWall(MazeWall wall)
