@@ -399,10 +399,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 44335da4a82e33c4eb160c7e5acab847, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  mazeType: 0
-  size: 5
+  mazeType: 1
+  size: 2
   cellSize: 2
   showPath: 1
+  debugMode: 1
   prefabCollection: {fileID: 11400000, guid: 359b609eaa96ba8459ab1390ed6a48a3, type: 2}
   mainCamera: {fileID: 63424797}
   agent2D: {fileID: 434716949}

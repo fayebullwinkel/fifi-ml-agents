@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using MazeGeneration_vivi.MazeDatatype.Enums;
 using UnityEngine;
+using Random = UnityEngine.Random;
 
 namespace MazeGeneration_vivi.MazeDatatype
 {
@@ -10,15 +11,16 @@ namespace MazeGeneration_vivi.MazeDatatype
         [Header("Maze Settings")]
         [Tooltip("If TwoDimensional, the maze will be generated on a plane. If ThreeDimensional, the maze will be generated on a cube.")]
         public EMazeType mazeType;
-        [SerializeField]
         [Tooltip("The number of cells in vertical and horizontal direction on each face of the cube.")]
-        private int size;
-        [SerializeField]
+        public int size;
         [Tooltip("The size of each cell in the maze.")]
-        private float cellSize;
+        public float cellSize;
         [SerializeField]
         [Tooltip("If true, the path from start to goal will be shown.")]
         internal bool showPath;
+        [SerializeField]
+        [Tooltip("If true, multiple debug things will be shown.")]
+        internal bool debugMode;
 
         [Header("Resources")]
         public PrefabCollection prefabCollection = null!;
@@ -30,12 +32,9 @@ namespace MazeGeneration_vivi.MazeDatatype
         private GameObject agent3D = null!;
 
         public Dictionary<ECubeFace, Grid> Grids { get; private set; }
-
-        private GameObject cube;
-
-        private GameObject agent;
-
         private GameObject maze;
+        private GameObject cube;
+        private GameObject agent;
 
         private void Awake()
         {
@@ -48,6 +47,7 @@ namespace MazeGeneration_vivi.MazeDatatype
             // otherAgent.SetActive(false);
 
             GenerateMaze();
+            PlaceAgent();
         }
 
         public void GenerateMaze()
@@ -71,7 +71,7 @@ namespace MazeGeneration_vivi.MazeDatatype
             cube.transform.localPosition = new Vector3(size - cellSize / 2, 0, size - cellSize / 2);
             cube.transform.localScale = new Vector3(size * cellSize, 0.001f, size * cellSize);
             
-            // Generate a grid for the top face of the cube
+            // Generate a grid
             var gridParent = new GameObject("Grid");
             gridParent.transform.SetParent(maze.transform);
             var grid = new Grid(this, size, gridParent);
@@ -162,25 +162,45 @@ namespace MazeGeneration_vivi.MazeDatatype
             mainCamera.transform.localPosition = new Vector3(size - cellSize / 2, (size - cellSize / 2) * 2, -cellSize / 2);
         }
 
-        // public void PlaceAgent()
-        // {
-        //     var randomX = Random.Range(0, xSize);
-        //     var randomZ = Random.Range(0, zSize);
-        //
-        //     agent.transform.localPosition =
-        //         new Vector3( randomX * cellSize, 0.6f, randomZ * cellSize);
-        //     mazeGraph.MarkCellVisited(randomX, randomZ);
-        //     mazeGraph.PlaceStart(agent.transform.localPosition);
-        // }
+        public void PlaceAgent()
+        {
+            // get random grid from Grids
+            var gridIndex = mazeType == EMazeType.ThreeDimensional
+                ? Random.Range(1, Enum.GetValues(typeof(ECubeFace)).Length)
+                : 0;
+
+            var cubeFace = (ECubeFace)gridIndex;
+            
+            var grid = Grids[cubeFace];
+            var randomX = Random.Range(0, size);
+            var randomZ = Random.Range(0, size);
+            var randomCell = grid.Cells[randomX, randomZ];
+            var position = grid.GetPositionFromCell(randomCell);
+            // if (cubeFace is ECubeFace.Bottom or ECubeFace.Left or ECubeFace.Front)
+            // {
+            //     position.y = 1;
+            // }
+
+            // agent.transform.localPosition = position;
+            var c = GameObject.CreatePrimitive(PrimitiveType.Cube);
+            c.transform.SetParent(grid.Parent.transform);
+            c.transform.localPosition = position;
+            
+            Debug.Log("Placed agent at " + position + " in grid " + cubeFace + " at cell " + randomX + ", " + randomZ + ".");
+                
+            grid.MarkCellVisited(randomX, randomZ);
+            grid.PlaceStart(position);
+        }
 
         public void ClearMaze()
         {
-            // TODO: clear maze
-        }
-
-        public int GetCellSize()
-        {
-            return (int)cellSize;
+            var grids = GameObject.FindGameObjectsWithTag("Grid");
+            foreach (var grid in grids)
+            {
+                Destroy(grid);
+            }
+            
+            Grids = new Dictionary<ECubeFace, Grid>();
         }
 
         public int GetCellCount()

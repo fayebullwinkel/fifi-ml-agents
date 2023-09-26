@@ -17,3 +17,5 @@ MonoBehaviour:
   startCellPrefab: {fileID: 7904931680188470924, guid: 8785553ee5b182041862e2b71570d952, type: 3}
   goalCellPrefab: {fileID: 7904931680188470924, guid: b3787cf688cafad47b62a6f58309f51c, type: 3}
   pathCellPrefab: {fileID: 7904931680188470924, guid: 1a246fd2f71780f4693882d13c9e48f0, type: 3}
+  cellPrefab: {fileID: 7904931680188470924, guid: 943fdebddeaf53144a375993b7df7b30, type: 3}
+  cellWithCoordinatesPrefab: {fileID: 4234481652779241603, guid: 4a26e271a9833544fbbf3a91d1bd19e7, type: 3}

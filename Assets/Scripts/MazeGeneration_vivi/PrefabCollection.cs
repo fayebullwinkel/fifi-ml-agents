@@ -14,5 +14,9 @@ namespace MazeGeneration_vivi
         public GameObject goalCellPrefab = null!;
 
         public GameObject pathCellPrefab = null!;
+        
+        public GameObject cellPrefab = null!;
+        
+        public GameObject cellWithCoordinatesPrefab = null!;
     }
 }

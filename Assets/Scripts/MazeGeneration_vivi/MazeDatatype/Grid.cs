@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using MazeGeneration_vivi.MazeDatatype.Enums;
+using TMPro;
 using UnityEngine;
 using Object = UnityEngine.Object;
 
@@ -51,6 +52,12 @@ namespace MazeGeneration_vivi.MazeDatatype
             InitializeNeighbours();
             InitializeWalls();
             InitializeCorners();
+
+            if (Maze.debugMode)
+            {
+                PrintAllCells();
+                ShowAllCells();
+            }
         }
         
         private void InitializeNeighbours()
@@ -201,7 +208,7 @@ namespace MazeGeneration_vivi.MazeDatatype
         
         private Vector3 GetWallPosition(MazeCell cell, EDirection direction)
         {
-            var cellSize = Maze.GetCellSize();
+            var cellSize = Maze.cellSize;
             float xOffset = 0;
             float zOffset = 0;
 
@@ -228,7 +235,7 @@ namespace MazeGeneration_vivi.MazeDatatype
         
         private Vector3 GetWallScale(WallType type)
         {
-            return type == WallType.Horizontal ? new Vector3(Maze.GetCellSize(), 1, 0.1f) : new Vector3(0.1f, 1, Maze.GetCellSize());
+            return type == WallType.Horizontal ? new Vector3(Maze.cellSize, 1, 0.1f) : new Vector3(0.1f, 1, Maze.cellSize);
         }
 
         private MazeCell GetNeighborCell(MazeCell currentCell, EDirection direction)
@@ -294,9 +301,9 @@ namespace MazeGeneration_vivi.MazeDatatype
             return Cells.Cast<MazeCell>().Count(cell => cell.Visited);
         }
 
-        public MazeCell GetCellFromAgentPosition(Vector3 position)
+        public MazeCell GetCellFromPosition(Vector3 position)
         {
-            var cellSize = Maze.GetCellSize();
+            var cellSize = Maze.cellSize;
             foreach (var cell in Cells)
             {
                 var minX = cell.X * cellSize - cellSize / 2;
@@ -312,27 +319,38 @@ namespace MazeGeneration_vivi.MazeDatatype
             }
             return null;
         }
+
+        public Vector3 GetPositionFromCell(MazeCell cell)
+        {
+            var cellSize = Maze.cellSize;
+            const float y = 0.5f;
+
+            var x = cell.X * cellSize;
+            var z = cell.Z * cellSize;
+
+            return new Vector3(x, y, z);
+        }
         
         public void PlaceStart(Vector3 position)
         {
-            var cell = GetCellFromAgentPosition(position);
+            var cell = GetCellFromPosition(position);
             if (cell != null && StartCell == null)
             {
                 StartCell = cell;
-                var cellSize = Maze.GetCellSize();
+                var cellSize = Maze.cellSize;
                 var startCellObject = Object.Instantiate(prefabCollection.startCellPrefab, Parent.transform);
-                startCellObject.transform.localPosition = new Vector3(cell.X * cellSize, 0, cell.Z * cellSize);
+                startCellObject.transform.localPosition = position;
                 startCellObject.transform.localScale = new Vector3(cellSize, 0.01f, cellSize);
             }
         }
         
         public void PlaceGoal(Vector3 position)
         {
-            var cell = GetCellFromAgentPosition(position);
+            var cell = GetCellFromPosition(position);
             if (cell != null && EndCell == null && StartCell != cell)
             {
                 EndCell = cell;
-                var cellSize = Maze.GetCellSize();
+                var cellSize = Maze.cellSize;
                 var goalCellObject = Object.Instantiate(prefabCollection.goalCellPrefab, Parent.transform);
                 goalCellObject.transform.localPosition = new Vector3(cell.X * cellSize, 0, cell.Z * cellSize);
                 goalCellObject.transform.localScale = new Vector3(cellSize, 0.01f, cellSize);
@@ -473,7 +491,7 @@ namespace MazeGeneration_vivi.MazeDatatype
                 {
                     continue;
                 }
-                var cellSize = Maze.GetCellSize();
+                var cellSize = Maze.cellSize;
                 var pathCellObject = Object.Instantiate(prefabCollection.pathCellPrefab, Parent.transform);
                 pathCellObject.transform.localPosition = new Vector3(cell.X * cellSize, 0, cell.Z * cellSize);
                 pathCellObject.transform.localScale = new Vector3(cellSize, 0.01f, cellSize);
@@ -500,6 +518,36 @@ namespace MazeGeneration_vivi.MazeDatatype
         {
             var longestPath = FindLongestPath(StartCell);
             return (float) longestPath.Count / (Size * Size);
+        }
+        
+        public void PrintAllCells()
+        {
+            foreach (var cell in Cells)
+            {
+                Debug.Log($"------- Face: {Face} -------");
+                Debug.Log($"Cell: ({cell.X}, {cell.Z})");
+
+                // Print neighbors
+                foreach (var neighbor in cell.Neighbours)
+                {
+                    Debug.Log($"Neighbor: ({neighbor.X}, {neighbor.Z}), Face: {neighbor.Grid.Face}");
+                }
+            }
+        }
+        
+        public void ShowAllCells()
+        {
+            foreach (var cell in Cells)
+            {
+                var position = GetPositionFromCell(cell);
+                var cellObject = Object.Instantiate(prefabCollection.cellWithCoordinatesPrefab, Parent.transform);
+                cellObject.transform.localPosition = position;
+                cellObject.transform.localScale = new Vector3(Maze.cellSize, 0.01f, Maze.cellSize);
+
+                var textMesh = cellObject.GetComponentInChildren<TextMeshPro>();
+                textMesh.text = $"({cell.X}, {cell.Z})";
+                textMesh.alignment = TextAlignmentOptions.Center;
+            }
         }
     }
 }
