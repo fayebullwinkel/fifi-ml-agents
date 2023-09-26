@@ -16,7 +16,7 @@ public class MazeGeneration : ScriptableObject
     private GameObject _startCubeObj;
     private GameObject _endCubeObj;
     private GameObject _mazeBase;
-    
+
     public GameObject wallPrefab;
 
     public void Generate(Vector3 position, Vector3 scale)
@@ -110,7 +110,8 @@ public class MazeGeneration : ScriptableObject
                                 GameObject wall = Instantiate(wallPrefab);
                                 wall.transform.localScale = _endCubeObj.transform.localScale;
                                 wall.transform.parent = _mazeObj.transform;
-                                wall.transform.localPosition = _mazeArray[width, height, depth].GetCubePosition(_mazeObj.transform.localScale);
+                                wall.transform.localPosition = _mazeArray[width, height, depth]
+                                    .GetCubePosition(_mazeObj.transform.localScale);
                             }
                             else
                             {
@@ -268,12 +269,12 @@ public class MazeGeneration : ScriptableObject
     {
         return _mazeObj;
     }
-    
+
     public GameObject GetEndCube()
     {
         return _endCubeObj;
     }
-    
+
     public Cube[,,] GetMazeArray()
     {
         return _mazeArray;

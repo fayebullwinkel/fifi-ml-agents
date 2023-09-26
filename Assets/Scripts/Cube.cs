@@ -13,48 +13,57 @@ public struct Cube
     public Vector3 GetCubePosition(Vector3 localScale)
     {
         return new Vector3(
-                (_x + 0.5f - (localScale.x / 2)) / localScale.x,
-                (_y + 0.5f - (localScale.y / 2)) / localScale.y,
-                (_z + 0.5f - (localScale.z / 2)) / localScale.z
-            );
+            (_x + 0.5f - (localScale.x / 2)) / localScale.x,
+            (_y + 0.5f - (localScale.y / 2)) / localScale.y,
+            (_z + 0.5f - (localScale.z / 2)) / localScale.z
+        );
     }
-    
+
     public float GetWeight()
     {
         return _weight;
     }
+
     public void SetWeight(float weight)
     {
         this._weight = weight;
     }
+
     public bool GetIsWall()
     {
         return _isWall;
     }
+
     public void SetIsWall(bool isWall)
     {
         _isWall = isWall;
     }
+
     public bool GetIsDeletable()
     {
         return _isDeletable;
     }
+
     public void SetIsDeletable(bool toDelete)
     {
         _isDeletable = toDelete;
     }
+
     public int GetX()
     {
         return _x;
     }
+
     public int GetY()
     {
         return _y;
     }
+
     public int GetZ()
     {
         return _z;
     }
+
     public void SetPos(int x, int y, int z)
     {
         _x = x;

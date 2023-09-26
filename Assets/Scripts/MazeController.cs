@@ -6,7 +6,7 @@ public class MazeController : MonoBehaviour
 {
     [FormerlySerializedAs("MazeGenerator")] [FormerlySerializedAs("TestCube")]
     public MazeGeneration mazeGenerator; // TODO: implement new scriptable object
-    
+
     // for presenting the cube
     public bool rotateCube;
     private readonly float _rotationSpeed = 30f;
@@ -93,7 +93,7 @@ public class MazeController : MonoBehaviour
     {
         // Get the dimensions of the 3D array
         int size = mazeArray.GetLength(0);
-        
+
         List<Vector3Int> positions = new List<Vector3Int>();
 
         // Loop through the surface cubes
@@ -124,7 +124,7 @@ public class MazeController : MonoBehaviour
         Cube[,,] mazeArray = mazeGenerator.GetMazeArray();
 
         List<Vector3Int> positions = FindSurfaceCubePositions(mazeArray);
-        
+
         // Check if there are surface cubes.
         if (positions.Count > 0)
         {
@@ -165,7 +165,7 @@ public class MazeController : MonoBehaviour
             _maze.transform.Rotate(Vector3.up, _rotationSpeed * Time.deltaTime, Space.World);
         }
     }
-    
+
     public float GetReferenceCubeSize()
     {
         return _startCubeObj.transform.localScale.x;

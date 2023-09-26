@@ -16,7 +16,7 @@ public class MazeAgent : Agent
     public override void OnActionReceived(ActionBuffers actionBuffers)
     {
         int discreteAction = actionBuffers.DiscreteActions[0];
-        
+
         float cubeSize = _mazeController.GetReferenceCubeSize();
 
         switch (discreteAction)
@@ -49,7 +49,7 @@ public class MazeAgent : Agent
         }
     }
 
-    void MoveInGlobalDirection(Vector3 globalDirection, float cubeSize)
+    private void MoveInGlobalDirection(Vector3 globalDirection, float cubeSize)
     {
         // Move the agent in the global direction
         transform.position += globalDirection * cubeSize;
@@ -62,7 +62,7 @@ public class MazeAgent : Agent
         // Initialize action values
         discreteActionsOut.Array[0] = 0;
 
-        // Determine the agent's current orientation (relative to the maze faces)
+        // agent's current orientation (relative to the maze faces)
         var transform1 = transform;
         Vector3 upDir = transform1.up;
         Vector3 rightDir = transform1.right;
@@ -70,27 +70,23 @@ public class MazeAgent : Agent
         // Check keyboard input to move along the surface
         if (Input.GetKey(KeyCode.W))
         {
-            // Move forward along the surface
             discreteActionsOut.Array[0] = 1;
         }
         else if (Input.GetKey(KeyCode.S))
         {
-            // Move backward along the surface
             discreteActionsOut.Array[0] = 2;
         }
 
         if (Input.GetKey(KeyCode.A))
         {
-            // Move left along the surface
             discreteActionsOut.Array[0] = 3;
         }
         else if (Input.GetKey(KeyCode.D))
         {
-            // Move right along the surface
             discreteActionsOut.Array[0] = 4;
         }
 
-        // Apply orientation adjustments based on the movement
+        // orientation adjustments based on the movement
         var transform2 = transform;
         transform2.up = upDir;
         transform2.right = rightDir;
@@ -106,13 +102,13 @@ public class MazeAgent : Agent
     {
         // number of observations corresponds to mazeAgentPrefab > Behavior Parameters > Vector Observation Space Size
         sensor.AddObservation(transform.position);
-        
+
         GameObject goal = GameObject.FindWithTag("EndCube");
         if (goal)
         {
             sensor.AddObservation(goal.transform.position);
         }
-        
+
         // 2 x Vector3 = 6 values
     }
 
@@ -121,7 +117,7 @@ public class MazeAgent : Agent
         if (other.gameObject.CompareTag("EndCube"))
         {
             SetReward(10.0f);
-            EndEpisode(); 
+            EndEpisode();
         }
         else if (other.gameObject.CompareTag("Wall")) // won't work if we are not moving into walls! 
         {
