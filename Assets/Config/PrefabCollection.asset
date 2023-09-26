@@ -1,0 +1,19 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 11e0f97183334c6f9e64d731118f6862, type: 3}
+  m_Name: PrefabCollection
+  m_EditorClassIdentifier: 
+  wallPrefab: {fileID: 6953688038259257717, guid: a4391d18c43172646adabba00e2fcf8b, type: 3}
+  mazeBoundsPrefab: {fileID: 5475356583517691170, guid: ab7d9e4222691e643af432f35250bc71, type: 3}
+  startCellPrefab: {fileID: 7904931680188470924, guid: 8785553ee5b182041862e2b71570d952, type: 3}
+  goalCellPrefab: {fileID: 7904931680188470924, guid: b3787cf688cafad47b62a6f58309f51c, type: 3}
+  pathCellPrefab: {fileID: 7904931680188470924, guid: 1a246fd2f71780f4693882d13c9e48f0, type: 3}

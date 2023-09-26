@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
-using MazeDatatype.Enums;
+using MazeGeneration_vivi.MazeDatatype.Enums;
 
-namespace MazeDatatype
+namespace MazeGeneration_vivi.MazeDatatype
 {
     public class NeighbourMap
     {

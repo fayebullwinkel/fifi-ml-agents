@@ -1,11 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using MazeDatatype.Enums;
+using MazeGeneration_vivi.MazeDatatype.Enums;
 using UnityEngine;
 using Object = UnityEngine.Object;
 
-namespace MazeDatatype
+namespace MazeGeneration_vivi.MazeDatatype
 {
     public class Grid
     {
@@ -15,22 +15,26 @@ namespace MazeDatatype
         public MazeCell[,] Cells { get; }
         public List<MazeWall> Walls { get; }
         public List<MazeCorner> Corners { get; }
-        
-        private Maze _maze = Maze.Singleton;
+
+        public Maze Maze { get; }
         
         public MazeCell StartCell { get; private set; }
         public MazeCell EndCell { get; private set; }
 
-        internal GameObject MazeParent;
+        internal GameObject Parent;
 
-        public Grid(int size, GameObject mazeParent, ECubeFace face = ECubeFace.None)
+        private PrefabCollection prefabCollection;
+
+        public Grid(Maze maze, int size, GameObject parent, ECubeFace face = ECubeFace.None)
         {
+            Maze = maze;
             Size = size;
             Face = face;
             Cells = new MazeCell[size, size];
             Walls = new List<MazeWall>();
             Corners = new List<MazeCorner>();
-            MazeParent = mazeParent;
+            Parent = parent;
+            prefabCollection = Maze.prefabCollection;
             
             // Initialize the maze cells
             for (var x = 0; x < Size; x++)
@@ -42,7 +46,7 @@ namespace MazeDatatype
             }
         }
 
-        public void SetupMazeGraph()
+        public void SetupGrid()
         {
             InitializeNeighbours();
             InitializeWalls();
@@ -62,7 +66,7 @@ namespace MazeDatatype
                         cell.AddNeighbour(Cells[x - 1, z]);
                     }
                     // if the cell is on the left edge, add the cell on the right edge from the left neighbour graph as a neighbour
-                    else if (x == 0 && _maze.mazeType == EMazeType.ThreeDimensional)
+                    else if (x == 0 && Maze.mazeType == EMazeType.ThreeDimensional)
                     {
                         var neighbourGraph = GetNeighbourGraph(this, EDirection.Left);
                         var neighbourCell = neighbourGraph.Cells[Size - 1, z];
@@ -73,7 +77,7 @@ namespace MazeDatatype
                     {
                         cell.AddNeighbour(Cells[x + 1, z]);
                     }
-                    else if (x == Size - 1 && _maze.mazeType == EMazeType.ThreeDimensional)
+                    else if (x == Size - 1 && Maze.mazeType == EMazeType.ThreeDimensional)
                     {
                         var neighbourGraph = GetNeighbourGraph(this, EDirection.Right);
                         var neighbourCell = neighbourGraph.Cells[0, z];
@@ -84,7 +88,7 @@ namespace MazeDatatype
                     {
                         cell.AddNeighbour(Cells[x, z - 1]);
                     }
-                    else if (z == 0 && _maze.mazeType == EMazeType.ThreeDimensional)
+                    else if (z == 0 && Maze.mazeType == EMazeType.ThreeDimensional)
                     {
                         var neighbourGraph = GetNeighbourGraph(this, EDirection.Bottom);
                         var neighbourCell = neighbourGraph.Cells[x, Size - 1];
@@ -95,7 +99,7 @@ namespace MazeDatatype
                     {
                         cell.AddNeighbour(Cells[x, z + 1]);
                     }
-                    else if (z == Size - 1 && _maze.mazeType == EMazeType.ThreeDimensional)
+                    else if (z == Size - 1 && Maze.mazeType == EMazeType.ThreeDimensional)
                     {
                         var neighbourGraph = GetNeighbourGraph(this, EDirection.Top);
                         var neighbourCell = neighbourGraph.Cells[x, 0];
@@ -108,7 +112,7 @@ namespace MazeDatatype
         private void InitializeWalls()
         {
             var wallParent = new GameObject("wallParent");
-            wallParent.transform.parent = MazeParent.transform;
+            wallParent.transform.parent = Parent.transform;
             wallParent.transform.localPosition = new Vector3(0, 0.5f, 0);
             
             for (var x = 0; x < Size; x++)
@@ -164,7 +168,7 @@ namespace MazeDatatype
                 throw new ArgumentOutOfRangeException(nameof(direction), direction, null);
             }
 
-            return _maze.cubeGraphs[neighbourFace];
+            return Maze.Grids[neighbourFace];
         }
 
         private void PlaceWall(MazeCell currentCell, EDirection direction, WallType wallType,
@@ -172,18 +176,19 @@ namespace MazeDatatype
         {
             var neighborCell = GetNeighborCell(currentCell, direction);
             var position = GetWallPosition(currentCell, direction);
+            var grid = currentCell.Grid;
             var existingWall = GetExistingWall(position);
 
             if (existingWall != null || neighborCell == null)
             {
                 return;
             }
-            var wallObject = Object.Instantiate(_maze.wallPrefab, wallParent.transform);
+            var wallObject = Object.Instantiate(prefabCollection.wallPrefab, wallParent.transform);
             wallObject.transform.localPosition = position;
             wallObject.transform.localScale = GetWallScale(wallType);
             var wall = wallObject.GetComponent<MazeWall>();
             var cells = new List<MazeCell> {currentCell};
-            wall.InitMazeWall(wallType, cells);
+            wall.InitMazeWall(grid, wallType, cells);
             currentCell.AddWall(wall);
             neighborCell.AddWall(wall);
             Walls.Add(wall);
@@ -196,7 +201,7 @@ namespace MazeDatatype
         
         private Vector3 GetWallPosition(MazeCell cell, EDirection direction)
         {
-            var cellSize = _maze.GetCellSize();
+            var cellSize = Maze.GetCellSize();
             float xOffset = 0;
             float zOffset = 0;
 
@@ -223,7 +228,7 @@ namespace MazeDatatype
         
         private Vector3 GetWallScale(WallType type)
         {
-            return type == WallType.Horizontal ? new Vector3(_maze.GetCellSize(), 1, 0.1f) : new Vector3(0.1f, 1, _maze.GetCellSize());
+            return type == WallType.Horizontal ? new Vector3(Maze.GetCellSize(), 1, 0.1f) : new Vector3(0.1f, 1, Maze.GetCellSize());
         }
 
         private MazeCell GetNeighborCell(MazeCell currentCell, EDirection direction)
@@ -233,7 +238,7 @@ namespace MazeDatatype
             if (x < 0 || x >= Size || z < 0 || z >= Size)
             {
                 // if the maze is three dimensional, get the neighbour cell from the neighbour graph
-                if (_maze.mazeType == EMazeType.ThreeDimensional)
+                if (Maze.mazeType == EMazeType.ThreeDimensional)
                 {
                     var neighbourGraphFace = GetNeighbourGraph(currentCell.Grid, direction).Face;
                     var neighbour = currentCell.Neighbours.Find(c => c.Grid.Face == neighbourGraphFace);
@@ -291,7 +296,7 @@ namespace MazeDatatype
 
         public MazeCell GetCellFromAgentPosition(Vector3 position)
         {
-            var cellSize = _maze.GetCellSize();
+            var cellSize = Maze.GetCellSize();
             foreach (var cell in Cells)
             {
                 var minX = cell.X * cellSize - cellSize / 2;
@@ -314,8 +319,8 @@ namespace MazeDatatype
             if (cell != null && StartCell == null)
             {
                 StartCell = cell;
-                var cellSize = _maze.GetCellSize();
-                var startCellObject = Object.Instantiate(_maze.startCellPrefab, MazeParent.transform);
+                var cellSize = Maze.GetCellSize();
+                var startCellObject = Object.Instantiate(prefabCollection.startCellPrefab, Parent.transform);
                 startCellObject.transform.localPosition = new Vector3(cell.X * cellSize, 0, cell.Z * cellSize);
                 startCellObject.transform.localScale = new Vector3(cellSize, 0.01f, cellSize);
             }
@@ -327,8 +332,8 @@ namespace MazeDatatype
             if (cell != null && EndCell == null && StartCell != cell)
             {
                 EndCell = cell;
-                var cellSize = _maze.GetCellSize();
-                var goalCellObject = Object.Instantiate(_maze.goalCellPrefab, MazeParent.transform);
+                var cellSize = Maze.GetCellSize();
+                var goalCellObject = Object.Instantiate(prefabCollection.goalCellPrefab, Parent.transform);
                 goalCellObject.transform.localPosition = new Vector3(cell.X * cellSize, 0, cell.Z * cellSize);
                 goalCellObject.transform.localScale = new Vector3(cellSize, 0.01f, cellSize);
                 
@@ -457,7 +462,7 @@ namespace MazeDatatype
 
         private void ShowPath(List<MazeCell> path)
         {
-            if (!_maze.showPath)
+            if (!Maze.showPath)
             {
                 return;
             }
@@ -468,8 +473,8 @@ namespace MazeDatatype
                 {
                     continue;
                 }
-                var cellSize = _maze.GetCellSize();
-                var pathCellObject = Object.Instantiate(_maze.pathCellPrefab, MazeParent.transform);
+                var cellSize = Maze.GetCellSize();
+                var pathCellObject = Object.Instantiate(prefabCollection.pathCellPrefab, Parent.transform);
                 pathCellObject.transform.localPosition = new Vector3(cell.X * cellSize, 0, cell.Z * cellSize);
                 pathCellObject.transform.localScale = new Vector3(cellSize, 0.01f, cellSize);
             }

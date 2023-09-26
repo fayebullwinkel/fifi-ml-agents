@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace MazeDatatype
+namespace MazeGeneration_vivi.MazeDatatype
 {
     public class MazeCorner
     {

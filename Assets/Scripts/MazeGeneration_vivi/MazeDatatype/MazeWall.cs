@@ -2,7 +2,7 @@
 using System.Linq;
 using UnityEngine;
 
-namespace MazeDatatype
+namespace MazeGeneration_vivi.MazeDatatype
 {
     public enum WallType
     {
@@ -14,9 +14,11 @@ namespace MazeDatatype
     {
         public WallType Type { get; set; }
         public List<MazeCell> Cells { get; private set; }
+        public Grid Grid { get; set; }
 
-        public void InitMazeWall(WallType type, List<MazeCell> cells)
+        public void InitMazeWall(Grid grid, WallType type, List<MazeCell> cells)
         {
+            Grid = grid;
             Type = type;
             Cells = cells;
         }
@@ -28,17 +30,16 @@ namespace MazeDatatype
 
         private void DestroyWall()
         {
-            var mazeManager = Maze.Singleton;
-            mazeManager.Grid.RemoveWall(this);
+            Grid.RemoveWall(this);
 
             // Mark all cells that this wall was connected to as visited
             foreach (var cell in Cells.Where(cell => !cell.Visited))
             {
-                mazeManager.Grid.MarkCellVisited(cell.X, cell.Z);
+                Grid.MarkCellVisited(cell.X, cell.Z);
             }
             
             // Check if the maze still meets the requirements
-            var meetsRequirements = mazeManager.Grid.MazeMeetsRequirements();
+            var meetsRequirements = Grid.MazeMeetsRequirements();
             Debug.Log("Maze meets requirements: " + meetsRequirements);
             
             Destroy(gameObject);

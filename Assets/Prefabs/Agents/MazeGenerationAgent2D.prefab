@@ -186,7 +186,7 @@ GameObject:
   - component: {fileID: 8256047935148980071}
   - component: {fileID: 8544491063056715474}
   m_Layer: 0
-  m_Name: MazeGenerationAgent_Sphere
+  m_Name: MazeGenerationAgent2D
   m_TagString: MazeGenerationAgent
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0

@@ -1,4 +1,4 @@
-﻿namespace MazeDatatype.Enums
+﻿namespace MazeGeneration_vivi.MazeDatatype.Enums
 {
     public enum EDirection
     {

@@ -1,13 +1,13 @@
 ﻿using System.Collections.Generic;
 
-namespace MazeDatatype
+namespace MazeGeneration_vivi.MazeDatatype
 {
     public class MazeCell
     {
         public int X { get; }
         public int Z { get; }
         
-        public Grid Grid { get; set; }
+        public Grid Grid { get; }
 
         public List<MazeCell> Neighbours { get; }
         public List<MazeWall> Walls { get; }
@@ -19,7 +19,7 @@ namespace MazeDatatype
         
         public bool Visited { get; set; }
 
-        public MazeCell(int x, int z, Grid grid = null)
+        public MazeCell(int x, int z, Grid grid)
         {
             X = x;
             Z = z;
