@@ -34,7 +34,9 @@ namespace MazeGeneration_vivi.MazeDatatype
 
         public Dictionary<ECubeFace, Grid> Grids { get; private set; }
         public MazeCell StartCell { get; private set; }
+        public GameObject StartCellObject { get; private set; }
         public MazeCell EndCell { get; private set; }
+        public GameObject EndCellObject { get; private set; }
         private GameObject maze;
         private GameObject cube;
         private GameObject agent;
@@ -181,9 +183,8 @@ namespace MazeGeneration_vivi.MazeDatatype
 
             agent.transform.SetParent(grid.Parent.transform);
             agent.transform.localPosition = position;
-            // var c = GameObject.CreatePrimitive(PrimitiveType.Cube);
-            // c.transform.SetParent(grid.Parent.transform);
-            // c.transform.localPosition = position;
+            agent.GetComponent<MazeGenerationAgent>().Grid = grid;
+            agent.transform.parent = grid.Parent.transform;
             
             Debug.Log("Placed agent at " + position + " in grid " + cubeFace + " at cell " + randomX + ", " + randomZ + ".");
                 
@@ -193,30 +194,35 @@ namespace MazeGeneration_vivi.MazeDatatype
         
         public void PlaceStart(Vector3 position)
         {
-            var agentParentGrid = agent.transform.parent.gameObject;
-            var grid = Grids.Values.FirstOrDefault(x => x.Parent == agentParentGrid);
+            var grid = agent.GetComponent<MazeGenerationAgent>().Grid;
             var cell = grid.GetCellFromPosition(position); 
-            if (cell != null && StartCell == null)
+            if (cell != null)
             {
+                if (StartCell == null)
+                {
+                    StartCellObject = Instantiate(prefabCollection.startCellPrefab, grid.Parent.transform);
+                }
+                StartCellObject.transform.localPosition = position;
+                StartCellObject.transform.localScale = new Vector3(cellSize, 0.01f, cellSize);
                 StartCell = cell;
-                var startCellObject = Instantiate(prefabCollection.startCellPrefab, grid.Parent.transform);
-                startCellObject.transform.localPosition = position;
-                startCellObject.transform.localScale = new Vector3(cellSize, 0.01f, cellSize);
             }
         }
         
         public void PlaceGoal(Vector3 position)
         {
-            var grid = agent.transform.parent.GetComponent<Grid>();
+            var grid = agent.GetComponent<MazeGenerationAgent>().Grid;
             var cell = grid.GetCellFromPosition(position); 
-            if (cell != null && EndCell == null && StartCell != cell)
+            if (cell != null)
             {
+                if (EndCell == null)
+                {
+                    EndCellObject = Instantiate(prefabCollection.startCellPrefab, grid.Parent.transform);
+                }
+                EndCellObject.transform.localPosition = position;
+                EndCellObject.transform.localScale = new Vector3(cellSize, 0.01f, cellSize);
                 EndCell = cell;
-                var goalCellObject = Instantiate(prefabCollection.goalCellPrefab, grid.Parent.transform);
-                goalCellObject.transform.localPosition = new Vector3(cell.X * cellSize, 0, cell.Z * cellSize);
-                goalCellObject.transform.localScale = new Vector3(cellSize, 0.01f, cellSize);
                 
-                Debug.Log("Maze is valid: " + MazeIsValid());
+                Debug.Log("Maze is solvable: " + MazeIsValid());
             }
         }
 
@@ -228,6 +234,8 @@ namespace MazeGeneration_vivi.MazeDatatype
                 Destroy(grid);
             }
             
+            StartCell = null;
+            EndCell = null;
             Grids = new Dictionary<ECubeFace, Grid>();
         }
         

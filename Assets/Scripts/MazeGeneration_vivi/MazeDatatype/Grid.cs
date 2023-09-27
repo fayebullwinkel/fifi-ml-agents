@@ -380,21 +380,13 @@ namespace MazeGeneration_vivi.MazeDatatype
         
         public MazeCell GetCellFromPosition(Vector3 position)
         {
+            var size = Maze.size;
             var cellSize = Maze.cellSize;
-            foreach (var cell in Cells)
-            {
-                var minX = cell.X * cellSize - cellSize / 2;
-                var maxX = cell.X * cellSize + cellSize / 2;
-                var isInRangeX = minX <= position.x && position.x <= maxX;
-                var minZ = cell.Z * cellSize - cellSize / 2;
-                var maxZ = cell.Z * cellSize + cellSize / 2;
-                var isInRangeZ = minZ <= position.z && position.z <= maxZ;
-                if (isInRangeX && isInRangeZ)
-                {
-                    return cell;
-                }
-            }
-            return null;
+            var xOffset = size * cellSize / 2;
+            var zOffset = size * cellSize / 2;
+            var xPos = Mathf.FloorToInt((position.x + xOffset) / cellSize);
+            var zPos = Mathf.FloorToInt((position.z + zOffset) / cellSize);
+            return Cells[xPos, zPos];
         }
 
         public Vector3 GetPositionFromCell(MazeCell cell)

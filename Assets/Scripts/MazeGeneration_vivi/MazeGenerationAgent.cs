@@ -2,6 +2,7 @@
 using Unity.MLAgents;
 using Unity.MLAgents.Sensors;
 using UnityEngine;
+using Grid = MazeGeneration_vivi.MazeDatatype.Grid;
 
 namespace MazeGeneration_vivi
 {
@@ -12,6 +13,8 @@ namespace MazeGeneration_vivi
 
         [SerializeField]
         protected Maze Maze = null!;
+        
+        public Grid Grid {get; set;} = null!;
     
         protected int visitedCells;
         protected int notReachedNewCellCounter;
@@ -60,10 +63,13 @@ namespace MazeGeneration_vivi
             }
             
             // Maze Start Cell: position
-            var start = Maze.StartCell;
-            sensor.AddObservation(start.X);
-            sensor.AddObservation(start.Z);
-            
+            if (Maze.StartCell != null)
+            {
+                var start = Maze.StartCell;
+                sensor.AddObservation(start.X);
+                sensor.AddObservation(start.Z);
+            }
+
             // // Maze longest path: length
             // sensor.AddObservation(Maze.Grid.FindLongestPath(Maze.Grid.StartCell).Count);
             // // Maze meets requirements: bool
@@ -124,7 +130,7 @@ namespace MazeGeneration_vivi
                     notReachedNewCellCounter++;
                     reachedNewCell = false;
                 }
-                if(notReachedNewCellCounter > 1000)
+                if(notReachedNewCellCounter > 500)
                 {
                     // Penalize the agent for not reaching a new cell for too long
                     var reward = -1.0f + percentageOfVisitedCells;
