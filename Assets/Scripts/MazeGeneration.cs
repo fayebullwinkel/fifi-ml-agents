@@ -46,7 +46,7 @@ public class MazeGeneration : ScriptableObject
         SearchArray(2);
         SetUpMazeBase();
     }
-    
+
     public void Delete()
     {
         Destroy(_mazeObj);
@@ -72,7 +72,7 @@ public class MazeGeneration : ScriptableObject
     private Cube SearchArray(int mode)
     {
         // Count valid cubes in mode 1
-        int count = 0;
+        var count = 0;
 
         for (int width = 0; width < _x; width++)
         {
@@ -113,7 +113,7 @@ public class MazeGeneration : ScriptableObject
                             // Mode 2: Create walls, cubes with isWall == false make up the _path
                             if (_mazeArray[width, height, depth].GetIsWall())
                             {
-                                GameObject wall = Instantiate(wallPrefab);
+                                var wall = Instantiate(wallPrefab);
                                 wall.transform.localScale = _endCubeObj.transform.localScale;
                                 wall.transform.parent = _mazeObj.transform;
                                 wall.transform.localPosition = _mazeArray[width, height, depth]
@@ -136,7 +136,7 @@ public class MazeGeneration : ScriptableObject
         if (mode == 1)
         {
             // Return a random valid next cube
-            int random = Random.Range(0, count);
+            var random = Random.Range(0, count);
             return _possibleNextCubes[random];
         }
 
@@ -147,7 +147,7 @@ public class MazeGeneration : ScriptableObject
         }
 
         // Return a placeholder cube for invalid cases
-        Cube badSearch = new Cube();
+        var badSearch = new Cube();
         badSearch.SetIsWall(false);
         return badSearch;
     }
@@ -217,7 +217,7 @@ public class MazeGeneration : ScriptableObject
         }
 
         // If no valid cube found, return a placeholder
-        Cube badSearch = new Cube();
+        var badSearch = new Cube();
         badSearch.SetWeight(999);
         return badSearch;
     }
@@ -239,18 +239,16 @@ public class MazeGeneration : ScriptableObject
     private Nullable<Cube> FindBestCube()
     {
         Nullable<Cube> targetCube = null;
-        float bestWeight = float.MaxValue;
+        var bestWeight = float.MaxValue;
 
         foreach (Cube cube in _cubeList)
         {
             Cube temp = GetNeighborCubes(cube.GetX(), cube.GetY(), cube.GetZ(), 0);
-            float tempWeight = _mazeArray[temp.GetX(), temp.GetY(), temp.GetZ()].GetWeight();
+            var tempWeight = _mazeArray[temp.GetX(), temp.GetY(), temp.GetZ()].GetWeight();
 
-            if (temp.GetIsWall() && tempWeight < bestWeight)
-            {
-                targetCube = temp;
-                bestWeight = tempWeight;
-            }
+            if (!temp.GetIsWall() || !(tempWeight < bestWeight)) continue;
+            targetCube = temp;
+            bestWeight = tempWeight;
         }
 
         return targetCube;

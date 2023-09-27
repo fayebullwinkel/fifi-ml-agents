@@ -26,7 +26,7 @@ public struct Cube
 
     public void SetWeight(float weight)
     {
-        this._weight = weight;
+        _weight = weight;
     }
 
     public bool GetIsWall()

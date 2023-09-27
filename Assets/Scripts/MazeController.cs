@@ -14,11 +14,13 @@ public class MazeController : MonoBehaviour
     private GameObject _maze;
 
     public GameObject agentPrefab;
-    public Camera mainCamera;
 
     private MazeAgent _mazeAgent;
     private GameObject _mazeAgentObj;
     private GameObject _startCubeObj;
+    private Vector3Int _startPosition;
+    private Cube[,,] _mazeArray;
+    private List<Vector3Int> _surfaceCubePositions;
 
     private void Start()
     {
@@ -43,14 +45,14 @@ public class MazeController : MonoBehaviour
 
     private void RotateMazeToFaceCamera()
     {
-        Vector3 startCubeCenter = _startCubeObj.transform.position;
-        Vector3 mazeCubeCenter = _maze.transform.position;
+        var startCubeCenter = _startCubeObj.transform.position;
+        var mazeCubeCenter = _maze.transform.position;
 
         // Direction from the startCube to the mazeCube
-        Vector3 directionToStartCube = startCubeCenter - mazeCubeCenter;
-        float x = Mathf.Abs(directionToStartCube.x);
-        float y = Mathf.Abs(directionToStartCube.y);
-        float z = Mathf.Abs(directionToStartCube.z);
+        var directionToStartCube = startCubeCenter - mazeCubeCenter;
+        var x = Mathf.Abs(directionToStartCube.x);
+        var y = Mathf.Abs(directionToStartCube.y);
+        var z = Mathf.Abs(directionToStartCube.z);
 
         // Rotate cube so that face with startCube is facing the camera
         if (x >= y && x >= z)
@@ -92,9 +94,9 @@ public class MazeController : MonoBehaviour
     private List<Vector3Int> FindSurfaceCubePositions(Cube[,,] mazeArray)
     {
         // Get the dimensions of the 3D array
-        int size = mazeArray.GetLength(0);
+        var size = mazeArray.GetLength(0);
 
-        List<Vector3Int> positions = new List<Vector3Int>();
+        var positions = new List<Vector3Int>();
 
         // Loop through the surface cubes
         for (int d = 0; d < size; d++)
@@ -121,23 +123,23 @@ public class MazeController : MonoBehaviour
 
     private void PlaceMazeAgent()
     {
-        Cube[,,] mazeArray = mazeGenerator.GetMazeArray();
+        _mazeArray = mazeGenerator.GetMazeArray();
 
-        List<Vector3Int> positions = FindSurfaceCubePositions(mazeArray);
+        _surfaceCubePositions = FindSurfaceCubePositions(_mazeArray);
 
         // Check if there are surface cubes.
-        if (positions.Count > 0)
+        if (_surfaceCubePositions.Count > 0)
         {
             // Select a random surface cube.
-            int random = Random.Range(0, positions.Count);
-            Vector3Int position = positions[random];
+            var random = Random.Range(0, _surfaceCubePositions.Count);
+            _startPosition = _surfaceCubePositions[random];
 
-            GameObject referenceCube = mazeGenerator.GetEndCube();
+            var referenceCube = mazeGenerator.GetEndCube();
 
             _startCubeObj = Instantiate(agentPrefab);
             _startCubeObj.transform.parent = _maze.transform;
             _startCubeObj.transform.localScale = referenceCube.transform.localScale;
-            _startCubeObj.transform.localPosition = mazeArray[position.x, position.y, position.z]
+            _startCubeObj.transform.localPosition = _mazeArray[_startPosition.x, _startPosition.y, _startPosition.z]
                 .GetCubePosition(_maze.transform.localScale);
             _startCubeObj.GetComponent<Rigidbody>().isKinematic = true;
             _startCubeObj.GetComponent<Renderer>().material.color = Color.green;
@@ -169,5 +171,20 @@ public class MazeController : MonoBehaviour
     public float GetReferenceCubeSize()
     {
         return _startCubeObj.transform.localScale.x;
+    }
+
+    public Vector3Int GetStartPosition()
+    {
+        return _startPosition;
+    }
+
+    public Cube[,,] GetMazeArray()
+    {
+        return _mazeArray;
+    }
+
+    public List<Vector3Int> GetSurfaceCubePositions()
+    {
+        return _surfaceCubePositions;
     }
 }
