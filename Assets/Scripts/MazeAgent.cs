@@ -10,6 +10,9 @@ public class MazeAgent : Agent
     private MazeController _mazeController;
     private Vector3Int _currPos;
     private Cube[,,] _mazeArray;
+    
+    // Heuristic
+    private MovementDirection _myNextMove = MovementDirection.Nothing;
 
     private enum MovementDirection
     {
@@ -40,9 +43,7 @@ public class MazeAgent : Agent
     {
         var discreteAction = (MovementDirection)actionBuffers.DiscreteActions[0];
 
-        var possibleActions = GetPossibleActions(_mazeArray, _currPos);
-
-        if (possibleActions.Contains(discreteAction))
+        if (IsActionLegal(discreteAction))
         {
             _currPos += GetDirectionVector(discreteAction);
             // convert to world coordinates
@@ -52,9 +53,7 @@ public class MazeAgent : Agent
         }
         else
         {
-            {
-                AddReward(-0.1f);
-            }
+            AddReward(-0.1f);
         }
 
         // Apply a tiny negative reward every step to encourage action
@@ -62,60 +61,75 @@ public class MazeAgent : Agent
         {
             AddReward(-1f / MaxStep);
         }
+        
+        actionBuffers.DiscreteActions.Array[0] = (int)MovementDirection.Nothing;
     }
 
-    public override void Heuristic(in ActionBuffers actionsOut)
+    public void Update()
     {
-        MovementDirection moveAction = MovementDirection.Nothing;
-
-        if (Input.GetKey(KeyCode.Q))
+        if (_myNextMove != MovementDirection.Nothing) return;
+        
+        var moveAction = MovementDirection.Nothing;
+        
+        if (Input.GetKeyDown(KeyCode.Q))
         {
             moveAction = MovementDirection.XPos;
         }
-        else if (Input.GetKey(KeyCode.A))
+        else if (Input.GetKeyDown(KeyCode.A))
         {
             moveAction = MovementDirection.XNeg;
         }
-        else if (Input.GetKey(KeyCode.W))
+        else if (Input.GetKeyDown(KeyCode.W))
         {
             moveAction = MovementDirection.YPos;
         }
-        else if (Input.GetKey(KeyCode.S))
+        else if (Input.GetKeyDown(KeyCode.S))
         {
             moveAction = MovementDirection.YNeg;
         }
-        else if (Input.GetKey(KeyCode.E))
+        else if (Input.GetKeyDown(KeyCode.E))
         {
             moveAction = MovementDirection.ZPos;
         }
-        else if (Input.GetKey(KeyCode.D))
+        else if (Input.GetKeyDown(KeyCode.D))
         {
             moveAction = MovementDirection.ZNeg;
         }
 
-        actionsOut.DiscreteActions.Array[0] = (int)moveAction;
+        _myNextMove = moveAction;
+    }
+
+    public override void Heuristic(in ActionBuffers actionsOut)
+    {
+        actionsOut.DiscreteActions.Array[0] = (int)_myNextMove;
+        _myNextMove = MovementDirection.Nothing;
     }
 
     //checks in all dimensions for possible next steps
     private List<MovementDirection> GetPossibleActions(Cube[,,] mazeArray, Vector3Int currPos)
     {
         var possibleActions = new List<MovementDirection>();
-
-        // iterate enum values
+        
         foreach (MovementDirection dir in Enum.GetValues(typeof(MovementDirection)))
         {
-            var direction = GetDirectionVector(dir);
-            var newPosition = currPos + direction;
-
-            if (IsInRange(newPosition) && IsSurfaceCube(newPosition) &&
-                !mazeArray[newPosition.x, newPosition.y, newPosition.z].GetIsWall())
+            if (IsActionLegal(dir))
             {
-                // TODO: what to do with already visited cubes?
                 possibleActions.Add(dir);
             }
         }
 
         return possibleActions;
+    }
+
+    private bool IsActionLegal(MovementDirection direction)
+    {
+        var newPosition = _currPos + GetDirectionVector(direction);
+        return IsInRange(newPosition) && IsSurfaceCube(newPosition) && !GetCube(newPosition).GetIsWall();
+    }
+
+    private Cube GetCube(Vector3Int coords)
+    {
+        return _mazeArray[coords.x, coords.y, coords.z];
     }
 
     // checks if cube outside of the maze bounds
@@ -136,23 +150,16 @@ public class MazeAgent : Agent
     // converts enums to vectors
     private static Vector3Int GetDirectionVector(MovementDirection val)
     {
-        switch (val)
+        return val switch
         {
-            case MovementDirection.XPos:
-                return new Vector3Int(1, 0, 0);
-            case MovementDirection.XNeg:
-                return new Vector3Int(-1, 0, 0);
-            case MovementDirection.YPos:
-                return new Vector3Int(0, 1, 0);
-            case MovementDirection.YNeg:
-                return new Vector3Int(0, -1, 0);
-            case MovementDirection.ZPos:
-                return new Vector3Int(0, 0, 1);
-            case MovementDirection.ZNeg:
-                return new Vector3Int(0, 0, -1);
-            default:
-                return new Vector3Int(0, 0, 0);
-        }
+            MovementDirection.XPos => new Vector3Int(1, 0, 0),
+            MovementDirection.XNeg => new Vector3Int(-1, 0, 0),
+            MovementDirection.YPos => new Vector3Int(0, 1, 0),
+            MovementDirection.YNeg => new Vector3Int(0, -1, 0),
+            MovementDirection.ZPos => new Vector3Int(0, 0, 1),
+            MovementDirection.ZNeg => new Vector3Int(0, 0, -1),
+            _ => new Vector3Int(0, 0, 0)
+        };
     }
 
     public override void CollectObservations(VectorSensor sensor)
@@ -173,6 +180,7 @@ public class MazeAgent : Agent
     {
         if (collision.gameObject.CompareTag("EndCube"))
         {
+            Debug.Log("End reached");
             SetReward(10.0f);
             EndEpisode();
         }
