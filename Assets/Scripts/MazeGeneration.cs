@@ -44,17 +44,23 @@ public class MazeGeneration : ScriptableObject
         _mazeObj.transform.localScale = scale;
 
         SearchArray(2);
-        _mazeBase = GameObject.CreatePrimitive(PrimitiveType.Cube);
-        Destroy(_mazeBase.GetComponent<BoxCollider>());
-        _mazeBase.transform.parent = _mazeObj.transform;
-        _mazeBase.transform.localPosition = new Vector3(0, 0, 0);
-        _mazeBase.transform.localScale = new Vector3(0.9f, 0.9f, 0.9f);
-        _mazeBase.GetComponent<Renderer>().material.color = new Color32(168, 119, 90, 255);
+        SetUpMazeBase();
     }
-
+    
     public void Delete()
     {
         Destroy(_mazeObj);
+    }
+
+    private void SetUpMazeBase()
+    {
+        _mazeBase = GameObject.CreatePrimitive(PrimitiveType.Cube);
+        _mazeBase.transform.parent = _mazeObj.transform;
+        _mazeBase.transform.localPosition = new Vector3(0, 0, 0);
+        _mazeBase.transform.localScale = new Vector3(0.9f, 0.9f, 0.9f);
+        _mazeBase.tag = "Floor";
+        _mazeBase.GetComponent<BoxCollider>().isTrigger = true;
+        _mazeBase.GetComponent<Renderer>().material.color = new Color32(168, 119, 90, 255);
     }
 
     private bool IsBoundaryCube(int width, int height, int depth)

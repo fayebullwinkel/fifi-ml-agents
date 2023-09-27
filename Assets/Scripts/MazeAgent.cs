@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UnityEngine;
 using Unity.MLAgents;
 using Unity.MLAgents.Actuators;
@@ -42,11 +43,39 @@ public class MazeAgent : Agent
                 break;
         }
 
+        if (IsAgentOnEdge())
+        {
+            Debug.Log("Agent on edge");
+        }
+
         // Apply a tiny negative reward every step to encourage action
         if (MaxStep > 0)
         {
             AddReward(-1f / MaxStep);
         }
+    }
+
+    private bool IsAgentOnEdge()
+    {
+        GameObject floorCube = GameObject.FindWithTag("Floor");
+        Bounds agentBounds = transform.GetComponent<Collider>().bounds;
+        Bounds largerCubeBounds = floorCube.GetComponent<Collider>().bounds;
+
+        Vector3 agentCenter = agentBounds.center;
+        Vector3 largerCubeCenter = largerCubeBounds.center;
+
+        float agentRadius = Mathf.Max(Mathf.Max(agentBounds.extents.x, agentBounds.extents.y), agentBounds.extents.z);
+        float largerCubeRadius = Mathf.Max(Mathf.Max(largerCubeBounds.extents.x, largerCubeBounds.extents.y),
+            largerCubeBounds.extents.z);
+
+        float distance = Vector3.Distance(agentCenter, largerCubeCenter);
+
+        if (distance <= (agentRadius + largerCubeRadius))
+        {
+            return false;
+        }
+
+        return true;
     }
 
     private void MoveInGlobalDirection(Vector3 globalDirection, float cubeSize)
@@ -112,14 +141,15 @@ public class MazeAgent : Agent
         // 2 x Vector3 = 6 values
     }
 
-    private void OnCollisionEnter(Collision other)
+    private void OnCollisionEnter(Collision collision)
     {
-        if (other.gameObject.CompareTag("EndCube"))
+        if (collision.gameObject.CompareTag("EndCube"))
         {
             SetReward(10.0f);
             EndEpisode();
         }
-        else if (other.gameObject.CompareTag("Wall")) // won't work if we are not moving into walls! 
+
+        if (collision.gameObject.CompareTag("Wall")) // TODO: won't work if we are not moving into walls! 
         {
             AddReward(-0.1f);
         }
