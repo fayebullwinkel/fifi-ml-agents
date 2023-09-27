@@ -1323,6 +1323,10 @@ PrefabInstance:
   m_Modification:
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 1508936989446036332, guid: fc2e1ac7a58dfd041b32309a78857f4b, type: 3}
+      propertyPath: m_BehaviorType
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 1946312899393052249, guid: fc2e1ac7a58dfd041b32309a78857f4b, type: 3}
       propertyPath: m_Name
       value: MazeGenerationAgent3D

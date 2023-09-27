@@ -37,6 +37,7 @@ namespace MazeGeneration_vivi.MazeDatatype
         public GameObject StartCellObject { get; private set; }
         public MazeCell EndCell { get; private set; }
         public GameObject EndCellObject { get; private set; }
+        public bool AgentIsMoving { get; set; }
         private GameObject maze;
         private GameObject cube;
         private GameObject agent;
@@ -250,6 +251,50 @@ namespace MazeGeneration_vivi.MazeDatatype
                 
                 Debug.Log("Maze is solvable: " + MazeIsValid());
             }
+        }
+
+        public void MoveAgent(EDirection direction)
+        {
+            AgentIsMoving = true;
+            var currentGrid = agent.GetComponent<MazeGenerationAgent>().Grid;
+            var currentCell = currentGrid.GetCellFromPosition(agent.transform.localPosition);
+            var nextCell = currentGrid.GetNeighborCell(currentCell, direction);
+            var nextGrid = nextCell?.Grid;
+    
+            if (nextGrid == null)
+            {
+                return;
+            }
+    
+            var nextPosition = nextGrid.GetPositionFromCell(nextCell);
+    
+            // set the parent of the agent to the next grid if it is not the same as the current grid
+            if (currentGrid != nextGrid)
+            {
+                agent.transform.SetParent(nextGrid.Parent.transform);
+                agent.GetComponent<MazeGenerationAgent>().Grid = nextGrid;
+            }
+            StartCoroutine(MoveAgentCoroutine(nextPosition));
+        }
+
+        private IEnumerator MoveAgentCoroutine(Vector3 targetPosition)
+        {
+            var agentTransform = agent.transform;
+            var startPosition = agentTransform.localPosition;
+            var elapsedTime = 0f;
+            var moveDuration = 1f; // Time to move to the center of the cell
+    
+            while (elapsedTime < moveDuration)
+            {
+                elapsedTime += Time.deltaTime;
+                var t = elapsedTime / moveDuration;
+                agentTransform.localPosition = Vector3.Lerp(startPosition, targetPosition, t);
+                yield return null;
+            }
+    
+            // Ensure the agent is precisely at the target position
+            agentTransform.localPosition = targetPosition;
+            AgentIsMoving = false;
         }
 
         public void ClearMaze()

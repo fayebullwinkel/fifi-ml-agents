@@ -1,4 +1,5 @@
 ﻿using MazeGeneration_vivi.MazeDatatype;
+using MazeGeneration_vivi.MazeDatatype.Enums;
 using Unity.MLAgents.Actuators;
 using Unity.MLAgents.Sensors;
 using UnityEngine;
@@ -21,42 +22,53 @@ namespace MazeGeneration_vivi
             // Agent position
             sensor.AddObservation(transform.localPosition);
         
-            AddMazeObservations(sensor);
+            // AddMazeObservations(sensor);
         }
 
         public override void OnActionReceived(ActionBuffers actions)
         {
-            var controlSignal = Vector3.zero;
-            controlSignal.x = actions.ContinuousActions[0];
-            controlSignal.z = actions.ContinuousActions[1];
+            if(Maze.AgentIsMoving)
+            {
+                return;
+            }
+            // get the first action that is not 0 from the discrete actions from 0 to 3
+            var action = -1;
+            for (var i = 0; i < 4; i++)
+            {
+                if (actions.DiscreteActions[i] > 0)
+                {
+                    action = i;
+                    break;
+                }
+            }
+
+            if (action != -1)
+            {
+                var direction = (EDirection)action;
+                Maze.MoveAgent(direction);
+            }
+
+            // Place End Cell
+            var placeGoal = actions.DiscreteActions[4] > 0;
+            if (placeGoal)
+            {
+                Maze.PlaceGoal(transform.localPosition);
+            }
         
-            var movement = controlSignal * (speed * Time.deltaTime);
-            transform.Translate(movement);
-            // // look in movement direction
-            // if (controlSignal != Vector3.zero) {
-            //     var targetRotation = Quaternion.LookRotation(controlSignal);
-            //     transform.localRotation = Quaternion.Slerp(transform.rotation, targetRotation, 1 * Time.deltaTime);
-            // }
-        
-            // // Place End Cell
-            // var placeGoal = actions.DiscreteActions[0] > 0;
-            // if (placeGoal)
-            // {
-            //     Maze.PlaceGoal(transform.localPosition);
-            // }
-        
-            GrantReward();
+            // GrantReward();
         }
     
         public override void Heuristic(in ActionBuffers actionsOut)
         {
-            var continuousActionsOut = actionsOut.ContinuousActions;
             var discreteActionsOut = actionsOut.DiscreteActions;
         
             // Manual control of the agent
-            continuousActionsOut[0] = Input.GetAxis("Horizontal");
-            continuousActionsOut[1] = Input.GetAxis("Vertical");
-            discreteActionsOut[0] = Input.GetKey(KeyCode.Space) ? 1 : 0;
+            // 0: left, 1: right, 2: top, 3: bottom, 4: place goal
+            discreteActionsOut[0] = Input.GetKey(KeyCode.A) ? 1 : 0;
+            discreteActionsOut[1] = Input.GetKey(KeyCode.D) ? 1 : 0;
+            discreteActionsOut[2] = Input.GetKey(KeyCode.W) ? 1 : 0;
+            discreteActionsOut[3] = Input.GetKey(KeyCode.S) ? 1 : 0;
+            discreteActionsOut[4] = Input.GetKey(KeyCode.Space) ? 1 : 0;
         }
     }
 }

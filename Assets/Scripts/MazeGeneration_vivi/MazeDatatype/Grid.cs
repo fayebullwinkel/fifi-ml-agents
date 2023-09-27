@@ -165,9 +165,9 @@ namespace MazeGeneration_vivi.MazeDatatype
         
         #region NeighbourMethods
 
-        private Grid GetNeighbourGraph(Grid graph, EDirection direction)
+        public Grid GetNeighbourGrid(EDirection direction)
         {
-            var thisFace = graph.Face;
+            var thisFace = Face;
             if (!NeighbourMap.Map.TryGetValue(thisFace, out var neighbourMap) ||
                 !neighbourMap.TryGetValue(direction, out var neighbourFace))
             {
@@ -179,7 +179,7 @@ namespace MazeGeneration_vivi.MazeDatatype
 
         private MazeCell FindNeighbourCellFromNeighbourGrid(MazeCell cell, EDirection direction)
         {
-            var neighbourGraph = GetNeighbourGraph(cell.Grid, direction);
+            var neighbourGraph = GetNeighbourGrid(direction);
             var face = cell.Grid.Face;
             var neighbourCell = neighbourGraph.Cells[cell.X, cell.Z];
             switch (face)
@@ -263,7 +263,7 @@ namespace MazeGeneration_vivi.MazeDatatype
             return neighbourCell;
         }
 
-        private MazeCell GetNeighborCell(MazeCell currentCell, EDirection direction)
+        public MazeCell GetNeighborCell(MazeCell currentCell, EDirection direction)
         {
             var (x, z) = GetNeighborCoordinates(currentCell.X, currentCell.Z, direction);
             // check if coordinates are out of bounds
@@ -272,7 +272,7 @@ namespace MazeGeneration_vivi.MazeDatatype
                 // if the maze is three dimensional, get the neighbour cell from the neighbour graph
                 if (Maze.mazeType == EMazeType.ThreeDimensional)
                 {
-                    var neighbourGraphFace = GetNeighbourGraph(currentCell.Grid, direction).Face;
+                    var neighbourGraphFace = GetNeighbourGrid(direction).Face;
                     var neighbour = currentCell.Neighbours.Find(c => c.Grid.Face == neighbourGraphFace);
                     return neighbour;
                 }
@@ -315,7 +315,7 @@ namespace MazeGeneration_vivi.MazeDatatype
             wallObject.transform.localPosition = position;
             wallObject.transform.localScale = GetWallScale(wallType);
             var wall = wallObject.GetComponent<MazeWall>();
-            var cells = new List<MazeCell> {currentCell};
+            var cells = new List<MazeCell> {currentCell, neighborCell};
             wall.InitMazeWall(grid, wallType, cells);
             currentCell.AddWall(wall);
             neighborCell.AddWall(wall);
