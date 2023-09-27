@@ -1,4 +1,3 @@
-using System.Collections.Generic;
 using UnityEngine;
 using Unity.MLAgents;
 using Unity.MLAgents.Actuators;
@@ -19,7 +18,7 @@ public class MazeAgent : Agent
         int discreteAction = actionBuffers.DiscreteActions[0];
 
         float cubeSize = _mazeController.GetReferenceCubeSize();
-
+        
         switch (discreteAction)
         {
             case 0:
@@ -41,11 +40,6 @@ public class MazeAgent : Agent
                 // right in world space
                 MoveInGlobalDirection(Vector3.right, cubeSize);
                 break;
-        }
-
-        if (IsAgentOnEdge())
-        {
-            Debug.Log("Agent on edge");
         }
 
         // Apply a tiny negative reward every step to encourage action
@@ -70,12 +64,12 @@ public class MazeAgent : Agent
 
         float distance = Vector3.Distance(agentCenter, largerCubeCenter);
 
-        if (distance <= (agentRadius + largerCubeRadius))
+        if (distance > (agentRadius + largerCubeRadius + 0.2f))
         {
-            return false;
+            return true;
         }
 
-        return true;
+        return false;
     }
 
     private void MoveInGlobalDirection(Vector3 globalDirection, float cubeSize)
