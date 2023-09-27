@@ -407,7 +407,20 @@ namespace MazeGeneration_vivi.MazeDatatype
 
         public void MarkCellVisited(int x, int z)
         {
-            Cells[x, z].Visited = true;
+            var cell = Cells[x, z];
+            cell.Visited = true;
+            if (!Maze.showVisitedCells)
+            {
+                return;
+            }
+            if (cell == Maze.StartCell || cell == Maze.EndCell)
+            {
+                return;
+            }
+            var position = GetPositionFromCell(cell);
+            var pathCellObject = Object.Instantiate(prefabCollection.pathCellPrefab, Parent.transform);
+            pathCellObject.transform.localPosition = position;
+            pathCellObject.transform.localScale = new Vector3(Maze.cellSize, 0.01f, Maze.cellSize);
         }
 
         public int GetVisitedCells()

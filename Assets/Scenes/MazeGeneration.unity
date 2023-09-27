@@ -2843,6 +2843,7 @@ MonoBehaviour:
   size: 5
   cellSize: 2
   showPath: 1
+  showVisitedCells: 1
   debugMode: 1
   prefabCollection: {fileID: 11400000, guid: 359b609eaa96ba8459ab1390ed6a48a3, type: 2}
   mainCamera: {fileID: 63424797}

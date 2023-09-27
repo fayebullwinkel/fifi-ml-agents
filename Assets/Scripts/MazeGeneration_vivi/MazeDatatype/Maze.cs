@@ -16,12 +16,12 @@ namespace MazeGeneration_vivi.MazeDatatype
         public int size;
         [Tooltip("The size of each cell in the maze.")]
         public float cellSize;
-        [SerializeField]
         [Tooltip("If true, the path from start to goal will be shown.")]
-        internal bool showPath;
-        [SerializeField]
+        public bool showPath;
+        [Tooltip("If true, the visited cells will be shown.")]
+        public bool showVisitedCells;
         [Tooltip("If true, multiple debug things will be shown.")]
-        internal bool debugMode;
+        public bool debugMode;
 
         [Header("Resources")]
         public PrefabCollection prefabCollection = null!;
@@ -214,8 +214,8 @@ namespace MazeGeneration_vivi.MazeDatatype
             
             Debug.Log("Placed agent at " + position + " in grid " + cubeFace + " at cell " + randomX + ", " + randomZ + ".");
                 
-            grid.MarkCellVisited(randomX, randomZ);
             PlaceStart(position);
+            grid.MarkCellVisited(randomX, randomZ);
         }
         
         public void PlaceStart(Vector3 position)
