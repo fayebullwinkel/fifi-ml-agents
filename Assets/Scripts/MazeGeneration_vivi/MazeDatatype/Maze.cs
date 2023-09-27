@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using MazeGeneration_vivi.MazeDatatype.Enums;
@@ -243,11 +244,19 @@ namespace MazeGeneration_vivi.MazeDatatype
             {
                 if (EndCell == null)
                 {
-                    EndCellObject = Instantiate(prefabCollection.startCellPrefab, grid.Parent.transform);
+                    EndCellObject = Instantiate(prefabCollection.goalCellPrefab, grid.Parent.transform);
                 }
                 EndCellObject.transform.localPosition = position;
                 EndCellObject.transform.localScale = new Vector3(cellSize, 0.01f, cellSize);
                 EndCell = cell;
+                
+                // remove PathCell object if it exists
+                var pathCell = grid.PathCells.Find(x => x.transform.localPosition == position);
+                if (pathCell != null)
+                {
+                    grid.PathCells.Remove(pathCell);
+                    Destroy(pathCell);
+                }
                 
                 Debug.Log("Maze is solvable: " + MazeIsValid());
             }

@@ -16,6 +16,8 @@ namespace MazeGeneration_vivi.MazeDatatype
         public MazeCell[,] Cells { get; }
         public List<MazeWall> Walls { get; }
         public List<MazeCorner> Corners { get; }
+        public List<GameObject> PathCells { get; }
+        private GameObject PathCellParent { get; set; }
 
         public Maze Maze { get; }
 
@@ -31,6 +33,7 @@ namespace MazeGeneration_vivi.MazeDatatype
             Cells = new MazeCell[size, size];
             Walls = new List<MazeWall>();
             Corners = new List<MazeCorner>();
+            PathCells = new List<GameObject>();
             Parent = parent;
             prefabCollection = Maze.prefabCollection;
             
@@ -418,9 +421,18 @@ namespace MazeGeneration_vivi.MazeDatatype
                 return;
             }
             var position = GetPositionFromCell(cell);
-            var pathCellObject = Object.Instantiate(prefabCollection.pathCellPrefab, Parent.transform);
+            if(PathCellParent == null)
+            {
+                PathCellParent = new GameObject("PathCellParent");
+                PathCellParent.transform.parent = Parent.transform;
+                PathCellParent.transform.localPosition = Vector3.zero;
+                PathCellParent.transform.localScale = Vector3.one;
+                PathCellParent.transform.localRotation = Quaternion.identity;
+            }
+            var pathCellObject = Object.Instantiate(prefabCollection.pathCellPrefab, PathCellParent.transform);
             pathCellObject.transform.localPosition = position;
             pathCellObject.transform.localScale = new Vector3(Maze.cellSize, 0.01f, Maze.cellSize);
+            PathCells.Add(pathCellObject);
         }
 
         public int GetVisitedCells()
