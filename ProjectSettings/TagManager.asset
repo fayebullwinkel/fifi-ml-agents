@@ -12,6 +12,7 @@ TagManager:
   - MazeGenerationAgent
   - Maze
   - Grid
+  - CubeViewCamera
   layers:
   - Default
   - TransparentFX

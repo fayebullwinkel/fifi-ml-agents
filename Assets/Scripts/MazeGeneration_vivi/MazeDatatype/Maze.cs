@@ -112,6 +112,7 @@ namespace MazeGeneration_vivi.MazeDatatype
                 grid.SetupGrid();
                 PositionGrid(grid);
             }
+            SetCameraPosition();
         }
 
         private void PositionGrid(Grid grid)
@@ -163,7 +164,27 @@ namespace MazeGeneration_vivi.MazeDatatype
 
         private void SetCameraPosition()
         {
-            mainCamera.transform.localPosition = new Vector3(size - cellSize / 2, (size - cellSize / 2) * 2, -cellSize / 2);
+            switch (mazeType)
+            {
+                case EMazeType.TwoDimensional:
+                    // mainCamera.transform.localPosition = new Vector3(size - cellSize / 2, (size - cellSize / 2) * 2, -cellSize / 2);
+                    break;
+                case EMazeType.ThreeDimensional:
+                    var cams = GameObject.FindGameObjectsWithTag("CubeViewCamera");
+                    foreach (var cam in cams)
+                    {
+                        var position = cam.transform.localPosition;
+                        position.x *= size * cellSize / 2;
+                        position.y *= size * cellSize / 2;
+                        position.z *= size * cellSize / 2;
+                        cam.transform.localPosition = position;
+                        var c = cam.GetComponent<Camera>();
+                        c.orthographicSize = size * cellSize / 2;
+                    }
+                    break;
+                default:
+                    throw new ArgumentOutOfRangeException();
+            }
         }
 
         public void PlaceAgent()
