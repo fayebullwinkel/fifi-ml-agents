@@ -52,7 +52,7 @@ namespace MazeGeneration_vivi.MazeDatatype
 
             if (Maze.debugMode)
             {
-                PrintAllCells();
+                //PrintAllCells();
                 ShowAllCells();
             }
         }

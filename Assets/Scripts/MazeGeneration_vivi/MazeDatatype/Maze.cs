@@ -50,6 +50,8 @@ namespace MazeGeneration_vivi.MazeDatatype
             agent.SetActive(true);
             var otherAgent = mazeType == EMazeType.ThreeDimensional ? agent2D : agent3D;
             otherAgent.SetActive(false);
+            
+            SetCameraPosition();
 
             // GenerateMaze();
             // PlaceAgent();
@@ -86,7 +88,6 @@ namespace MazeGeneration_vivi.MazeDatatype
             PositionGrid(grid);
 
             SetOuterWalls();
-            SetCameraPosition();
         }
         
         private void Generate3DMaze()
@@ -112,7 +113,6 @@ namespace MazeGeneration_vivi.MazeDatatype
                 grid.SetupGrid();
                 PositionGrid(grid);
             }
-            SetCameraPosition();
         }
 
         private void PositionGrid(Grid grid)
@@ -164,6 +164,11 @@ namespace MazeGeneration_vivi.MazeDatatype
 
         private void SetCameraPosition()
         {
+            var pos = mainCamera.transform.localPosition;
+            pos.x = size - 1;
+            pos.y *= size * cellSize / 2;
+            pos.z *= size * cellSize / 2 + 1;
+            mainCamera.transform.localPosition = pos;
             switch (mazeType)
             {
                 case EMazeType.TwoDimensional:
