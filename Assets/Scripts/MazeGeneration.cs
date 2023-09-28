@@ -10,8 +10,8 @@ public class MazeGeneration : ScriptableObject
     private Cube[,,] _cubes;
     private List<Cube> _cutOutCubes;
     private List<Cube> _possibleNextCubes;
-    private Maze _maze;
-    
+    private List<Vector3Int> _surfaceCubePositions;
+
     public Maze Generate(Vector3 scale)
     {
         _x = Mathf.RoundToInt(scale.x);
@@ -20,15 +20,22 @@ public class MazeGeneration : ScriptableObject
         _possibleNextCubes = new List<Cube>();
         _cutOutCubes = new List<Cube>();
         _cubes = new Cube[_x, _y, _x];
-        _maze = new Maze();
 
         SearchArray(0);
         PrimsAlgorithm();
-        
-        _maze.SetCubes(_cubes);
-        return _maze;
+
+        var randomStartPos = ChooseRandomPosition();
+        Debug.Log("startPos: " + randomStartPos);
+        _cubes[randomStartPos.x, randomStartPos.y, randomStartPos.z].SetIsStartCube(true);
+
+        var randomEndPos = ChooseRandomPosition();
+        Debug.Log("endPos: " + randomEndPos);
+        _cubes[randomEndPos.x, randomEndPos.y, randomEndPos.z].SetIsGoalCube(true);
+
+        return new Maze(_cubes, _cubes[randomStartPos.x, randomStartPos.y, randomStartPos.z],
+            _cubes[randomEndPos.x, randomEndPos.y, randomEndPos.z]);
     }
-    
+
     private bool IsBoundaryCube(int width, int height, int depth)
     {
         return depth == 0 || height == 0 || width == 0 || depth == _z - 1 || height == _y - 1 || width == _x - 1;
@@ -46,7 +53,7 @@ public class MazeGeneration : ScriptableObject
                 for (var z = 0; z < _z; z++)
                 {
                     _cubes[x, y, z] ??= new Cube();
-                    
+
                     switch (mode)
                     {
                         case 0:
@@ -204,5 +211,56 @@ public class MazeGeneration : ScriptableObject
 
             Cutout(bestCube);
         }
+    }
+
+    private Vector3Int ChooseRandomPosition()
+    {
+        _surfaceCubePositions = FindValidSurfaceCubePositions(_cubes);
+
+        // Check if there are surface cubes.
+        if (_surfaceCubePositions.Count > 0)
+        {
+            // Select a random surface cube.
+            var random = Random.Range(0, _surfaceCubePositions.Count);
+            return _surfaceCubePositions[random];
+        }
+
+        Debug.Log("no surface cubes found. this should not happen.");
+        return Vector3Int.zero;
+    }
+
+    private List<Vector3Int> FindValidSurfaceCubePositions(Cube[,,] cubes)
+    {
+        // Get the dimensions of the 3D array
+        var size = cubes.GetLength(0);
+
+        var positions = new List<Vector3Int>();
+
+        // Loop through the surface cubes
+        for (int d = 0; d < size; d++)
+        {
+            for (int h = 0; h < size; h++)
+            {
+                for (int w = 0; w < size; w++)
+                {
+                    // Check if the cube is on the surface (i.e., on the outermost layer)
+                    if (d == 0 || d == size - 1 || h == 0 || h == size - 1 || w == 0 || w == size - 1)
+                    {
+                        // Check if surfaceCube is not a wall
+                        if (!cubes[w, h, d].GetIsWall() && !cubes[w, h, d].GetIsStartCube())
+                        {
+                            positions.Add(new Vector3Int(w, h, d));
+                        }
+                    }
+                }
+            }
+        }
+
+        return positions;
+    }
+
+    public List<Vector3Int> GetSurfaceCubePositions()
+    {
+        return _surfaceCubePositions;
     }
 }

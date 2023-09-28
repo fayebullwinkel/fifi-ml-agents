@@ -49,7 +49,7 @@ public class MazeAgent : Agent
                 .GetCubePosition(_mazeController.transform.localScale);
             transform.localPosition = newPosUnity;
 
-            if (_maze.GetCube(_currPos).GetIsGoal())
+            if (_maze.GetCube(_currPos).GetIsGoalCube())
             {
                 Debug.Log("End reached");
                 SetReward(10.0f);

@@ -5,7 +5,8 @@ public class Cube
     private float _weight;
     private bool _isWall;
     private bool _isDeletable;
-    private bool _isGoal;
+    private bool _isGoalCube;
+    private bool _isStartCube;
     private GameObject _cubeObj;
     private int _x;
     private int _y;
@@ -71,14 +72,34 @@ public class Cube
         _y = y;
         _z = z;
     }
+
+    public Vector3Int GetPos()
+    {
+        return new Vector3Int(_x, _y, _z);
+    }
     
     public void SetIsGoal(bool isGoal)
     {
-        _isGoal = isGoal;
+        _isGoalCube = isGoal;
     }
     
-    public bool GetIsGoal()
+    public bool GetIsGoalCube()
     {
-        return _isGoal;
+        return _isGoalCube;
+    }
+
+    public void SetIsStartCube(bool isStartCube)
+    {
+        _isStartCube = isStartCube;
+    }
+
+    public void SetIsGoalCube(bool isGoalCube)
+    {
+        _isGoalCube = isGoalCube;
+    }
+
+    public bool GetIsStartCube()
+    {
+        return _isStartCube;
     }
 }

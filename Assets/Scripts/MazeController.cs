@@ -6,7 +6,6 @@ public class MazeController : MonoBehaviour
     public MazeGeneration mazeGenerator;
 
     private MazeBuilder _mazeBuilder;
-    private MazeAgent _mazeAgent;
     private Maze _maze;
     
     // for presenting the cube
@@ -24,6 +23,10 @@ public class MazeController : MonoBehaviour
     public void ResetArea()
     {
         _mazeBuilder.Delete();
+        if (gameObject.GetComponent<MazeBuilder>() != null)
+        {
+            _mazeBuilder = gameObject.AddComponent<MazeBuilder>();
+        }
         _maze = GenerateMaze();
         BuildMaze(_maze);
         _mazeBuilder.PlaceMazeAgent();
@@ -45,7 +48,7 @@ public class MazeController : MonoBehaviour
     
     private void RotateMazeToFaceCamera()
     {
-        var startCubeCenter = _mazeBuilder.GetStartCube().transform.position;
+        var startCubeCenter = _mazeBuilder.GetAgentObject().transform.position;
         var mazeCubeCenter = _mazeObj.transform.position;
 
         // Direction from the startCube to the mazeCube
@@ -111,16 +114,16 @@ public class MazeController : MonoBehaviour
 
     public Vector3Int GetStartPosition()
     {
-        return _mazeBuilder.GetStartPosition();
+        return _maze.GetStartCube().GetPos();
     }
 
     public Maze GetMaze()
     {
-        return _mazeBuilder.GetMaze();
+        return _maze;
     }
 
     public List<Vector3Int> GetSurfaceCubePositions()
     {
-        return _mazeBuilder.GetSurfaceCubePositions();
+        return mazeGenerator.GetSurfaceCubePositions();
     }
 }

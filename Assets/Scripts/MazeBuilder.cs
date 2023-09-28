@@ -5,7 +5,7 @@ public class MazeBuilder: MonoBehaviour
 {
     private GameObject _mazeObj;
     private GameObject _mazeBase;
-    private GameObject _startCubeObj;
+    private GameObject _agentObj;
     private GameObject _wallPrefab;
     private GameObject _endCubeObj;
     private GameObject _agentPrefab;
@@ -14,12 +14,8 @@ public class MazeBuilder: MonoBehaviour
     private int _y;
     private int _z;
     
-    private Vector3Int _startPosition;
     private Cube[,,] _cubes;
     private Maze _maze;
-    
-    private List<Cube> _path;
-    private List<Vector3Int> _surfaceCubePositions;
     
     public void Initialize(Maze maze)
     {
@@ -28,8 +24,6 @@ public class MazeBuilder: MonoBehaviour
         _x = _cubes.GetLength(0);
         _y = _cubes.GetLength(1);
         _z = _cubes.GetLength(2);
-        
-        _path = new List<Cube>();
         
         _wallPrefab = (GameObject)Resources.Load("Prefabs/Wall", typeof(GameObject));
         _agentPrefab = (GameObject)Resources.Load("Prefabs/MazeAgent", typeof(GameObject));
@@ -40,10 +34,6 @@ public class MazeBuilder: MonoBehaviour
     public void Delete()
     {
         Destroy(_mazeObj);
-        
-        // TODO: test what needs to be destroyed
-        /*Destroy(_startCubeObj);
-        Destroy(_endCubeObj);*/
     }
 
     public GameObject BuildMaze(Vector3 position, Vector3 scale)
@@ -51,14 +41,16 @@ public class MazeBuilder: MonoBehaviour
         _mazeObj = new GameObject();
         _mazeObj.transform.position = position;
         _mazeObj.transform.localScale = scale;
+        _mazeObj.gameObject.name = "Maze";
 
         CreateWalls();
-        SetUpMazeBase();
+        CreateMazeBase();
+        PlaceEndCube();
 
         return _mazeObj;
     }
     
-    private void SetUpMazeBase()
+    private void CreateMazeBase()
     {
         _mazeBase = GameObject.CreatePrimitive(PrimitiveType.Cube);
         _mazeBase.transform.parent = _mazeObj.transform;
@@ -85,19 +77,16 @@ public class MazeBuilder: MonoBehaviour
                         wall.transform.localPosition = _cubes[x, y, z]
                             .GetCubePosition(_mazeObj.transform.localScale);
                     }
-                    else
-                    {
-                        _path.Add(_cubes[x, y, z]);
-                    }
                 }
             }
         }
-        
-        // place end cube
-        var endCube = _path[_path.Count - 1];
-        endCube.SetIsGoal(true);
+    }
+
+    private void PlaceEndCube()
+    {
+        var endCube = _maze.GetEndCube();
+        Debug.Log("endCube pos in MazeBuilder: " + endCube.GetX() + " " + endCube.GetY() + " " + endCube.GetZ());
         PlaceCube(_endCubeObj, endCube, Color.red);
-        
     }
     
     private void PlaceCube(GameObject cubeObj, Cube cube, Color color)
@@ -109,77 +98,18 @@ public class MazeBuilder: MonoBehaviour
     
     public void PlaceMazeAgent()
     {
-        _surfaceCubePositions = FindSurfaceCubePositions(_maze);
-
-        // Check if there are surface cubes.
-        if (_surfaceCubePositions.Count > 0)
-        {
-            // Select a random surface cube.
-            var random = Random.Range(0, _surfaceCubePositions.Count);
-            _startPosition = _surfaceCubePositions[random];
-            
-            _startCubeObj = Instantiate(_agentPrefab);
-            _startCubeObj.transform.parent = _mazeObj.transform;
-            _startCubeObj.transform.localScale = _endCubeObj.transform.localScale;
-            _startCubeObj.transform.localPosition = _maze.GetCube(new Vector3Int(_startPosition.x, _startPosition.y, _startPosition.z))
-                .GetCubePosition(_mazeObj.transform.localScale);
-            _startCubeObj.GetComponent<Rigidbody>().isKinematic = true;
-            _startCubeObj.GetComponent<Renderer>().material.color = Color.green;
-        }
-        else
-        {
-            Debug.Log("No surface cubes found.");
-        }
-    }
-    
-    private List<Vector3Int> FindSurfaceCubePositions(Maze maze)
-    {
-        // Get the dimensions of the 3D array
-        var size = maze.GetCubes().GetLength(0);
-
-        var positions = new List<Vector3Int>();
-
-        // Loop through the surface cubes
-        for (int d = 0; d < size; d++)
-        {
-            for (int h = 0; h < size; h++)
-            {
-                for (int w = 0; w < size; w++)
-                {
-                    // Check if the cube is on the surface (i.e., on the outermost layer)
-                    if (d == 0 || d == size - 1 || h == 0 || h == size - 1 || w == 0 || w == size - 1)
-                    {
-                        // Check if surfaceCube is not a wall
-                        if (!maze.GetCube(new Vector3Int(w, h, d)).GetIsWall())
-                        {
-                            positions.Add(new Vector3Int(w, h, d));
-                        }
-                    }
-                }
-            }
-        }
-
-        return positions;
-    }
-    
-    public Vector3Int GetStartPosition()
-    {
-        return _startPosition;
+        // TODO: try using PlaceCube()
+        _agentObj = Instantiate(_agentPrefab);
+        _agentObj.transform.parent = _mazeObj.transform;
+        _agentObj.transform.localScale = _endCubeObj.transform.localScale;
+        _agentObj.transform.localPosition = _maze.GetStartCube().GetCubePosition(_mazeObj.transform.localScale);
+        _agentObj.GetComponent<Rigidbody>().isKinematic = true;
+        _agentObj.GetComponent<Renderer>().material.color = Color.green;
     }
 
-    public GameObject GetStartCube()
+    public GameObject GetAgentObject()
     {
-        return _startCubeObj;
-    }
-
-    public List<Vector3Int> GetSurfaceCubePositions()
-    {
-        return _surfaceCubePositions;
-    }
-
-    public Maze GetMaze()
-    {
-        return _maze;
+        return _agentObj;
     }
 
     public GameObject GetMazeObj()
