@@ -12,10 +12,7 @@ namespace MazeGeneration_vivi.MazeDatatype
         public List<MazeCell> Neighbours { get; }
         public List<MazeWall> Walls { get; }
         
-        public MazeCorner TopLeftCorner { get; set; }
-        public MazeCorner TopRightCorner { get; set; }
-        public MazeCorner BottomLeftCorner { get; set; }
-        public MazeCorner BottomRightCorner { get; set; }
+        public List<MazeCorner> Corners { get; }
         
         public bool Visited { get; set; }
 
@@ -26,6 +23,7 @@ namespace MazeGeneration_vivi.MazeDatatype
             Grid = grid;
             Neighbours = new List<MazeCell>();
             Walls = new List<MazeWall>();
+            Corners = new List<MazeCorner>();
             Visited = false;
         }
 

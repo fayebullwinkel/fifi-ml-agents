@@ -17,7 +17,7 @@ namespace MazeGeneration_vivi
             // Agent position
             sensor.AddObservation(transform.localPosition);
         
-            // AddMazeObservations(sensor);
+            AddMazeObservations(sensor);
         }
 
         public override void OnActionReceived(ActionBuffers actions)

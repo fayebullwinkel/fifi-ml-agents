@@ -154,10 +154,10 @@ namespace MazeGeneration_vivi.MazeDatatype
                     var corner = new MazeCorner(cells, walls);
                     Corners.Add(corner);
                     
-                    Cells[x, z].TopRightCorner = corner;
-                    Cells[x + 1, z].TopLeftCorner = corner;
-                    Cells[x, z + 1].BottomRightCorner = corner;
-                    Cells[x + 1, z + 1].BottomLeftCorner = corner;
+                    Cells[x, z].Corners.Add(corner);
+                    Cells[x + 1, z].Corners.Add(corner);
+                    Cells[x, z + 1].Corners.Add(corner);
+                    Cells[x + 1, z + 1].Corners.Add(corner);
                 }
             }
         }

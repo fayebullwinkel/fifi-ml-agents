@@ -250,10 +250,13 @@ namespace MazeGeneration_vivi.MazeDatatype
 
             agent.transform.SetParent(grid.Parent.transform);
             agent.transform.localPosition = position;
-            agent.GetComponent<MazeGenerationAgent>().Grid = grid;
+            var mazeAgent = agent.GetComponent<MazeGenerationAgent>();
+            mazeAgent.CurrentGrid = grid;
+            mazeAgent.CurrentCell = randomCell;
+            
             agent.transform.parent = grid.Parent.transform;
             
-            Debug.Log("Placed agent at " + position + " in grid " + cubeFace + " at cell " + randomX + ", " + randomZ + ".");
+            // Debug.Log("Placed agent at " + position + " in grid " + cubeFace + " at cell " + randomX + ", " + randomZ + ".");
                 
             position.y = 0;
             PlaceStart(position);
@@ -262,7 +265,7 @@ namespace MazeGeneration_vivi.MazeDatatype
         
         public void PlaceStart(Vector3 position)
         {
-            var grid = agent.GetComponent<MazeGenerationAgent>().Grid;
+            var grid = agent.GetComponent<MazeGenerationAgent>().CurrentGrid;
             var cell = grid.GetCellFromPosition(position); 
             if (cell != null)
             {
@@ -279,7 +282,7 @@ namespace MazeGeneration_vivi.MazeDatatype
         
         public void PlaceGoal(Vector3 position)
         {
-            var grid = agent.GetComponent<MazeGenerationAgent>().Grid;
+            var grid = agent.GetComponent<MazeGenerationAgent>().CurrentGrid;
             var cell = grid.GetCellFromPosition(position); 
             if (cell != null)
             {
@@ -311,7 +314,8 @@ namespace MazeGeneration_vivi.MazeDatatype
         public void MoveAgent(EDirection direction)
         {
             AgentIsMoving = true;
-            var currentGrid = agent.GetComponent<MazeGenerationAgent>().Grid;
+            var mazeAgent = agent.GetComponent<MazeGenerationAgent>();
+            var currentGrid = mazeAgent.CurrentGrid;
             var currentCell = currentGrid.GetCellFromPosition(agent.transform.localPosition);
             var nextCell = currentGrid.GetNeighborCell(currentCell, direction);
             var nextGrid = nextCell?.Grid;
@@ -328,8 +332,9 @@ namespace MazeGeneration_vivi.MazeDatatype
             if (currentGrid != nextGrid)
             {
                 agent.transform.SetParent(nextGrid.Parent.transform);
-                agent.GetComponent<MazeGenerationAgent>().Grid = nextGrid;
+                mazeAgent.CurrentGrid = nextGrid;
             }
+            mazeAgent.CurrentCell = nextCell;
             StartCoroutine(MoveAgentCoroutine(nextPosition));
         }
 
@@ -497,63 +502,6 @@ namespace MazeGeneration_vivi.MazeDatatype
             path.Add(startCell);
             path.Reverse();
             return path;
-        }
-        
-        // Finds the longest path from the start cell without an end cell using the breadth-first search algorithm
-        public List<MazeCell> FindLongestPath(MazeCell startCell)
-        {
-            var queue = new Queue<MazeCell>();
-            var visited = new HashSet<MazeCell>();
-            var parent = new Dictionary<MazeCell, MazeCell>();
-            queue.Enqueue(startCell);
-            visited.Add(startCell);
-            while (queue.Count > 0)
-            {
-                var currentCell = queue.Dequeue();
-                foreach (var neighbour in currentCell.Neighbours)
-                {
-                    if (!visited.Contains(neighbour))
-                    {
-                        // check if there is a wall between the current cell and the neighbour
-                        var grid = currentCell.Grid;
-                        var neighbourGrid = neighbour.Grid;
-                        var wall = grid.Walls.Find(x => x.Cells.Contains(currentCell) && x.Cells.Contains(neighbour));
-                        var neighbourWall = neighbourGrid.Walls.Find(x => x.Cells.Contains(currentCell) && x.Cells.Contains(neighbour));
-                        if (wall != null || neighbourWall != null)
-                        {
-                            continue;
-                        }
-                        queue.Enqueue(neighbour);
-                        visited.Add(neighbour);
-                        parent[neighbour] = currentCell;
-                    }
-                }
-            }
-            // build a path for each cell in the dictionary from that cell to the start cell
-            var paths = new List<List<MazeCell>>();
-            foreach (var cell in parent.Keys)
-            {
-                if(cell == startCell)
-                {
-                    continue;
-                }
-                var path = new List<MazeCell>();
-                var c = cell;
-                while (c != startCell)
-                {
-                    path.Add(c);
-                    c = parent[c];
-                }
-                path.Add(startCell);
-                path.Reverse();
-                paths.Add(path);
-            }
-            if(paths.Count == 0)
-            {
-                return new List<MazeCell>();
-            }
-            // return the longest path
-            return paths.OrderByDescending(x => x.Count).First();
         }
 
         private void ShowPath(List<MazeCell> path)
