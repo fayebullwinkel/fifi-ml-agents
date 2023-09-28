@@ -17,8 +17,8 @@ namespace MazeGeneration_vivi.MazeDatatype
         public MazeCell[,] Cells { get; }
         public List<MazeWall> Walls { get; }
         public List<MazeCorner> Corners { get; }
-        public List<GameObject> PathCells { get; }
-        public GameObject PathCellParent { get; set; }
+        public List<GameObject> VisitedCellsPath { get; set; }
+        public GameObject VisitedCellsPathParent { get; set; }
         private PrefabCollection prefabCollection;
         private TextMeshProUGUI visitedCellsText;
 
@@ -31,7 +31,7 @@ namespace MazeGeneration_vivi.MazeDatatype
             Cells = new MazeCell[size, size];
             Walls = new List<MazeWall>();
             Corners = new List<MazeCorner>();
-            PathCells = new List<GameObject>();
+            VisitedCellsPath = new List<GameObject>();
             Parent = parent;
             prefabCollection = Maze.prefabCollection;
             

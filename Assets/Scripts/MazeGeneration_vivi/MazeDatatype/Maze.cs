@@ -18,6 +18,8 @@ namespace MazeGeneration_vivi.MazeDatatype
         public int size;
         [Tooltip("The size of each cell in the maze.")]
         public float cellSize;
+        [Tooltip("If true, the maze requires all cells to be visited to be valid.")]
+        public bool requireAllCellsToBeVisited;
         [Tooltip("If true, the path from start to goal will be shown.")]
         public bool showPath;
         [Tooltip("If true, the visited cells will be shown.")]
@@ -288,15 +290,15 @@ namespace MazeGeneration_vivi.MazeDatatype
                 EndCell = cell;
                 
                 // remove PathCell object if it exists
-                var pathCell = grid.PathCells.Find(x => x.transform.localPosition == position);
+                var pathCell = grid.VisitedCellsPath.Find(x => x.transform.localPosition == position);
                 if (pathCell != null)
                 {
-                    grid.PathCells.Remove(pathCell);
+                    grid.VisitedCellsPath.Remove(pathCell);
                     Destroy(pathCell);
                 }
                 MarkCellVisited(cell);
                 
-                Debug.Log("Maze is solvable: " + MazeIsValid());
+                Debug.Log("Maze is Valid: " + IsValid());
             }
         }
         
@@ -370,28 +372,28 @@ namespace MazeGeneration_vivi.MazeDatatype
                 return;
             }
             var position = grid.GetPositionFromCell(cell);
-            if(grid.PathCellParent == null)
+            if(grid.VisitedCellsPathParent == null)
             {
-                grid.PathCellParent = new GameObject("PathCellParent");
-                grid.PathCellParent.transform.parent = grid.Parent.transform;
-                grid.PathCellParent.transform.localPosition = Vector3.zero;
-                grid.PathCellParent.transform.localScale = Vector3.one;
-                grid.PathCellParent.transform.localRotation = Quaternion.identity;
+                grid.VisitedCellsPathParent = new GameObject("PathCellParent");
+                grid.VisitedCellsPathParent.transform.parent = grid.Parent.transform;
+                grid.VisitedCellsPathParent.transform.localPosition = Vector3.zero;
+                grid.VisitedCellsPathParent.transform.localScale = Vector3.one;
+                grid.VisitedCellsPathParent.transform.localRotation = Quaternion.identity;
             }
-            var pathCellObject = Instantiate(prefabCollection.pathCellPrefab, grid.PathCellParent.transform);
+            var pathCellObject = Instantiate(prefabCollection.pathCellPrefab, grid.VisitedCellsPathParent.transform);
             pathCellObject.transform.localPosition = position;
             pathCellObject.transform.localScale = new Vector3(cellSize, 0.01f, cellSize);
-            grid.PathCells.Add(pathCellObject);
+            grid.VisitedCellsPath.Add(pathCellObject);
         }
 
         public void ClearMaze()
         {
+            agent.transform.SetParent(null);
             var grids = GameObject.FindGameObjectsWithTag("Grid");
             foreach (var grid in grids)
             {
                 Destroy(grid);
             }
-            
             StartCell = null;
             EndCell = null;
             Grids = new Dictionary<ECubeFace, Grid>();
@@ -400,13 +402,18 @@ namespace MazeGeneration_vivi.MazeDatatype
         #endregion
         
         #region MazeValidationMethods
+
+        public bool IsFinished() => StartCell != null && EndCell != null;
         
-        public bool MazeIsValid()
+        public bool IsValid()
         {
-            // Check if all cells are visited -> maze is connected
-            if (Grids.Values.Any(grid => grid.GetVisitedCells() != grid.Cells.Length))
+            if (requireAllCellsToBeVisited)
             {
-                return false;
+                // Check if all cells are visited -> maze is connected
+                if (Grids.Values.Any(grid => grid.GetVisitedCells() != grid.Cells.Length))
+                {
+                    return false;
+                }
             }
             // Check if maze has a start and end cell
             if (StartCell == null || EndCell == null)
@@ -423,7 +430,7 @@ namespace MazeGeneration_vivi.MazeDatatype
             return isSolvable;
         }
         
-        public bool MazeMeetsRequirements()
+        public bool MeetsRequirements()
         {
             // Check if all corners have at least one wall -> maze is not empty
             if (Grids.Values.Any(grid => grid.Corners.Any(corner => corner.Walls.Count == 0)))
@@ -546,6 +553,12 @@ namespace MazeGeneration_vivi.MazeDatatype
             if (!showPath)
             {
                 return;
+            }
+            // delete all visited cells from every grid
+            foreach (var grid in Grids.Values)
+            {
+                Destroy(grid.VisitedCellsPathParent);
+                grid.VisitedCellsPath = new List<GameObject>();
             }
             foreach (var cell in path)
             {

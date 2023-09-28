@@ -40,6 +40,8 @@ namespace MazeGeneration_vivi.MazeDatatype
                 Maze.MarkCellVisited(cell);
             }
             
+            Debug.Log("Maze Meets Requirements: " + Maze.MeetsRequirements());
+            
             Destroy(gameObject);
         }
 
