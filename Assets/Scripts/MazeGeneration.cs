@@ -25,11 +25,8 @@ public class MazeGeneration : ScriptableObject
         PrimsAlgorithm();
 
         var randomStartPos = ChooseRandomPosition();
-        Debug.Log("startPos: " + randomStartPos);
-        _cubes[randomStartPos.x, randomStartPos.y, randomStartPos.z].SetIsStartCube(true);
 
         var randomEndPos = ChooseRandomPosition();
-        Debug.Log("endPos: " + randomEndPos);
         _cubes[randomEndPos.x, randomEndPos.y, randomEndPos.z].SetIsGoalCube(true);
 
         return new Maze(_cubes, _cubes[randomStartPos.x, randomStartPos.y, randomStartPos.z],
@@ -213,9 +210,9 @@ public class MazeGeneration : ScriptableObject
         }
     }
 
-    private Vector3Int ChooseRandomPosition()
+    private Vector3Int ChooseRandomPosition(Vector3Int excludePosition = default)
     {
-        _surfaceCubePositions = FindValidSurfaceCubePositions(_cubes);
+        _surfaceCubePositions = FindValidSurfaceCubePositions(_cubes, excludePosition);
 
         // Check if there are surface cubes.
         if (_surfaceCubePositions.Count > 0)
@@ -229,7 +226,7 @@ public class MazeGeneration : ScriptableObject
         return Vector3Int.zero;
     }
 
-    private List<Vector3Int> FindValidSurfaceCubePositions(Cube[,,] cubes)
+    private List<Vector3Int> FindValidSurfaceCubePositions(Cube[,,] cubes, Vector3Int excludePosition = default)
     {
         // Get the dimensions of the 3D array
         var size = cubes.GetLength(0);
@@ -247,7 +244,7 @@ public class MazeGeneration : ScriptableObject
                     if (d == 0 || d == size - 1 || h == 0 || h == size - 1 || w == 0 || w == size - 1)
                     {
                         // Check if surfaceCube is not a wall
-                        if (!cubes[w, h, d].GetIsWall() && !cubes[w, h, d].GetIsStartCube())
+                        if (!cubes[w, h, d].GetIsWall() && new Vector3Int(w, h, d) != excludePosition)
                         {
                             positions.Add(new Vector3Int(w, h, d));
                         }

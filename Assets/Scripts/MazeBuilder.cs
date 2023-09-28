@@ -85,7 +85,6 @@ public class MazeBuilder: MonoBehaviour
     private void PlaceEndCube()
     {
         var endCube = _maze.GetEndCube();
-        Debug.Log("endCube pos in MazeBuilder: " + endCube.GetX() + " " + endCube.GetY() + " " + endCube.GetZ());
         PlaceCube(_endCubeObj, endCube, Color.red);
     }
     
@@ -98,13 +97,10 @@ public class MazeBuilder: MonoBehaviour
     
     public void PlaceMazeAgent()
     {
-        // TODO: try using PlaceCube()
         _agentObj = Instantiate(_agentPrefab);
-        _agentObj.transform.parent = _mazeObj.transform;
+        PlaceCube(_agentObj, _maze.GetStartCube(), Color.green);
         _agentObj.transform.localScale = _endCubeObj.transform.localScale;
-        _agentObj.transform.localPosition = _maze.GetStartCube().GetCubePosition(_mazeObj.transform.localScale);
         _agentObj.GetComponent<Rigidbody>().isKinematic = true;
-        _agentObj.GetComponent<Renderer>().material.color = Color.green;
     }
 
     public GameObject GetAgentObject()

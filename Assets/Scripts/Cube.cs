@@ -88,18 +88,8 @@ public class Cube
         return _isGoalCube;
     }
 
-    public void SetIsStartCube(bool isStartCube)
-    {
-        _isStartCube = isStartCube;
-    }
-
     public void SetIsGoalCube(bool isGoalCube)
     {
         _isGoalCube = isGoalCube;
-    }
-
-    public bool GetIsStartCube()
-    {
-        return _isStartCube;
     }
 }
