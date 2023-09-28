@@ -63,7 +63,7 @@ public class MazeBuilder: MonoBehaviour
                         wall.transform.localScale = new Vector3(1f, 1f, 1f);
                         wall.transform.parent = _mazeObj.transform;
                         wall.transform.localPosition = _cubes[x, y, z]
-                            .GetCubePosition(_mazeObj.transform.localScale);
+                            .GetRelativePosition(_mazeObj.transform.localScale);
                     }
                 }
             }

@@ -123,7 +123,7 @@ public class MazeController : MonoBehaviour
     private void MoveCube(GameObject cubeObj, Cube cube, Color color)
     {
         cubeObj.transform.parent = _mazeObj.transform;
-        cubeObj.transform.localPosition = cube.GetCubePosition(_mazeObj.transform.localScale);
+        cubeObj.transform.localPosition = cube.GetRelativePosition(_mazeObj.transform.localScale);
         cubeObj.GetComponent<Renderer>().material.color = color;
     }
 

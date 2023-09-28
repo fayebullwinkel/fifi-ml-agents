@@ -229,19 +229,19 @@ public class MazeGeneration : ScriptableObject
     private List<Vector3Int> FindValidSurfaceCubePositions(Cube[,,] cubes, Vector3Int excludePosition = default)
     {
         // Get the dimensions of the 3D array
-        var size = cubes.GetLength(0);
 
         var positions = new List<Vector3Int>();
 
         // Loop through the surface cubes
-        for (int d = 0; d < size; d++)
+        for (var d = 0; d < cubes.GetLength(2); d++)
         {
-            for (int h = 0; h < size; h++)
+            for (var h = 0; h < cubes.GetLength(1); h++)
             {
-                for (int w = 0; w < size; w++)
+                for (var w = 0; w < cubes.GetLength(0); w++)
                 {
                     // Check if the cube is on the surface (i.e., on the outermost layer)
-                    if (d == 0 || d == size - 1 || h == 0 || h == size - 1 || w == 0 || w == size - 1)
+                    if (d == 0 || d == cubes.GetLength(2) - 1 || h == 0 || h == cubes.GetLength(1) - 1 || w == 0 ||
+                        w == cubes.GetLength(0) - 1)
                     {
                         // Check if surfaceCube is not a wall
                         if (!cubes[w, h, d].GetIsWall() && new Vector3Int(w, h, d) != excludePosition)

@@ -12,7 +12,7 @@ public class Cube
     private int _y;
     private int _z;
 
-    public Vector3 GetCubePosition(Vector3 localScale)
+    public Vector3 GetRelativePosition(Vector3 localScale)
     {
         return new Vector3(
             (_x + 0.5f - (localScale.x / 2)) / localScale.x,
