@@ -1,4 +1,5 @@
-﻿using MazeGeneration_vivi.MazeDatatype;
+﻿using System.Collections;
+using MazeGeneration_vivi.MazeDatatype;
 using MazeGeneration_vivi.MazeDatatype.Enums;
 using Unity.MLAgents.Actuators;
 using Unity.MLAgents.Sensors;
@@ -8,10 +9,6 @@ namespace MazeGeneration_vivi
 {
     public sealed class MazeGenerationAgent3D: MazeGenerationAgent
     {
-        private void Start()
-        {
-        }
-    
         public override void OnEpisodeBegin()
         {
             SetupMaze();
@@ -31,7 +28,7 @@ namespace MazeGeneration_vivi
             {
                 return;
             }
-            // get the first action that is not 0 from the discrete actions from 0 to 3
+            // get the first action that is not 0 from the discrete actions from 0 to 3 -> Moving Actions
             var action = -1;
             for (var i = 0; i < 4; i++)
             {
@@ -41,21 +38,27 @@ namespace MazeGeneration_vivi
                     break;
                 }
             }
-
             if (action != -1)
             {
                 var direction = (EDirection)action;
                 Maze.MoveAgent(direction);
             }
-
-            // Place End Cell
-            var placeGoal = actions.DiscreteActions[4] > 0;
-            if (placeGoal)
+            else
             {
-                Maze.PlaceGoal(transform.localPosition);
+                if (lockedGoalPlacement)
+                {
+                    return;
+                }
+                // Place End Cell
+                var placeGoal = actions.DiscreteActions[4] > 0;
+                if (placeGoal)
+                {
+                    Maze.PlaceGoal(transform.localPosition);
+                    StartCoroutine(LockGoalPlacement());
+                }
             }
-        
-            // GrantReward();
+
+            GrantReward();
         }
     
         public override void Heuristic(in ActionBuffers actionsOut)
@@ -69,6 +72,13 @@ namespace MazeGeneration_vivi
             discreteActionsOut[2] = Input.GetKey(KeyCode.W) ? 1 : 0;
             discreteActionsOut[3] = Input.GetKey(KeyCode.S) ? 1 : 0;
             discreteActionsOut[4] = Input.GetKey(KeyCode.Space) ? 1 : 0;
+        }
+
+        private IEnumerator LockGoalPlacement()
+        {
+            lockedGoalPlacement = true;
+            yield return new WaitForSeconds(1f);
+            lockedGoalPlacement = false;
         }
     }
 }
