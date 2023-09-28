@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using MazeGeneration_vivi.MazeDatatype.Enums;
+using TMPro;
 using UnityEngine;
 using Random = UnityEngine.Random;
 
@@ -32,6 +33,18 @@ namespace MazeGeneration_vivi.MazeDatatype
         private GameObject agent2D = null!;
         [SerializeField]
         private GameObject agent3D = null!;
+        [SerializeField]
+        private GameObject frontView = null!;
+        [SerializeField]
+        private GameObject backView = null!;
+        [SerializeField]
+        private GameObject leftView = null!;
+        [SerializeField]
+        private GameObject rightView = null!;
+        [SerializeField]
+        private GameObject topView = null!;
+        [SerializeField]
+        private GameObject bottomView = null!;
 
         public Dictionary<ECubeFace, Grid> Grids { get; private set; }
         public MazeCell StartCell { get; private set; }
@@ -109,7 +122,20 @@ namespace MazeGeneration_vivi.MazeDatatype
                 var gridParent = new GameObject("Grid" + face);
                 gridParent.transform.SetParent(maze.transform);
                 gridParent.tag = "Grid";
-                var grid = new Grid(this, size, gridParent, face);
+                // get the VisitedCellsText object from the corresponding face
+                var visitedCellsText = face switch
+                {
+                    ECubeFace.None => null,
+                    ECubeFace.Front => frontView.transform.Find("VisitedCellsText").GetComponent<TextMeshProUGUI>(),
+                    ECubeFace.Back => backView.transform.Find("VisitedCellsText").GetComponent<TextMeshProUGUI>(),
+                    ECubeFace.Left => leftView.transform.Find("VisitedCellsText").GetComponent<TextMeshProUGUI>(),
+                    ECubeFace.Right => rightView.transform.Find("VisitedCellsText").GetComponent<TextMeshProUGUI>(),
+                    ECubeFace.Top => topView.transform.Find("VisitedCellsText").GetComponent<TextMeshProUGUI>(),
+                    ECubeFace.Bottom => bottomView.transform.Find("VisitedCellsText").GetComponent<TextMeshProUGUI>(),
+                    _ => throw new ArgumentOutOfRangeException()
+                };
+
+                var grid = new Grid(this, size, gridParent, face, visitedCellsText);
                 Grids.Add(face, grid);
             }
             foreach (var grid in Grids.Values)
@@ -243,6 +269,7 @@ namespace MazeGeneration_vivi.MazeDatatype
                 StartCellObject.transform.localPosition = position;
                 StartCellObject.transform.localScale = new Vector3(cellSize, 0.01f, cellSize);
                 StartCell = cell;
+                MarkCellVisited(cell);
             }
         }
         
@@ -267,6 +294,7 @@ namespace MazeGeneration_vivi.MazeDatatype
                     grid.PathCells.Remove(pathCell);
                     Destroy(pathCell);
                 }
+                MarkCellVisited(cell);
                 
                 Debug.Log("Maze is solvable: " + MazeIsValid());
             }
@@ -326,8 +354,13 @@ namespace MazeGeneration_vivi.MazeDatatype
 
         public void MarkCellVisited(MazeCell cell)
         {
+            if(cell.Visited)
+            {
+                return;
+            }
             cell.Visited = true;
             var grid = cell.Grid;
+            grid.UpdateVisitedCellsText();
             if (!showVisitedCells)
             {
                 return;

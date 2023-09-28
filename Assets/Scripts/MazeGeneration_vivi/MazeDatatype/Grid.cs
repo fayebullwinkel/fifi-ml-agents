@@ -10,26 +10,24 @@ namespace MazeGeneration_vivi.MazeDatatype
 {
     public class Grid
     {
-        private int Size { get; }
+        public Maze Maze { get; }
         public ECubeFace Face { get; }
-
+        private int Size { get; }
+        public GameObject Parent;
         public MazeCell[,] Cells { get; }
         public List<MazeWall> Walls { get; }
         public List<MazeCorner> Corners { get; }
         public List<GameObject> PathCells { get; }
         public GameObject PathCellParent { get; set; }
-
-        public Maze Maze { get; }
-
-        internal GameObject Parent;
-
         private PrefabCollection prefabCollection;
+        private TextMeshProUGUI visitedCellsText;
 
-        public Grid(Maze maze, int size, GameObject parent, ECubeFace face = ECubeFace.None)
+        public Grid(Maze maze, int size, GameObject parent, ECubeFace face = ECubeFace.None, TextMeshProUGUI visitedCellsTextPro = null)
         {
             Maze = maze;
             Size = size;
             Face = face;
+            visitedCellsText = visitedCellsTextPro;
             Cells = new MazeCell[size, size];
             Walls = new List<MazeWall>();
             Corners = new List<MazeCorner>();
@@ -408,10 +406,19 @@ namespace MazeGeneration_vivi.MazeDatatype
 
         #endregion
 
+        #region GeneralMethods
+        
+        public void UpdateVisitedCellsText()
+        {
+            visitedCellsText.text = $"Visited Cells: {GetVisitedCells()}/{Cells.Length}";
+        }
+
         public int GetVisitedCells()
         {
             return Cells.Cast<MazeCell>().Count(cell => cell.Visited);
         }
+        
+        #endregion
 
         #region DebugMethods
         
