@@ -19,6 +19,7 @@ namespace MazeGeneration_vivi
         protected int visitedCells;
         protected int notReachedNewCellCounter;
         protected bool reachedNewCell;
+        protected bool lockedGoalPlacement;
 
         protected void SetupMaze()
         {
@@ -73,9 +74,9 @@ namespace MazeGeneration_vivi
             // // Maze longest path: length
             // sensor.AddObservation(Maze.Grid.FindLongestPath(Maze.Grid.StartCell).Count);
             // // Maze meets requirements: bool
-            // sensor.AddObservation(Maze.Grid.MazeMeetsRequirements());
+            // sensor.AddObservation(Maze.Grid.MeetsRequirements());
             // // Maze is solvable: bool
-            // sensor.AddObservation(Maze.Grid.MazeIsValid());
+            // sensor.AddObservation(Maze.Grid.IsValid());
             // // Maze percentage of visited cells: float
             // sensor.AddObservation(Maze.Grid.GetPercentageOfVisitedCells());
             // // Maze percentage of longest path: float
@@ -86,65 +87,78 @@ namespace MazeGeneration_vivi
 
         protected void GrantReward()
         {
-            var mazeIsFinished = Maze.EndCell != null;
-            if (mazeIsFinished)
+            if (Maze.IsFinished())
             {
-                var longestPathCount = Maze.FindLongestPath(Maze.StartCell).Count;
-                Debug.Log("Longest Path: " + longestPathCount);
-                var isSolvable = Maze.MazeIsValid();
-                if(isSolvable)
-                {
-                    SetReward(10.0f);
-                    EndEpisode();
-                }
-                else
-                {
-                    // calculate the reward based on the length of the longest path, should be between 0 and -1 
-                    var cellCount = Maze.GetCellCount();
-                    var reward = -1.0f + (longestPathCount - 1) / (cellCount - 1);
-                    SetReward(reward);
-                    EndEpisode();
-                }
-            }
-            var mazeMeetsRequirements = Maze.MazeMeetsRequirements();
-            var percentageOfVisitedCells = Maze.GetPercentageOfVisitedCells();
-            if (mazeMeetsRequirements)
-            {
-                // Existentially penalize the agent for taking too long to solve the maze
-                AddReward(-0.001f);
-            
-                // +0.1 reward for each visited cell
-                var newVisitedCells = Maze.GetVisitedCells();
-                var visitedCellsDelta = newVisitedCells - visitedCells;
-                visitedCells = newVisitedCells;
-                if (visitedCellsDelta > 0)
-                {
-                    AddReward(visitedCellsDelta * 1.0f);
-                    notReachedNewCellCounter = 0;
-                    reachedNewCell = true;
-                }
-                // -0.01 reward for not reaching a new cell
-                else
-                {
-                    AddReward(-0.01f);
-                    notReachedNewCellCounter++;
-                    reachedNewCell = false;
-                }
-                if(notReachedNewCellCounter > 500)
-                {
-                    // Penalize the agent for not reaching a new cell for too long
-                    var reward = -1.0f + percentageOfVisitedCells;
-                    SetReward(reward);
-                    EndEpisode();
-                }
-            }
-            else
-            {
-                // Penalize the agent for not meeting the requirements
-                var reward = -5.0f + percentageOfVisitedCells;
+                // TODO: calculate the reward based on the length of the path, should be between 0 and 1
+                var reward = Maze.IsValid() ? 1.0f : -1.0f;
                 SetReward(reward);
                 EndEpisode();
             }
+
+            if (!Maze.MeetsRequirements())
+            {
+                EndEpisode();
+            }
+            
+            // var mazeIsFinished = Maze.EndCell != null;
+            // if (mazeIsFinished)
+            // {
+            //     var longestPathCount = Maze.FindLongestPath(Maze.StartCell).Count;
+            //     Debug.Log("Longest Path: " + longestPathCount);
+            //     var isSolvable = Maze.IsValid();
+            //     if(isSolvable)
+            //     {
+            //         SetReward(10.0f);
+            //         EndEpisode();
+            //     }
+            //     else
+            //     {
+            //         // calculate the reward based on the length of the longest path, should be between 0 and -1 
+            //         var cellCount = Maze.GetCellCount();
+            //         var reward = -1.0f + (longestPathCount - 1) / (cellCount - 1);
+            //         SetReward(reward);
+            //         EndEpisode();
+            //     }
+            // }
+            // var mazeMeetsRequirements = Maze.MeetsRequirements();
+            // var percentageOfVisitedCells = Maze.GetPercentageOfVisitedCells();
+            // if (mazeMeetsRequirements)
+            // {
+            //     // Existentially penalize the agent for taking too long to solve the maze
+            //     AddReward(-0.001f);
+            //
+            //     // +0.1 reward for each visited cell
+            //     var newVisitedCells = Maze.GetVisitedCells();
+            //     var visitedCellsDelta = newVisitedCells - visitedCells;
+            //     visitedCells = newVisitedCells;
+            //     if (visitedCellsDelta > 0)
+            //     {
+            //         AddReward(visitedCellsDelta * 1.0f);
+            //         notReachedNewCellCounter = 0;
+            //         reachedNewCell = true;
+            //     }
+            //     // -0.01 reward for not reaching a new cell
+            //     else
+            //     {
+            //         AddReward(-0.01f);
+            //         notReachedNewCellCounter++;
+            //         reachedNewCell = false;
+            //     }
+            //     if(notReachedNewCellCounter > 500)
+            //     {
+            //         // Penalize the agent for not reaching a new cell for too long
+            //         var reward = -1.0f + percentageOfVisitedCells;
+            //         SetReward(reward);
+            //         EndEpisode();
+            //     }
+            // }
+            // else
+            // {
+            //     // Penalize the agent for not meeting the requirements
+            //     var reward = -5.0f + percentageOfVisitedCells;
+            //     SetReward(reward);
+            //     EndEpisode();
+            // }
         }
     }
 }
