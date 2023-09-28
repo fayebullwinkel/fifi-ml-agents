@@ -397,6 +397,10 @@ namespace MazeGeneration_vivi.MazeDatatype
         public void ClearMaze()
         {
             agent.transform.SetParent(null);
+            foreach (var grid in Grids.Values)
+            {
+                grid.UpdateVisitedCellsText();
+            }
             var grids = GameObject.FindGameObjectsWithTag("Grid");
             foreach (var grid in grids)
             {

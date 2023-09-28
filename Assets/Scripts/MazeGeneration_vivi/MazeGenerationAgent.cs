@@ -8,14 +8,10 @@ namespace MazeGeneration_vivi
 {
     public class MazeGenerationAgent : Agent
     {
-        [SerializeField] 
-        protected float speed = 10f;
-
-        [SerializeField]
-        protected Maze Maze = null!;
-        
+        public Maze Maze = null!;
         public Grid CurrentGrid {get; set;} = null!;
         public MazeCell CurrentCell {get; set;} = null!;
+        private int oldVisitedCells = 0;
 
         protected void SetupMaze()
         {
@@ -65,6 +61,18 @@ namespace MazeGeneration_vivi
             {
                 SetReward(-1.0f);
                 EndEpisode();
+            }
+            
+            // Reward for finding new cells
+            var visitedCellsCount = Maze.GetVisitedCells();
+            if (visitedCellsCount > oldVisitedCells)
+            {
+                AddReward(0.0025f);
+                oldVisitedCells = visitedCellsCount;
+            }
+            else
+            {
+                AddReward(-0.0025f);
             }
         }
     }
