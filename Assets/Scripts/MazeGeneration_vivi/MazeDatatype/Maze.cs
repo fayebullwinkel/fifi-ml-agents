@@ -65,8 +65,8 @@ namespace MazeGeneration_vivi.MazeDatatype
             maze = gameObject;
             agent = mazeType == EMazeType.ThreeDimensional ? agent3D : agent2D;
             agent.SetActive(true);
-            var otherAgent = mazeType == EMazeType.ThreeDimensional ? agent2D : agent3D;
-            otherAgent.SetActive(false);
+            // var otherAgent = mazeType == EMazeType.ThreeDimensional ? agent2D : agent3D;
+            // otherAgent.SetActive(false);
             
             SetCameraPosition();
 
@@ -246,6 +246,7 @@ namespace MazeGeneration_vivi.MazeDatatype
             var randomZ = Random.Range(0, size);
             var randomCell = grid.Cells[randomX, randomZ];
             var position = grid.GetPositionFromCell(randomCell);
+            position.y = 0.5f;
 
             agent.transform.SetParent(grid.Parent.transform);
             agent.transform.localPosition = position;
@@ -254,6 +255,7 @@ namespace MazeGeneration_vivi.MazeDatatype
             
             Debug.Log("Placed agent at " + position + " in grid " + cubeFace + " at cell " + randomX + ", " + randomZ + ".");
                 
+            position.y = 0;
             PlaceStart(position);
             MarkCellVisited(randomCell);
         }
@@ -320,6 +322,7 @@ namespace MazeGeneration_vivi.MazeDatatype
             }
     
             var nextPosition = nextGrid.GetPositionFromCell(nextCell);
+            nextPosition.y = 0.5f;
     
             // set the parent of the agent to the next grid if it is not the same as the current grid
             if (currentGrid != nextGrid)
@@ -481,6 +484,11 @@ namespace MazeGeneration_vivi.MazeDatatype
             }
             var path = new List<MazeCell>();
             var cell = endCell;
+            // check if end cell is in parent dictionary -> there is a path from start to end cell
+            if (!parent.ContainsKey(cell))
+            {
+                return path;
+            }
             while (cell != startCell)
             {
                 path.Add(cell);

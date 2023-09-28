@@ -1,6 +1,4 @@
-﻿using System.Collections;
-using MazeGeneration_vivi.MazeDatatype;
-using MazeGeneration_vivi.MazeDatatype.Enums;
+﻿using MazeGeneration_vivi.MazeDatatype.Enums;
 using Unity.MLAgents.Actuators;
 using Unity.MLAgents.Sensors;
 using UnityEngine;
@@ -45,16 +43,11 @@ namespace MazeGeneration_vivi
             }
             else
             {
-                if (lockedGoalPlacement)
-                {
-                    return;
-                }
                 // Place End Cell
                 var placeGoal = actions.DiscreteActions[4] > 0;
                 if (placeGoal)
                 {
                     Maze.PlaceGoal(transform.localPosition);
-                    StartCoroutine(LockGoalPlacement());
                 }
             }
 
@@ -72,13 +65,6 @@ namespace MazeGeneration_vivi
             discreteActionsOut[2] = Input.GetKey(KeyCode.W) ? 1 : 0;
             discreteActionsOut[3] = Input.GetKey(KeyCode.S) ? 1 : 0;
             discreteActionsOut[4] = Input.GetKey(KeyCode.Space) ? 1 : 0;
-        }
-
-        private IEnumerator LockGoalPlacement()
-        {
-            lockedGoalPlacement = true;
-            yield return new WaitForSeconds(1f);
-            lockedGoalPlacement = false;
         }
     }
 }

@@ -1,4 +1,5 @@
-﻿using MazeGeneration_vivi.MazeDatatype;
+﻿using System.Linq;
+using MazeGeneration_vivi.MazeDatatype;
 using Unity.MLAgents;
 using Unity.MLAgents.Sensors;
 using UnityEngine;
@@ -19,7 +20,6 @@ namespace MazeGeneration_vivi
         protected int visitedCells;
         protected int notReachedNewCellCounter;
         protected bool reachedNewCell;
-        protected bool lockedGoalPlacement;
 
         protected void SetupMaze()
         {
@@ -42,35 +42,45 @@ namespace MazeGeneration_vivi
             {
                 return;
             }
-            // Visited Cells
-            sensor.AddObservation(Maze.GetVisitedCells());
             
-            // // Walls: for each cell in each grid from Grids, how many walls are there
+            // Position of the Start Cell
+            var startCell = Maze.StartCell;
+            var grid = startCell.Grid;
+            var startCellPosition = grid.GetPositionFromCell(startCell);
+            sensor.AddObservation(startCellPosition);
+            // Walls on each Corner in each Grid
+            foreach (var wall in grid.Corners.SelectMany(corner => corner.Walls))
+            {
+                sensor.AddObservation(wall);
+            }
+            // Maze percentage of visited cells: float
+            sensor.AddObservation(Maze.GetPercentageOfVisitedCells());
+
+            // // Visited Cells
+            // sensor.AddObservation(Maze.GetVisitedCells());
+            // // // Walls: for each cell in each grid from Grids, how many walls are there
+            // // foreach (var grid in Maze.Grids)
+            // // {
+            // //     foreach (var cell in grid.Value.Cells)
+            // //     {
+            // //         sensor.AddObservation(cell.Walls.Count);
+            // //     }
+            // // }
+            // // Corners: for each corner in each grid from Grids, how many walls are there
             // foreach (var grid in Maze.Grids)
             // {
-            //     foreach (var cell in grid.Value.Cells)
+            //     foreach (var corner in grid.Value.Corners)
             //     {
-            //         sensor.AddObservation(cell.Walls.Count);
+            //         sensor.AddObservation(corner.Walls.Count);
             //     }
             // }
-            
-            // Corners: for each corner in each grid from Grids, how many walls are there
-            foreach (var grid in Maze.Grids)
-            {
-                foreach (var corner in grid.Value.Corners)
-                {
-                    sensor.AddObservation(corner.Walls.Count);
-                }
-            }
-            
-            // Maze Start Cell: position
-            if (Maze.StartCell != null)
-            {
-                var start = Maze.StartCell;
-                sensor.AddObservation(start.X);
-                sensor.AddObservation(start.Z);
-            }
-
+            // // Maze Start Cell: position
+            // if (Maze.StartCell != null)
+            // {
+            //     var start = Maze.StartCell;
+            //     sensor.AddObservation(start.X);
+            //     sensor.AddObservation(start.Z);
+            // }
             // // Maze longest path: length
             // sensor.AddObservation(Maze.Grid.FindLongestPath(Maze.Grid.StartCell).Count);
             // // Maze meets requirements: bool
