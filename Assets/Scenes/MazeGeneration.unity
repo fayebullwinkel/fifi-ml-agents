@@ -1327,8 +1327,12 @@ PrefabInstance:
       value: 8
       objectReference: {fileID: 0}
     - target: {fileID: 1508936989446036332, guid: fc2e1ac7a58dfd041b32309a78857f4b, type: 3}
+      propertyPath: m_BrainParameters.VectorActionSize.Array.size
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 1508936989446036332, guid: fc2e1ac7a58dfd041b32309a78857f4b, type: 3}
       propertyPath: m_BrainParameters.VectorActionSize.Array.data[0]
-      value: 2
+      value: 6
       objectReference: {fileID: 0}
     - target: {fileID: 1508936989446036332, guid: fc2e1ac7a58dfd041b32309a78857f4b, type: 3}
       propertyPath: m_BrainParameters.VectorActionSize.Array.data[1]
@@ -1347,8 +1351,12 @@ PrefabInstance:
       value: 2
       objectReference: {fileID: 0}
     - target: {fileID: 1508936989446036332, guid: fc2e1ac7a58dfd041b32309a78857f4b, type: 3}
+      propertyPath: m_BrainParameters.m_ActionSpec.BranchSizes.Array.size
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 1508936989446036332, guid: fc2e1ac7a58dfd041b32309a78857f4b, type: 3}
       propertyPath: m_BrainParameters.m_ActionSpec.BranchSizes.Array.data[0]
-      value: 2
+      value: 6
       objectReference: {fileID: 0}
     - target: {fileID: 1508936989446036332, guid: fc2e1ac7a58dfd041b32309a78857f4b, type: 3}
       propertyPath: m_BrainParameters.m_ActionSpec.BranchSizes.Array.data[1]

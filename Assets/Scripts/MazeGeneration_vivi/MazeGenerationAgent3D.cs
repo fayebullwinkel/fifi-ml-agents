@@ -26,29 +26,26 @@ namespace MazeGeneration_vivi
             {
                 return;
             }
-            // get the first action that is not 0 from the discrete actions from 0 to 3 -> Moving Actions
-            var action = -1;
-            for (var i = 0; i < 4; i++)
+
+            switch (actions.DiscreteActions[0])
             {
-                if (actions.DiscreteActions[i] > 0)
-                {
-                    action = i;
+                case 0:
+                    Maze.MoveAgent(EDirection.Left);
                     break;
-                }
-            }
-            if (action != -1)
-            {
-                var direction = (EDirection)action;
-                Maze.MoveAgent(direction);
-            }
-            else
-            {
-                // Place End Cell
-                var placeGoal = actions.DiscreteActions[4] > 0;
-                if (placeGoal)
-                {
+                case 1:
+                    Maze.MoveAgent(EDirection.Right);
+                    break;
+                case 2:
+                    Maze.MoveAgent(EDirection.Top);
+                    break;
+                case 3:
+                    Maze.MoveAgent(EDirection.Bottom);
+                    break;
+                case 4:
                     Maze.PlaceGoal(transform.localPosition);
-                }
+                    break;
+                case 5:
+                    break;
             }
 
             GrantReward();
@@ -59,12 +56,29 @@ namespace MazeGeneration_vivi
             var discreteActionsOut = actionsOut.DiscreteActions;
         
             // Manual control of the agent
-            // 0: left, 1: right, 2: top, 3: bottom, 4: place goal
-            discreteActionsOut[0] = Input.GetKey(KeyCode.A) ? 1 : 0;
-            discreteActionsOut[1] = Input.GetKey(KeyCode.D) ? 1 : 0;
-            discreteActionsOut[2] = Input.GetKey(KeyCode.W) ? 1 : 0;
-            discreteActionsOut[3] = Input.GetKey(KeyCode.S) ? 1 : 0;
-            discreteActionsOut[4] = Input.GetKey(KeyCode.Space) ? 1 : 0;
+            // // 0: left, 1: right, 2: top, 3: bottom, 4: place goal
+            var value = 5;
+            if (Input.GetKey(KeyCode.A))
+            {
+                value = 0;
+            }
+            else if (Input.GetKey(KeyCode.D))
+            {
+                value = 1;
+            }
+            else if (Input.GetKey(KeyCode.W))
+            {
+                value = 2;
+            }
+            else if (Input.GetKey(KeyCode.S))
+            {
+                value = 3;
+            }
+            else if (Input.GetKey(KeyCode.Space))
+            {
+                value = 4;
+            }
+            discreteActionsOut[0] = value;
         }
     }
 }
