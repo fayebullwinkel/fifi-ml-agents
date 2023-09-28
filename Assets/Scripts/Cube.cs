@@ -1,10 +1,11 @@
 using UnityEngine;
 
-public struct Cube
+public class Cube
 {
     private float _weight;
     private bool _isWall;
     private bool _isDeletable;
+    private bool _isGoal;
     private GameObject _cubeObj;
     private int _x;
     private int _y;
@@ -69,5 +70,15 @@ public struct Cube
         _x = x;
         _y = y;
         _z = z;
+    }
+    
+    public void SetIsGoal(bool isGoal)
+    {
+        _isGoal = isGoal;
+    }
+    
+    public bool GetIsGoal()
+    {
+        return _isGoal;
     }
 }

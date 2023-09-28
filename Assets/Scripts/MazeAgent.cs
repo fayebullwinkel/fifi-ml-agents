@@ -1,5 +1,3 @@
-using System;
-using System.Collections.Generic;
 using UnityEngine;
 using Unity.MLAgents;
 using Unity.MLAgents.Actuators;
@@ -9,7 +7,7 @@ public class MazeAgent : Agent
 {
     private MazeController _mazeController;
     private Vector3Int _currPos;
-    private Cube[,,] _mazeArray;
+    private Maze _maze;
     
     // Heuristic
     private MovementDirection _myNextMove = MovementDirection.Nothing;
@@ -30,7 +28,7 @@ public class MazeAgent : Agent
         base.Initialize();
         _mazeController = GameObject.Find("MazeController").GetComponent<MazeController>();
         _currPos = _mazeController.GetStartPosition();
-        _mazeArray = _mazeController.GetMazeArray();
+        _maze = _mazeController.GetMaze();
     }
 
     public override void OnEpisodeBegin()
@@ -45,18 +43,25 @@ public class MazeAgent : Agent
 
         if (IsActionLegal(discreteAction))
         {
-            _currPos += GetDirectionVector(discreteAction);
+            _currPos += GetVectorToEnum(discreteAction);
             // convert to world coordinates
-            var newPosUnity = _mazeArray[_currPos.x, _currPos.y, _currPos.z]
+            var newPosUnity = _maze.GetCube(new Vector3Int(_currPos.x, _currPos.y, _currPos.z))
                 .GetCubePosition(_mazeController.transform.localScale);
             transform.localPosition = newPosUnity;
+
+            if (_maze.GetCube(_currPos).GetIsGoal())
+            {
+                Debug.Log("End reached");
+                SetReward(10.0f);
+                EndEpisode();
+            }
         }
         else
         {
             AddReward(-0.1f);
         }
 
-        // Apply a tiny negative reward every step to encourage action
+        // apply a tiny negative reward every step to encourage action
         if (MaxStep > 0)
         {
             AddReward(-1f / MaxStep);
@@ -105,50 +110,26 @@ public class MazeAgent : Agent
         _myNextMove = MovementDirection.Nothing;
     }
 
-    //checks in all dimensions for possible next steps
-    private List<MovementDirection> GetPossibleActions(Cube[,,] mazeArray, Vector3Int currPos)
-    {
-        var possibleActions = new List<MovementDirection>();
-        
-        foreach (MovementDirection dir in Enum.GetValues(typeof(MovementDirection)))
-        {
-            if (IsActionLegal(dir))
-            {
-                possibleActions.Add(dir);
-            }
-        }
-
-        return possibleActions;
-    }
-
     private bool IsActionLegal(MovementDirection direction)
     {
-        var newPosition = _currPos + GetDirectionVector(direction);
-        return IsInRange(newPosition) && IsSurfaceCube(newPosition) && !GetCube(newPosition).GetIsWall();
+        var newPosition = _currPos + GetVectorToEnum(direction);
+        return IsCubeInsideMaze(newPosition) && IsCubeOnSurface(newPosition) && !_maze.GetCube(newPosition).GetIsWall();
     }
 
-    private Cube GetCube(Vector3Int coords)
+    private bool IsCubeInsideMaze(Vector3 newPosition)
     {
-        return _mazeArray[coords.x, coords.y, coords.z];
+        return newPosition.x >= 0 && newPosition.x < _mazeController.GetMaze().GetCubes().GetLength(0) &&
+               newPosition.y >= 0 && newPosition.y < _mazeController.GetMaze().GetCubes().GetLength(1) &&
+               newPosition.z >= 0 && newPosition.z < _mazeController.GetMaze().GetCubes().GetLength(2);
     }
 
-    // checks if cube outside of the maze bounds
-    private bool IsInRange(Vector3 newPosition)
-    {
-        return newPosition.x >= 0 && newPosition.x < _mazeController.GetMazeArray().GetLength(0) &&
-               newPosition.y >= 0 && newPosition.y < _mazeController.GetMazeArray().GetLength(1) &&
-               newPosition.z >= 0 && newPosition.z < _mazeController.GetMazeArray().GetLength(2);
-    }
-
-    // check if cube is on the surface
-    private bool IsSurfaceCube(Vector3Int newPosition)
+    private bool IsCubeOnSurface(Vector3Int newPosition)
     {
         var surfaceCubePositions = _mazeController.GetSurfaceCubePositions();
         return surfaceCubePositions.Contains(newPosition);
     }
 
-    // converts enums to vectors
-    private static Vector3Int GetDirectionVector(MovementDirection val)
+    private static Vector3Int GetVectorToEnum(MovementDirection val)
     {
         return val switch
         {
@@ -164,7 +145,7 @@ public class MazeAgent : Agent
 
     public override void CollectObservations(VectorSensor sensor)
     {
-        // number of observations corresponds to mazeAgentPrefab > Behavior Parameters > Vector Observation Space Size
+        // number of observations corresponds to mazeAgentPrefab > behavior parameters > vector observation space size
         sensor.AddObservation(transform.position);
 
         var goal = GameObject.FindWithTag("EndCube");
@@ -174,15 +155,5 @@ public class MazeAgent : Agent
         }
 
         // 2 x Vector3 = 6 values
-    }
-
-    private void OnCollisionEnter(Collision collision)
-    {
-        if (collision.gameObject.CompareTag("EndCube"))
-        {
-            Debug.Log("End reached");
-            SetReward(10.0f);
-            EndEpisode();
-        }
     }
 }
