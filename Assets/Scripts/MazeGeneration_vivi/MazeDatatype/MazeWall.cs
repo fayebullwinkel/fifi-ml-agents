@@ -15,9 +15,11 @@ namespace MazeGeneration_vivi.MazeDatatype
         public WallType Type { get; set; }
         public List<MazeCell> Cells { get; private set; }
         public Grid Grid { get; set; }
+        public Maze Maze { get; set; }
 
-        public void InitMazeWall(Grid grid, WallType type, List<MazeCell> cells)
+        public void InitMazeWall(Maze maze, Grid grid, WallType type, List<MazeCell> cells)
         {
+            Maze = maze;
             Grid = grid;
             Type = type;
             Cells = cells;
@@ -35,7 +37,7 @@ namespace MazeGeneration_vivi.MazeDatatype
             // Mark all cells that this wall was connected to as visited
             foreach (var cell in Cells.Where(cell => !cell.Visited))
             {
-                Grid.MarkCellVisited(cell.X, cell.Z);
+                Maze.MarkCellVisited(cell);
             }
             
             Destroy(gameObject);

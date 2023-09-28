@@ -59,6 +59,8 @@ namespace MazeGeneration_vivi.MazeDatatype
             // PlaceAgent();
         }
 
+        #region GenerateMethods
+
         public void GenerateMaze()
         {
             switch (mazeType)
@@ -116,6 +118,10 @@ namespace MazeGeneration_vivi.MazeDatatype
                 PositionGrid(grid);
             }
         }
+        
+        #endregion
+
+        #region GeneralMethods
 
         private void PositionGrid(Grid grid)
         {
@@ -193,6 +199,10 @@ namespace MazeGeneration_vivi.MazeDatatype
                     throw new ArgumentOutOfRangeException();
             }
         }
+        
+        #endregion
+
+        #region PlacingMethods
 
         public void PlaceAgent()
         {
@@ -217,7 +227,7 @@ namespace MazeGeneration_vivi.MazeDatatype
             Debug.Log("Placed agent at " + position + " in grid " + cubeFace + " at cell " + randomX + ", " + randomZ + ".");
                 
             PlaceStart(position);
-            grid.MarkCellVisited(randomX, randomZ);
+            MarkCellVisited(randomCell);
         }
         
         public void PlaceStart(Vector3 position)
@@ -261,6 +271,10 @@ namespace MazeGeneration_vivi.MazeDatatype
                 Debug.Log("Maze is solvable: " + MazeIsValid());
             }
         }
+        
+        #endregion
+
+        #region MovementMethods
 
         public void MoveAgent(EDirection direction)
         {
@@ -305,6 +319,37 @@ namespace MazeGeneration_vivi.MazeDatatype
             agentTransform.localPosition = targetPosition;
             AgentIsMoving = false;
         }
+        
+        #endregion
+
+        #region MazeMethods
+
+        public void MarkCellVisited(MazeCell cell)
+        {
+            cell.Visited = true;
+            var grid = cell.Grid;
+            if (!showVisitedCells)
+            {
+                return;
+            }
+            if (cell == StartCell || cell == EndCell)
+            {
+                return;
+            }
+            var position = grid.GetPositionFromCell(cell);
+            if(grid.PathCellParent == null)
+            {
+                grid.PathCellParent = new GameObject("PathCellParent");
+                grid.PathCellParent.transform.parent = grid.Parent.transform;
+                grid.PathCellParent.transform.localPosition = Vector3.zero;
+                grid.PathCellParent.transform.localScale = Vector3.one;
+                grid.PathCellParent.transform.localRotation = Quaternion.identity;
+            }
+            var pathCellObject = Instantiate(prefabCollection.pathCellPrefab, grid.PathCellParent.transform);
+            pathCellObject.transform.localPosition = position;
+            pathCellObject.transform.localScale = new Vector3(cellSize, 0.01f, cellSize);
+            grid.PathCells.Add(pathCellObject);
+        }
 
         public void ClearMaze()
         {
@@ -318,6 +363,8 @@ namespace MazeGeneration_vivi.MazeDatatype
             EndCell = null;
             Grids = new Dictionary<ECubeFace, Grid>();
         }
+        
+        #endregion
         
         #region MazeValidationMethods
         
@@ -484,6 +531,8 @@ namespace MazeGeneration_vivi.MazeDatatype
         
         #endregion
 
+        #region Getters
+
         public int GetCellCount()
         {
             return size * size * 6;
@@ -497,5 +546,7 @@ namespace MazeGeneration_vivi.MazeDatatype
         }
         
         public bool GetIsMazeEmpty() => Grids.Count == 0;
+        
+        #endregion
     }
 }

@@ -17,7 +17,7 @@ namespace MazeGeneration_vivi.MazeDatatype
         public List<MazeWall> Walls { get; }
         public List<MazeCorner> Corners { get; }
         public List<GameObject> PathCells { get; }
-        private GameObject PathCellParent { get; set; }
+        public GameObject PathCellParent { get; set; }
 
         public Maze Maze { get; }
 
@@ -319,7 +319,7 @@ namespace MazeGeneration_vivi.MazeDatatype
             wallObject.transform.localScale = GetWallScale(wallType);
             var wall = wallObject.GetComponent<MazeWall>();
             var cells = new List<MazeCell> {currentCell, neighborCell};
-            wall.InitMazeWall(grid, wallType, cells);
+            wall.InitMazeWall(Maze, grid, wallType, cells);
             currentCell.AddWall(wall);
             neighborCell.AddWall(wall);
             Walls.Add(wall);
@@ -407,33 +407,6 @@ namespace MazeGeneration_vivi.MazeDatatype
         }
 
         #endregion
-
-        public void MarkCellVisited(int x, int z)
-        {
-            var cell = Cells[x, z];
-            cell.Visited = true;
-            if (!Maze.showVisitedCells)
-            {
-                return;
-            }
-            if (cell == Maze.StartCell || cell == Maze.EndCell)
-            {
-                return;
-            }
-            var position = GetPositionFromCell(cell);
-            if(PathCellParent == null)
-            {
-                PathCellParent = new GameObject("PathCellParent");
-                PathCellParent.transform.parent = Parent.transform;
-                PathCellParent.transform.localPosition = Vector3.zero;
-                PathCellParent.transform.localScale = Vector3.one;
-                PathCellParent.transform.localRotation = Quaternion.identity;
-            }
-            var pathCellObject = Object.Instantiate(prefabCollection.pathCellPrefab, PathCellParent.transform);
-            pathCellObject.transform.localPosition = position;
-            pathCellObject.transform.localScale = new Vector3(Maze.cellSize, 0.01f, Maze.cellSize);
-            PathCells.Add(pathCellObject);
-        }
 
         public int GetVisitedCells()
         {
