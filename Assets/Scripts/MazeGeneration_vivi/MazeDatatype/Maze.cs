@@ -284,6 +284,11 @@ namespace MazeGeneration_vivi.MazeDatatype
         {
             var grid = agent.GetComponent<MazeGenerationAgent>().CurrentGrid;
             var cell = grid.GetCellFromPosition(position); 
+            // Goal can not be placed on the start cell
+            if(cell == StartCell)
+            {
+                return;
+            }
             if (cell != null)
             {
                 if (EndCell == null)
