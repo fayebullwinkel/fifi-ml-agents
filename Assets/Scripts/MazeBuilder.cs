@@ -5,10 +5,7 @@ public class MazeBuilder: MonoBehaviour
 {
     private GameObject _mazeObj;
     private GameObject _mazeBase;
-    private GameObject _agentObj;
     private GameObject _wallPrefab;
-    private GameObject _endCubeObj;
-    private GameObject _agentPrefab;
     
     private int _x;
     private int _y;
@@ -16,24 +13,19 @@ public class MazeBuilder: MonoBehaviour
     
     private Cube[,,] _cubes;
     private Maze _maze;
+
+    private GameObject _referenceCube;
     
-    public void Initialize(Maze maze)
+    public void Initialize(Maze maze, GameObject referenceCube)
     {
         _maze = maze;
+        _referenceCube = referenceCube;
         _cubes = _maze.GetCubes();
         _x = _cubes.GetLength(0);
         _y = _cubes.GetLength(1);
         _z = _cubes.GetLength(2);
         
         _wallPrefab = (GameObject)Resources.Load("Prefabs/Wall", typeof(GameObject));
-        _agentPrefab = (GameObject)Resources.Load("Prefabs/MazeAgent", typeof(GameObject));
-        _endCubeObj = GameObject.CreatePrimitive(PrimitiveType.Cube);
-        _endCubeObj.tag = "EndCube";
-    }
-    
-    public void Delete()
-    {
-        Destroy(_mazeObj);
     }
 
     public GameObject BuildMaze(Vector3 position, Vector3 scale)
@@ -42,10 +34,10 @@ public class MazeBuilder: MonoBehaviour
         _mazeObj.transform.position = position;
         _mazeObj.transform.localScale = scale;
         _mazeObj.gameObject.name = "Maze";
+        _mazeObj.gameObject.tag = "Maze";
 
         CreateWalls();
         CreateMazeBase();
-        PlaceEndCube();
 
         return _mazeObj;
     }
@@ -72,7 +64,7 @@ public class MazeBuilder: MonoBehaviour
                     if (_cubes[x, y, z].GetIsWall())
                     {
                         var wall = Instantiate(_wallPrefab);
-                        wall.transform.localScale = _endCubeObj.transform.localScale;
+                        wall.transform.localScale = _referenceCube.transform.localScale;
                         wall.transform.parent = _mazeObj.transform;
                         wall.transform.localPosition = _cubes[x, y, z]
                             .GetCubePosition(_mazeObj.transform.localScale);
@@ -80,36 +72,5 @@ public class MazeBuilder: MonoBehaviour
                 }
             }
         }
-    }
-
-    private void PlaceEndCube()
-    {
-        var endCube = _maze.GetEndCube();
-        PlaceCube(_endCubeObj, endCube, Color.red);
-    }
-    
-    private void PlaceCube(GameObject cubeObj, Cube cube, Color color)
-    {
-        cubeObj.transform.parent = _mazeObj.transform;
-        cubeObj.transform.localPosition = cube.GetCubePosition(_mazeObj.transform.localScale);
-        cubeObj.GetComponent<Renderer>().material.color = color;
-    }
-    
-    public void PlaceMazeAgent()
-    {
-        _agentObj = Instantiate(_agentPrefab);
-        PlaceCube(_agentObj, _maze.GetStartCube(), Color.green);
-        _agentObj.transform.localScale = _endCubeObj.transform.localScale;
-        _agentObj.GetComponent<Rigidbody>().isKinematic = true;
-    }
-
-    public GameObject GetAgentObject()
-    {
-        return _agentObj;
-    }
-
-    public GameObject GetMazeObj()
-    {
-        return _mazeObj;
     }
 }

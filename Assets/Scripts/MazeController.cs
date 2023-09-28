@@ -4,43 +4,49 @@ using UnityEngine;
 public class MazeController : MonoBehaviour
 {
     public MazeGeneration mazeGenerator;
-
     private MazeBuilder _mazeBuilder;
     private Maze _maze;
+    
+    private GameObject _endCubeObj;
+    private GameObject _agentPrefab;
+    private GameObject _agentObj;
     
     // for presenting the cube
     public bool rotateCube;
     private readonly float _rotationSpeed = 30f;
     private Quaternion _currentRotation;
     private GameObject _mazeObj;
-
+    
     private void Start()
     {
         _mazeBuilder = gameObject.AddComponent<MazeBuilder>();
-        ResetArea();
+        
+        _endCubeObj = GameObject.CreatePrimitive(PrimitiveType.Cube);
+        _endCubeObj.tag = "EndCube";
+        
+        _agentPrefab = (GameObject)Resources.Load("Prefabs/MazeAgent", typeof(GameObject));
+        _agentObj = Instantiate(_agentPrefab);  
+        _agentObj.transform.localScale = _endCubeObj.transform.localScale;
+        _agentObj.GetComponent<Rigidbody>().isKinematic = true;
     }
 
     public void ResetArea()
     {
-        _mazeBuilder.Delete();
-        if (gameObject.GetComponent<MazeBuilder>() != null)
-        {
-            _mazeBuilder = gameObject.AddComponent<MazeBuilder>();
-        }
         _maze = GenerateMaze();
         BuildMaze(_maze);
-        _mazeBuilder.PlaceMazeAgent();
+        MoveCube(_agentObj, _maze.GetStartCube(), Color.green);
+        MoveCube(_endCubeObj, _maze.GetEndCube(), Color.red);
         RotateMazeToFaceCamera();
     }
 
-    private Maze GenerateMaze()
+    private Maze GenerateMaze() 
     {
         return mazeGenerator.Generate(transform.localScale);
     }
     
     private void BuildMaze(Maze maze)
     {
-        _mazeBuilder.Initialize(maze);
+        _mazeBuilder.Initialize(maze, _endCubeObj);
         
         var localScale = transform.localScale;
         _mazeObj = _mazeBuilder.BuildMaze(transform.position, localScale);
@@ -48,7 +54,7 @@ public class MazeController : MonoBehaviour
     
     private void RotateMazeToFaceCamera()
     {
-        var startCubeCenter = _mazeBuilder.GetAgentObject().transform.position;
+        var startCubeCenter = _agentObj.transform.position;
         var mazeCubeCenter = _mazeObj.transform.position;
 
         // Direction from the startCube to the mazeCube
@@ -101,15 +107,21 @@ public class MazeController : MonoBehaviour
         {
             _currentRotation = _mazeObj.transform.rotation;
             ResetArea();
-            _mazeBuilder.GetMazeObj().transform.rotation = _currentRotation;
+            _mazeObj.transform.rotation = _currentRotation;
         }
 
         // rotate the maze, just for fun
-        _mazeObj = _mazeBuilder.GetMazeObj();
         if (_mazeObj)
         {
             _mazeObj.transform.Rotate(Vector3.up, _rotationSpeed * Time.deltaTime, Space.World);
         }
+    }
+    
+    private void MoveCube(GameObject cubeObj, Cube cube, Color color)
+    {
+        cubeObj.transform.parent = _mazeObj.transform;
+        cubeObj.transform.localPosition = cube.GetCubePosition(_mazeObj.transform.localScale);
+        cubeObj.GetComponent<Renderer>().material.color = color;
     }
 
     public Vector3Int GetStartPosition()

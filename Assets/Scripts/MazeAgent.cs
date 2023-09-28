@@ -27,14 +27,14 @@ public class MazeAgent : Agent
     {
         base.Initialize();
         _mazeController = GameObject.Find("MazeController").GetComponent<MazeController>();
-        _currPos = _mazeController.GetStartPosition();
-        _maze = _mazeController.GetMaze();
     }
 
     public override void OnEpisodeBegin()
     {
         Debug.Log("Epsiode begins");
         _mazeController.ResetArea();
+        _currPos = _mazeController.GetStartPosition();
+        _maze = _mazeController.GetMaze();
     }
 
     public override void OnActionReceived(ActionBuffers actionBuffers)
