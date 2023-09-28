@@ -34,7 +34,6 @@ public class MazeBuilder: MonoBehaviour
         _mazeObj.transform.position = position;
         _mazeObj.transform.localScale = scale;
         _mazeObj.gameObject.name = "Maze";
-        _mazeObj.gameObject.tag = "Maze";
 
         CreateWalls();
         CreateMazeBase();
