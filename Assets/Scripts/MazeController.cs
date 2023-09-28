@@ -32,6 +32,9 @@ public class MazeController : MonoBehaviour
 
     public void ResetArea()
     {
+        GameObject.FindGameObjectWithTag("MazeAgent").transform.parent = null;
+        Destroy(_mazeObj);
+        
         _maze = GenerateMaze();
         BuildMaze(_maze);
         MoveCube(_agentObj, _maze.GetStartCube(), Color.green);
@@ -46,7 +49,7 @@ public class MazeController : MonoBehaviour
     
     private void BuildMaze(Maze maze)
     {
-        _mazeBuilder.Initialize(maze, _endCubeObj);
+        _mazeBuilder.Initialize(maze);
         
         var localScale = transform.localScale;
         _mazeObj = _mazeBuilder.BuildMaze(transform.position, localScale);

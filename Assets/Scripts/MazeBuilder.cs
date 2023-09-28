@@ -13,13 +13,10 @@ public class MazeBuilder: MonoBehaviour
     
     private Cube[,,] _cubes;
     private Maze _maze;
-
-    private GameObject _referenceCube;
     
-    public void Initialize(Maze maze, GameObject referenceCube)
+    public void Initialize(Maze maze)
     {
         _maze = maze;
-        _referenceCube = referenceCube;
         _cubes = _maze.GetCubes();
         _x = _cubes.GetLength(0);
         _y = _cubes.GetLength(1);
@@ -63,7 +60,7 @@ public class MazeBuilder: MonoBehaviour
                     if (_cubes[x, y, z].GetIsWall())
                     {
                         var wall = Instantiate(_wallPrefab);
-                        wall.transform.localScale = _referenceCube.transform.localScale;
+                        wall.transform.localScale = new Vector3(1f, 1f, 1f);
                         wall.transform.parent = _mazeObj.transform;
                         wall.transform.localPosition = _cubes[x, y, z]
                             .GetCubePosition(_mazeObj.transform.localScale);
