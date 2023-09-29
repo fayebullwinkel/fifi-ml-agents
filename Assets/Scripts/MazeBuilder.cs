@@ -1,9 +1,8 @@
-﻿using System.Collections.Generic;
-using UnityEngine;
+﻿using UnityEngine;
 
 public class MazeBuilder: MonoBehaviour
 {
-    private GameObject _mazeObj;
+    public GameObject mazeObj;
     private GameObject _mazeBase;
     private GameObject _wallPrefab;
     
@@ -27,21 +26,21 @@ public class MazeBuilder: MonoBehaviour
 
     public GameObject BuildMaze(Vector3 position, Vector3 scale)
     {
-        _mazeObj = new GameObject();
-        _mazeObj.transform.position = position;
-        _mazeObj.transform.localScale = scale;
-        _mazeObj.gameObject.name = "Maze";
+        mazeObj = new GameObject();
+        mazeObj.transform.position = position;
+        mazeObj.transform.localScale = scale;
+        mazeObj.gameObject.name = "Maze";
 
         CreateWalls();
         CreateMazeBase();
 
-        return _mazeObj;
+        return mazeObj;
     }
     
     private void CreateMazeBase()
     {
         _mazeBase = GameObject.CreatePrimitive(PrimitiveType.Cube);
-        _mazeBase.transform.parent = _mazeObj.transform;
+        _mazeBase.transform.parent = mazeObj.transform;
         _mazeBase.transform.localPosition = new Vector3(0, 0, 0);
         _mazeBase.transform.localScale = new Vector3(0.9f, 0.9f, 0.9f);
         _mazeBase.tag = "Floor";
@@ -61,9 +60,9 @@ public class MazeBuilder: MonoBehaviour
                     {
                         var wall = Instantiate(_wallPrefab);
                         wall.transform.localScale = new Vector3(1f, 1f, 1f);
-                        wall.transform.parent = _mazeObj.transform;
+                        wall.transform.parent = mazeObj.transform;
                         wall.transform.localPosition = _cubes[x, y, z]
-                            .GetRelativePosition(_mazeObj.transform.localScale);
+                            .GetRelativePosition(mazeObj.transform.localScale);
                     }
                 }
             }

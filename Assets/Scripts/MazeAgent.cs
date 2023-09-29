@@ -10,6 +10,7 @@ public class MazeAgent : Agent
     private MazeController _mazeController;
     private Vector3Int _currPos;
     private Maze _maze;
+    private Vector3Int _startPos;
 
     // Heuristic
     private MovementDirection _myNextMove = MovementDirection.Nothing;
@@ -34,9 +35,7 @@ public class MazeAgent : Agent
     public override void OnEpisodeBegin()
     {
         Debug.Log("Epsiode begins");
-        _mazeController.ResetArea();
-        _currPos = _mazeController.GetStartPosition();
-        _maze = _mazeController.GetMaze();
+        _currPos = _startPos;
     }
 
     public override void OnActionReceived(ActionBuffers actionBuffers)
@@ -62,6 +61,7 @@ public class MazeAgent : Agent
                 Debug.Log("End reached");
                 SetReward(10.0f);
                 EndEpisode();
+                _mazeController.Reset();
             }
         }
         else
@@ -153,9 +153,9 @@ public class MazeAgent : Agent
 
     private bool IsCubeInsideMaze(Vector3 newPosition)
     {
-        return newPosition.x >= 0 && newPosition.x < _mazeController.GetMaze().GetCubes().GetLength(0) &&
-               newPosition.y >= 0 && newPosition.y < _mazeController.GetMaze().GetCubes().GetLength(1) &&
-               newPosition.z >= 0 && newPosition.z < _mazeController.GetMaze().GetCubes().GetLength(2);
+        return newPosition.x >= 0 && newPosition.x < _maze.GetCubes().GetLength(0) &&
+               newPosition.y >= 0 && newPosition.y < _maze.GetCubes().GetLength(1) &&
+               newPosition.z >= 0 && newPosition.z < _maze.GetCubes().GetLength(2);
     }
 
     private bool IsCubeOnSurface(Vector3Int newPosition)
@@ -207,5 +207,15 @@ public class MazeAgent : Agent
         }
 
         // 2 x Vector3 + 98 = 104
+    }
+
+    public void SetStartPosition(Vector3Int startPos)
+    {
+        _startPos = startPos;
+    }
+    
+    public void SetMaze(Maze maze)
+    {
+        _maze = maze;
     }
 }
