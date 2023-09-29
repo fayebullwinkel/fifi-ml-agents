@@ -11,10 +11,11 @@ namespace MazeGeneration_vivi
         public Maze Maze = null!;
         public Grid CurrentGrid {get; set;} = null!;
         public MazeCell CurrentCell {get; set;} = null!;
-        private int oldVisitedCells = 0;
+        private int oldVisitedCells;
 
         protected void SetupMaze()
         {
+            oldVisitedCells = 0;
             // generate new maze grid and place agent
             if (!Maze.GetIsMazeEmpty())
             {
@@ -37,6 +38,11 @@ namespace MazeGeneration_vivi
             var grid = startCell.Grid;
             var startCellPosition = grid.GetPositionFromCell(startCell);
             sensor.AddObservation(startCellPosition);
+            // For each Neighbour of the current cell: 1 if visited, 0 if not visited
+            foreach (var neighbour in CurrentCell.Neighbours)
+            {
+                sensor.AddObservation(neighbour.Visited ? 1 : 0);
+            }
             // The number of walls on each corner of the current cell
             foreach (var corner in CurrentCell.Corners)
             {
