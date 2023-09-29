@@ -138,6 +138,7 @@ namespace MazeGeneration_vivi.MazeDatatype
                 };
 
                 var grid = new Grid(this, size, gridParent, face, visitedCellsText);
+                grid.UpdateVisitedCellsText();
                 Grids.Add(face, grid);
             }
             foreach (var grid in Grids.Values)
@@ -321,7 +322,7 @@ namespace MazeGeneration_vivi.MazeDatatype
             AgentIsMoving = true;
             var mazeAgent = agent.GetComponent<MazeGenerationAgent>();
             var currentGrid = mazeAgent.CurrentGrid;
-            var currentCell = currentGrid.GetCellFromPosition(agent.transform.localPosition);
+            var currentCell = mazeAgent.CurrentCell;
             var nextCell = currentGrid.GetNeighborCell(currentCell, direction);
             var nextGrid = nextCell?.Grid;
     
@@ -340,10 +341,13 @@ namespace MazeGeneration_vivi.MazeDatatype
                 mazeAgent.CurrentGrid = nextGrid;
             }
             mazeAgent.CurrentCell = nextCell;
-            StartCoroutine(MoveAgentCoroutine(nextPosition));
+            // try find a wall between the current cell and the next cell
+            var wall = currentGrid.Walls.Find(x => x.Cells.Contains(currentCell) && x.Cells.Contains(nextCell));
+            var nextWall = nextGrid.Walls.Find(x => x.Cells.Contains(currentCell) && x.Cells.Contains(nextCell));
+            StartCoroutine(MoveAgentCoroutine(nextPosition, wall, nextWall));
         }
 
-        private IEnumerator MoveAgentCoroutine(Vector3 targetPosition)
+        private IEnumerator MoveAgentCoroutine(Vector3 targetPosition, MazeWall wall, MazeWall nextWall)
         {
             var agentTransform = agent.transform;
             var startPosition = agentTransform.localPosition;
@@ -361,6 +365,14 @@ namespace MazeGeneration_vivi.MazeDatatype
             // Ensure the agent is precisely at the target position
             agentTransform.localPosition = targetPosition;
             AgentIsMoving = false;
+            if(wall != null)
+            {
+                wall.DestroyWall();
+            }
+            if(nextWall != null)
+            {
+                nextWall.DestroyWall();
+            }
         }
         
         #endregion
@@ -402,10 +414,6 @@ namespace MazeGeneration_vivi.MazeDatatype
         public void ClearMaze()
         {
             agent.transform.SetParent(null);
-            foreach (var grid in Grids.Values)
-            {
-                grid.UpdateVisitedCellsText();
-            }
             var grids = GameObject.FindGameObjectsWithTag("Grid");
             foreach (var grid in grids)
             {

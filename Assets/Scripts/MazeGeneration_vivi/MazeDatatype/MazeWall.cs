@@ -30,7 +30,7 @@ namespace MazeGeneration_vivi.MazeDatatype
             Cells.Add(cell);
         }
 
-        private void DestroyWall()
+        public void DestroyWall()
         {
             Grid.RemoveWall(this);
 
