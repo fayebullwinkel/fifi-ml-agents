@@ -4,7 +4,7 @@ public class Cube
 {
     private float _weight;
     private bool _isWall;
-    private bool _isDeletable;
+    private bool _isCoreCube;
     private bool _isGoalCube;
     private bool _isStartCube;
     private GameObject _cubeObj;
@@ -41,14 +41,14 @@ public class Cube
         _isWall = isWall;
     }
 
-    public bool GetIsDeletable()
+    public bool GetIsCoreCube()
     {
-        return _isDeletable;
+        return _isCoreCube;
     }
 
-    public void SetIsDeletable(bool toDelete)
+    public void IsCoreCube(bool isCoreCube)
     {
-        _isDeletable = toDelete;
+        _isCoreCube = isCoreCube;
     }
 
     public int GetX()

@@ -63,10 +63,10 @@ public class MazeAgent : Agent
 
             if (_maze.GetCube(_currPos).GetIsGoalCube())
             {
-                Debug.Log("End reached");
+                Debug.Log("Goal reached");
                 SetReward(10.0f);
-                EndEpisode();
                 _mazeController.ResetArea(_mazeObj, _mazeBuilder, _endCubeObj, _agentObj, _mazePosition);
+                EndEpisode();
             }
         }
         else
@@ -93,7 +93,7 @@ public class MazeAgent : Agent
             var direction = GetVectorToEnum(dir);
             var newPosition = currPos + direction;
 
-            if (IsInRange(newPosition) && IsCubeOnSurface(newPosition) && !_maze.GetCube(newPosition).GetIsWall())
+            if (IsCubeInMazeBounds(newPosition) && IsCubeOnSurface(newPosition) && !_maze.GetCube(newPosition).GetIsWall())
             {
                 possibleActions.Add(dir);
             }
@@ -102,12 +102,11 @@ public class MazeAgent : Agent
         return possibleActions;
     }
     
-    // checks if cube outside of the maze bounds
-    private bool IsInRange(Vector3 newPosition)
+    private bool IsActionLegal(MovementDirection direction)
     {
-        return newPosition.x >= 0 && newPosition.x < _maze.GetCubes().GetLength(0) &&
-               newPosition.y >= 0 && newPosition.y < _maze.GetCubes().GetLength(1) &&
-               newPosition.z >= 0 && newPosition.z < _maze.GetCubes().GetLength(2);
+        var newPosition = _currPos + GetVectorToEnum(direction);
+        
+        return IsCubeInMazeBounds(newPosition) && IsCubeOnSurface(newPosition) && !_maze.GetCube(newPosition).GetIsWall();
     }
 
     public void Update()
@@ -150,13 +149,7 @@ public class MazeAgent : Agent
         _myNextMove = MovementDirection.Nothing;
     }
 
-    private bool IsActionLegal(MovementDirection direction)
-    {
-        var newPosition = _currPos + GetVectorToEnum(direction);
-        return IsCubeInsideMaze(newPosition) && IsCubeOnSurface(newPosition) && !_maze.GetCube(newPosition).GetIsWall();
-    }
-
-    private bool IsCubeInsideMaze(Vector3 newPosition)
+    private bool IsCubeInMazeBounds(Vector3 newPosition)
     {
         return newPosition.x >= 0 && newPosition.x < _maze.GetCubes().GetLength(0) &&
                newPosition.y >= 0 && newPosition.y < _maze.GetCubes().GetLength(1) &&
@@ -165,11 +158,40 @@ public class MazeAgent : Agent
 
     private bool IsCubeOnSurface(Vector3Int newPosition)
     {
-        var surfaceCubePositions = _mazeController.GetSurfaceCubePositions();
+        var surfaceCubePositions = GetSurfaceCubePositions();
         return surfaceCubePositions.Contains(newPosition);
     }
 
-    private static Vector3Int GetVectorToEnum(MovementDirection val)
+    private List<Vector3Int> GetSurfaceCubePositions()
+    {
+        var positions = new List<Vector3Int>();
+        var cubes = _maze.GetCubes();
+
+        // Loop through the surface cubes
+        for (var d = 0; d < cubes.GetLength(2); d++)
+        {
+            for (var h = 0; h < cubes.GetLength(1); h++)
+            {
+                for (var w = 0; w < cubes.GetLength(0); w++)
+                {
+                    // Check if the cube is on the surface (i.e., on the outermost layer)
+                    if (d == 0 || d == cubes.GetLength(2) - 1 || h == 0 || h == cubes.GetLength(1) - 1 || w == 0 ||
+                        w == cubes.GetLength(0) - 1)
+                    {
+                        // Check if surfaceCube is not a wall
+                        if (!cubes[w, h, d].GetIsWall())
+                        {
+                            positions.Add(new Vector3Int(w, h, d));
+                        }
+                    }
+                }
+            }
+        }
+
+        return positions;
+    }
+    
+    static Vector3Int GetVectorToEnum(MovementDirection val)
     {
         return val switch
         {

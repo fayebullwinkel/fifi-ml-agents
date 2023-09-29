@@ -1,4 +1,6 @@
+using System;
 using System.Collections.Generic;
+using DefaultNamespace;
 using UnityEngine;
 using Random = UnityEngine.Random;
 
@@ -23,7 +25,7 @@ public class MazeGeneration : ScriptableObject
 
         SearchArray(0);
         PrimsAlgorithm();
-
+        
         var randomStartPos = ChooseRandomPosition();
 
         var randomEndPos = ChooseRandomPosition();
@@ -33,7 +35,7 @@ public class MazeGeneration : ScriptableObject
             _cubes[randomEndPos.x, randomEndPos.y, randomEndPos.z]);
     }
 
-    private bool IsBoundaryCube(int width, int height, int depth)
+    private bool IsSurfaceCube(int width, int height, int depth)
     {
         return depth == 0 || height == 0 || width == 0 || depth == _z - 1 || height == _y - 1 || width == _x - 1;
     }
@@ -55,7 +57,7 @@ public class MazeGeneration : ScriptableObject
                     {
                         case 0:
                             // Mode 0: Initiating all walls and setting cube properties
-                            if (IsBoundaryCube(x, y, z))
+                            if (IsSurfaceCube(x, y, z))
                             {
                                 // Set cube properties for boundary cubes
                                 _cubes[x, y, z].SetIsWall(true);
@@ -66,7 +68,7 @@ public class MazeGeneration : ScriptableObject
                             {
                                 // Set cube properties for non-boundary cubes
                                 _cubes[x, y, z].SetIsWall(false);
-                                _cubes[x, y, z].SetIsDeletable(true);
+                                _cubes[x, y, z].IsCoreCube(true);
                             }
 
                             break;
@@ -142,7 +144,7 @@ public class MazeGeneration : ScriptableObject
                                 IsValidNeighbor(xi, yi, zi, pointX, pointY, pointZ))
                             {
                                 if (!_cubes[pointX + xi, pointY + yi, pointZ + zi].GetIsWall() &&
-                                    !_cubes[pointX + xi, pointY + yi, pointZ + zi].GetIsDeletable())
+                                    !_cubes[pointX + xi, pointY + yi, pointZ + zi].GetIsCoreCube())
                                 {
                                     _possibleNextCubes.Add(_cubes[pointX, pointY, pointZ]);
                                 }
@@ -222,8 +224,7 @@ public class MazeGeneration : ScriptableObject
             return _surfaceCubePositions[random];
         }
 
-        Debug.Log("no surface cubes found. this should not happen.");
-        return Vector3Int.zero;
+        throw new GenerationException("no surface cubes found. this should not happen.");
     }
 
     private List<Vector3Int> FindValidSurfaceCubePositions(Cube[,,] cubes, Vector3Int excludePosition = default)
@@ -254,10 +255,5 @@ public class MazeGeneration : ScriptableObject
         }
 
         return positions;
-    }
-
-    public List<Vector3Int> GetSurfaceCubePositions()
-    {
-        return _surfaceCubePositions;
     }
 }
