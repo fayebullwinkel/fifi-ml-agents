@@ -8,63 +8,59 @@ public class MazeController : MonoBehaviour
     public int mazeCountZ = 1;
     public int spacing = 4;
 
-    private MazeBuilder _mazeBuilder;
-
-    private GameObject _mazeObj;
-    private GameObject _agentPrefab;
-    private GameObject _agentObj;
-    private GameObject _endCubeObj;
-    private Maze _maze;
-
-    private Vector3 _mazePosition;
-    private bool _first;
-
+    private bool _firstRound;
     private void Start()
     {
-        _agentPrefab = (GameObject)Resources.Load("Prefabs/MazeAgent", typeof(GameObject));
+        var agentPrefab = (GameObject)Resources.Load("Prefabs/MazeAgent", typeof(GameObject));
         var localScale = transform.localScale;
 
-        for (int i = 0; i < mazeCountX; i++)
+        for (var i = 0; i < mazeCountX; i++)
         {
-            for (int j = 0; j < mazeCountZ; j++)
+            for (var j = 0; j < mazeCountZ; j++)
             {
-                Maze maze = null;
-                _mazeBuilder = gameObject.AddComponent<MazeBuilder>();
+                GameObject mazeObj = new GameObject();
+                var mazeBuilder = gameObject.AddComponent<MazeBuilder>();
 
-                _endCubeObj = GameObject.CreatePrimitive(PrimitiveType.Cube);
-                _endCubeObj.tag = "EndCube";
+                var endCubeObj = GameObject.CreatePrimitive(PrimitiveType.Cube);
+                endCubeObj.tag = "EndCube";
+                endCubeObj.name = "EndCube";
 
-                _agentObj = Instantiate(_agentPrefab);
-                _agentObj.transform.localScale = _endCubeObj.transform.localScale;
-                _agentObj.GetComponent<Rigidbody>().isKinematic = true;
+                var agentObj = Instantiate(agentPrefab);
+                agentObj.transform.localScale = endCubeObj.transform.localScale;
+                agentObj.GetComponent<Rigidbody>().isKinematic = true;
 
-                float xOffset = (i * (localScale.x + spacing)) - ((mazeCountX - 1) * 0.5f * (localScale.x + spacing));
-                float zOffset = (j * (localScale.z + spacing)) - ((mazeCountZ - 1) * 0.5f * (localScale.z + spacing));
+                var xOffset = (i * (localScale.x + spacing)) - ((mazeCountX - 1) * 0.5f * (localScale.x + spacing));
+                var zOffset = (j * (localScale.z + spacing)) - ((mazeCountZ - 1) * 0.5f * (localScale.z + spacing));
 
-                _mazePosition = transform.position + new Vector3(xOffset, 0f, zOffset);
-                _first = true;
-                
-                ResetArea(_mazeBuilder, maze, _endCubeObj, _agentObj, _mazePosition);
+                var mazePosition = transform.position + new Vector3(xOffset, 0f, zOffset);
+
+                ResetArea(mazeObj, mazeBuilder, endCubeObj, agentObj, mazePosition);
             }
         }
     }
 
-    private void ResetArea(MazeBuilder mazeBuilder, Maze maze, GameObject endCubeObj, GameObject agentObj, Vector3 mazePosition)
+    public void ResetArea(GameObject mazeObj, MazeBuilder mazeBuilder, GameObject endCubeObj, GameObject agentObj, Vector3 mazePosition)
     {
-        if (!_first)
+        var agent = mazeObj.transform.Find("MazeAgent(Clone)");
+        if (agent != null)
         {
-            _first = false;
-            mazeBuilder.mazeObj.transform.Find("MazeAgent").SetParent(null); 
-        }
-        Destroy(mazeBuilder.mazeObj);
+            agent.SetParent(null);
+            mazeObj.transform.Find("EndCube").SetParent(null);
+            int childCount = mazeObj.transform.childCount;
 
-        maze = GenerateMaze();
-        BuildMaze(mazeBuilder, maze, mazePosition);
-        agentObj.GetComponent<MazeAgent>().SetStartPosition(maze.GetStartCube().GetPos());
-        agentObj.GetComponent<MazeAgent>().SetMaze(maze);
-        MoveCube(mazeBuilder.mazeObj, agentObj, maze.GetStartCube(), Color.green);
-        MoveCube(mazeBuilder.mazeObj, endCubeObj, maze.GetEndCube(), Color.red);
-        RotateMazeToFaceCamera(mazeBuilder.mazeObj, agentObj);
+            for (int i = childCount - 1; i >= 0; i--)
+            {
+                Transform child = mazeObj.transform.GetChild(i);
+                Destroy(child.gameObject);
+            }
+        }
+        
+        var maze = GenerateMaze();
+        BuildMaze(mazeObj, mazeBuilder, maze, mazePosition);
+        SetAgentProperties(agentObj, maze, mazeBuilder, endCubeObj, mazePosition, mazeObj);
+        MoveCube(mazeObj, agentObj, maze.GetStartCube(), Color.green);
+        MoveCube(mazeObj, endCubeObj, maze.GetEndCube(), Color.red);
+        RotateMazeToFaceCamera(mazeObj, agentObj);
     }
 
     private Maze GenerateMaze()
@@ -72,10 +68,23 @@ public class MazeController : MonoBehaviour
         return mazeGenerator.Generate(transform.localScale);
     }
 
-    private void BuildMaze(MazeBuilder mazeBuilder, Maze maze, Vector3 mazePosition)
+    private void BuildMaze(GameObject mazeObj, MazeBuilder mazeBuilder, Maze maze, Vector3 mazePosition)
     {
         mazeBuilder.Initialize(maze);
-        mazeBuilder.BuildMaze(mazePosition, transform.localScale);
+        mazeBuilder.BuildMaze(mazePosition, transform.localScale, mazeObj);
+    }
+
+    private void SetAgentProperties(GameObject agentObj, Maze maze, MazeBuilder mazeBuilder, GameObject endCubeObj,
+        Vector3 mazePosition, GameObject mazeObj)
+    {
+        var agent = agentObj.GetComponent<MazeAgent>();
+        agent.SetStartPosition(maze.GetStartCube().GetPos());
+        agent.SetMaze(maze);
+        agent.SetMazeBuilder(mazeBuilder);
+        agent.SetEndCubeObj(endCubeObj);
+        agent.SetAgentObj(agentObj);
+        agent.SetMazePosition(mazePosition);
+        agent.SetMazeObj(mazeObj);
     }
 
     private void RotateMazeToFaceCamera(GameObject mazeObj, GameObject agentObj)
@@ -136,10 +145,5 @@ public class MazeController : MonoBehaviour
     public List<Vector3Int> GetSurfaceCubePositions()
     {
         return mazeGenerator.GetSurfaceCubePositions();
-    }
-
-    public void Reset()
-    {
-        ResetArea(_mazeBuilder, _maze, _endCubeObj, _agentObj, _mazePosition);
     }
 }

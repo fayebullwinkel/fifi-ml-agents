@@ -2,7 +2,6 @@
 
 public class MazeBuilder: MonoBehaviour
 {
-    public GameObject mazeObj;
     private GameObject _mazeBase;
     private GameObject _wallPrefab;
     
@@ -24,20 +23,17 @@ public class MazeBuilder: MonoBehaviour
         _wallPrefab = (GameObject)Resources.Load("Prefabs/Wall", typeof(GameObject));
     }
 
-    public GameObject BuildMaze(Vector3 position, Vector3 scale)
+    public void BuildMaze(Vector3 position, Vector3 scale, GameObject mazeObj)
     {
-        mazeObj = new GameObject();
         mazeObj.transform.position = position;
         mazeObj.transform.localScale = scale;
         mazeObj.gameObject.name = "Maze";
 
-        CreateWalls();
-        CreateMazeBase();
-
-        return mazeObj;
+        CreateWalls(mazeObj);
+        CreateMazeBase(mazeObj);
     }
     
-    private void CreateMazeBase()
+    private void CreateMazeBase(GameObject mazeObj)
     {
         _mazeBase = GameObject.CreatePrimitive(PrimitiveType.Cube);
         _mazeBase.transform.parent = mazeObj.transform;
@@ -48,7 +44,7 @@ public class MazeBuilder: MonoBehaviour
         _mazeBase.GetComponent<Renderer>().material.color = new Color32(168, 119, 90, 255);
     }
 
-    private void CreateWalls()
+    private void CreateWalls(GameObject mazeObj)
     {
         for (int x = 0; x < _x; x++)
         {

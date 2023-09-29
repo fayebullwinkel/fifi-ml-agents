@@ -11,6 +11,11 @@ public class MazeAgent : Agent
     private Vector3Int _currPos;
     private Maze _maze;
     private Vector3Int _startPos;
+    private MazeBuilder _mazeBuilder;
+    private GameObject _endCubeObj;
+    private GameObject _agentObj;
+    private Vector3 _mazePosition;
+    private GameObject _mazeObj;
 
     // Heuristic
     private MovementDirection _myNextMove = MovementDirection.Nothing;
@@ -61,7 +66,7 @@ public class MazeAgent : Agent
                 Debug.Log("End reached");
                 SetReward(10.0f);
                 EndEpisode();
-                _mazeController.Reset();
+                _mazeController.ResetArea(_mazeObj, _mazeBuilder, _endCubeObj, _agentObj, _mazePosition);
             }
         }
         else
@@ -213,9 +218,28 @@ public class MazeAgent : Agent
     {
         _startPos = startPos;
     }
-    
     public void SetMaze(Maze maze)
     {
         _maze = maze;
+    }
+    public void SetMazeBuilder(MazeBuilder mazeBuilder)
+    {
+        _mazeBuilder = mazeBuilder;
+    }
+    public void SetEndCubeObj(GameObject endCubeObj)
+    {
+        _endCubeObj = endCubeObj;
+    }
+    public void SetAgentObj(GameObject agentObj)
+    {
+        _agentObj = agentObj;
+    }
+    public void SetMazePosition(Vector3 mazePosition)
+    {
+        _mazePosition = mazePosition;
+    }
+    public void SetMazeObj(GameObject mazeObj)
+    {
+        _mazeObj = mazeObj;
     }
 }
