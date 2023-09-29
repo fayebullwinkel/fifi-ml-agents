@@ -1319,12 +1319,16 @@ PrefabInstance:
     m_TransformParent: {fileID: 0}
     m_Modifications:
     - target: {fileID: 1508936989446036332, guid: fc2e1ac7a58dfd041b32309a78857f4b, type: 3}
+      propertyPath: m_Model
+      value: 
+      objectReference: {fileID: 0}
+    - target: {fileID: 1508936989446036332, guid: fc2e1ac7a58dfd041b32309a78857f4b, type: 3}
       propertyPath: m_BehaviorType
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 1508936989446036332, guid: fc2e1ac7a58dfd041b32309a78857f4b, type: 3}
       propertyPath: m_BrainParameters.VectorObservationSize
-      value: 12
+      value: 19
       objectReference: {fileID: 0}
     - target: {fileID: 1508936989446036332, guid: fc2e1ac7a58dfd041b32309a78857f4b, type: 3}
       propertyPath: m_BrainParameters.VectorActionSize.Array.size

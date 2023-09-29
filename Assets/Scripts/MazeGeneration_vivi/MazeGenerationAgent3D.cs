@@ -7,8 +7,14 @@ namespace MazeGeneration_vivi
 {
     public sealed class MazeGenerationAgent3D: MazeGenerationAgent
     {
+        private int oldMovingDirection;
+        private int newMovingDirection;
+        
         public override void OnEpisodeBegin()
         {
+            // reset moving direction to 5 (no movement)
+            oldMovingDirection = 5;
+            newMovingDirection = 5;
             SetupMaze();
         }
 
@@ -16,6 +22,10 @@ namespace MazeGeneration_vivi
         {
             // Agent position
             sensor.AddObservation(transform.localPosition);
+            // oldMovingDirection
+            sensor.AddObservation(oldMovingDirection);
+            // newMovingDirection
+            sensor.AddObservation(newMovingDirection);
         
             AddMazeObservations(sensor);
         }
@@ -27,19 +37,24 @@ namespace MazeGeneration_vivi
                 return;
             }
 
+            newMovingDirection = 5;
             switch (actions.DiscreteActions[0])
             {
                 case 0:
                     Maze.MoveAgent(EDirection.Left);
+                    newMovingDirection = 0;
                     break;
                 case 1:
                     Maze.MoveAgent(EDirection.Right);
+                    newMovingDirection = 1;
                     break;
                 case 2:
                     Maze.MoveAgent(EDirection.Top);
+                    newMovingDirection = 2;
                     break;
                 case 3:
                     Maze.MoveAgent(EDirection.Bottom);
+                    newMovingDirection = 3;
                     break;
                 case 4:
                     Maze.PlaceGoal(transform.localPosition);
@@ -49,6 +64,11 @@ namespace MazeGeneration_vivi
             }
 
             GrantReward();
+            if(newMovingDirection != oldMovingDirection)
+            {
+                AddReward(0.0025f);
+                oldMovingDirection = newMovingDirection;
+            }
         }
     
         public override void Heuristic(in ActionBuffers actionsOut)
