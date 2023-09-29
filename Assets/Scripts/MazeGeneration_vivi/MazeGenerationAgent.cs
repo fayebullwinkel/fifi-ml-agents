@@ -11,11 +11,11 @@ namespace MazeGeneration_vivi
         public Maze Maze = null!;
         public Grid CurrentGrid {get; set;} = null!;
         public MazeCell CurrentCell {get; set;} = null!;
-        private int oldVisitedCells;
+        private int oldVisitedCellsCount;
 
         protected void SetupMaze()
         {
-            oldVisitedCells = 0;
+            oldVisitedCellsCount = 0;
             // generate new maze grid and place agent
             if (!Maze.GetIsMazeEmpty())
             {
@@ -50,6 +50,10 @@ namespace MazeGeneration_vivi
             }
             // Maze percentage of visited cells: float
             sensor.AddObservation(Maze.GetPercentageOfVisitedCells());
+            // oldVisitedCellsCount: int
+            sensor.AddObservation(oldVisitedCellsCount);
+            // newVisitedCellsCount: int
+            sensor.AddObservation(Maze.GetVisitedCells());
         }
 
         protected void GrantReward()
@@ -71,10 +75,10 @@ namespace MazeGeneration_vivi
             
             // Reward for finding new cells
             var visitedCellsCount = Maze.GetVisitedCells();
-            if (visitedCellsCount > oldVisitedCells)
+            if (visitedCellsCount > oldVisitedCellsCount)
             {
-                AddReward(0.0025f);
-                oldVisitedCells = visitedCellsCount;
+                AddReward(0.005f);
+                oldVisitedCellsCount = visitedCellsCount;
             }
             else
             {
