@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using MazeGeneration_vivi.MazeDatatype.Enums;
 
 namespace MazeGeneration_vivi.MazeDatatype
 {
@@ -25,6 +26,14 @@ namespace MazeGeneration_vivi.MazeDatatype
             Walls = new List<MazeWall>();
             Corners = new List<MazeCorner>();
             Visited = false;
+        }
+
+        public bool HasWall(EDirection direction)
+        {
+            // get neighbour cell and check if there is a wall between them
+            var neighbour = Grid.GetNeighborCell(this, direction);
+            var wall = Grid.Walls.Find(x => x.Cells.Contains(this) && x.Cells.Contains(neighbour));
+            return wall != null;
         }
 
         public void AddWall(MazeWall wall)

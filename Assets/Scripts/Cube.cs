@@ -72,6 +72,16 @@ public class Cube
         _y = y;
         _z = z;
     }
+    
+    public bool GetIsStartCube()
+    {
+        return _isStartCube;
+    }
+    
+    public void SetIsStart(bool isStartCube)
+    {
+        _isStartCube = isStartCube;
+    }
 
     public Vector3Int GetPos()
     {
