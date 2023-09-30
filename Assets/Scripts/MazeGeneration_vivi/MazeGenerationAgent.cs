@@ -8,7 +8,7 @@ namespace MazeGeneration_vivi
 {
     public class MazeGenerationAgent : Agent
     {
-        public Maze Maze = null!;
+        public MazeDatatype.Maze Maze = null!;
         public Grid CurrentGrid {get; set;} = null!;
         public MazeCell CurrentCell {get; set;} = null!;
         private int oldVisitedCellsCount;
