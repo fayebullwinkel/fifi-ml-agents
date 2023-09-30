@@ -7,6 +7,12 @@ TagManager:
   - MazeAgent
   - EndCube
   - Wall
+  - wall
+  - ground
+  - MazeGenerationAgent
+  - Maze
+  - Grid
+  - CubeViewCamera
   layers:
   - Default
   - TransparentFX
