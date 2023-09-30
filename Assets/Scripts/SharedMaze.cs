@@ -2,19 +2,16 @@
 using MazeGeneration_vivi.MazeDatatype.Enums;
 using UnityEngine;
 
-public class SharedMaze
+public static class SharedMaze
 {
-    public Cube [,,] Cubes { get; set; }
-    public int Size {get; set;}
-    
-    public SharedMaze(int size)
-    {
-        Size = size;
-        Cubes = new Cube[size, size, size];
-    }
+    public static Cube [,,] Cubes { get; set; }
+    public static int Size {get; set;}
+    public static Cube EndCube { get; set; }
+    public static Cube StartCube { get; set; }
 
-    public void FillCubes(MazeGeneration_vivi.MazeDatatype.Maze maze)
+    public static void FillCubes(MazeGeneration_vivi.MazeDatatype.Maze maze)
     {
+        Cubes = new Cube[Size, Size, Size];
         foreach (var grid in maze.Grids.Values)
         {
             var face = grid.Face;
@@ -32,12 +29,12 @@ public class SharedMaze
                         break;
                     case ECubeFace.Back:
                         position.z = Size - 1;
-                        position.x = cell.X * 2 + 1;
+                        position.x = (Size - 1) - (cell.X * 2 + 1);
                         position.y = cell.Z * 2 + 1;
                         break;
                     case ECubeFace.Left:
                         position.x = 0;
-                        position.z = cell.X * 2 + 1;
+                        position.z = (Size - 1) - (cell.X * 2 + 1);
                         position.y = cell.Z * 2 + 1;
                         break;
                     case ECubeFace.Right:
@@ -53,7 +50,7 @@ public class SharedMaze
                     case ECubeFace.Bottom:
                         position.y = 0;
                         position.x = cell.X * 2 + 1;
-                        position.z = cell.Z * 2 + 1;
+                        position.z = (Size - 1) - (cell.Z * 2 + 1);
                         break;
                     default:
                         throw new ArgumentOutOfRangeException();
@@ -61,8 +58,18 @@ public class SharedMaze
                 var cube = new Cube();
                 cube.SetPos(position.x, position.y, position.z);
                 cube.SetIsWall(false);
-                cube.SetIsStart(cell == maze.StartCell);
-                cube.SetIsGoal(cell == maze.EndCell);
+                if (cell == maze.StartCell)
+                {
+                    cube.SetIsStart(true);
+                    StartCube = cube;
+                }
+
+                if (cell == maze.EndCell)
+                {
+                    cube.SetIsGoal(cell == maze.EndCell);
+                    EndCube = cube;
+                }
+                
                 Cubes[position.x, position.y, position.z] = cube;
 
                 // Add Wall Cubes
@@ -75,7 +82,6 @@ public class SharedMaze
                         case ECubeFace.None:
                             break;
                         case ECubeFace.Front:
-                        case ECubeFace.Back:
                             switch (i)
                             {
                                 case 0:
@@ -96,7 +102,48 @@ public class SharedMaze
                                     break;
                             }
                             break;
+                        case ECubeFace.Back:
+                            switch (i)
+                            {
+                                case 0:
+                                    wallPoition.x -= 1;
+                                    isWall = cell.HasWall(EDirection.Right);
+                                    break;
+                                case 1:
+                                    wallPoition.x += 1;
+                                    isWall = cell.HasWall(EDirection.Left);
+                                    break;
+                                case 2:
+                                    wallPoition.y -= 1;
+                                    isWall = cell.HasWall(EDirection.Bottom);
+                                    break;
+                                case 3:
+                                    wallPoition.y += 1;
+                                    isWall = cell.HasWall(EDirection.Top);
+                                    break;
+                            }
+                            break;
                         case ECubeFace.Left:
+                            switch (i)
+                            {
+                                case 0:
+                                    wallPoition.z -= 1;
+                                    isWall = cell.HasWall(EDirection.Right);
+                                    break;
+                                case 1:
+                                    wallPoition.z += 1;
+                                    isWall = cell.HasWall(EDirection.Left);
+                                    break;
+                                case 2:
+                                    wallPoition.y -= 1;
+                                    isWall = cell.HasWall(EDirection.Bottom);
+                                    break;
+                                case 3:
+                                    wallPoition.y += 1;
+                                    isWall = cell.HasWall(EDirection.Top);
+                                    break;
+                            }
+                            break;
                         case ECubeFace.Right:
                             switch (i)
                             {
@@ -119,6 +166,26 @@ public class SharedMaze
                             }
                             break;
                         case ECubeFace.Top:
+                            switch (i)
+                            {
+                                case 0:
+                                wallPoition.x -= 1;
+                                isWall = cell.HasWall(EDirection.Left);
+                                break;
+                                case 1:
+                                wallPoition.x += 1;
+                                isWall = cell.HasWall(EDirection.Right);
+                                break;
+                                case 2:
+                                wallPoition.z -= 1;
+                                isWall = cell.HasWall(EDirection.Bottom);
+                                break;
+                                case 3:
+                                wallPoition.z += 1;
+                                isWall = cell.HasWall(EDirection.Top);
+                                break; 
+                            }
+                            break;
                         case ECubeFace.Bottom:
                             switch (i)
                             {
@@ -132,11 +199,11 @@ public class SharedMaze
                                     break;
                                 case 2:
                                     wallPoition.z -= 1;
-                                    isWall = cell.HasWall(EDirection.Left);
+                                    isWall = cell.HasWall(EDirection.Top);
                                     break;
                                 case 3:
                                     wallPoition.z += 1;
-                                    isWall = cell.HasWall(EDirection.Right);
+                                    isWall = cell.HasWall(EDirection.Bottom);
                                     break; 
                             }
                             break;
@@ -244,7 +311,7 @@ public class SharedMaze
         }
     }
     
-    private bool CubeExists(Vector3Int position)
+    private static bool CubeExists(Vector3Int position)
     {
         return Cubes[position.x, position.y, position.z] != null;
     }

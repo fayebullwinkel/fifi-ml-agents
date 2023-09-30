@@ -52,6 +52,7 @@ public class MazeBuilder: MonoBehaviour
             {
                 for (int z = 0; z < _z; z++)
                 {
+                    if(_cubes[x,y,z] == null) continue;
                     if (_cubes[x, y, z].GetIsWall())
                     {
                         var wall = Instantiate(_wallPrefab);

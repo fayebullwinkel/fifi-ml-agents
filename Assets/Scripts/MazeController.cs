@@ -1,5 +1,3 @@
-using System;
-using System.Collections.Generic;
 using DefaultNamespace;
 using JetBrains.Annotations;
 using UnityEngine;
@@ -57,8 +55,18 @@ public class MazeController : MonoBehaviour
                 Destroy(child.gameObject);
             }
         }
+
+        Maze maze;
         
-        var maze = GenerateMaze(mazeObj, mazeBuilder, endCubeObj, agentObj, mazePosition);
+        if (SharedMaze.Cubes != null)
+        {
+            maze = new Maze(SharedMaze.Cubes, SharedMaze.StartCube, SharedMaze.EndCube);
+        }
+        else
+        {
+            maze = GenerateMaze(mazeObj, mazeBuilder, endCubeObj, agentObj, mazePosition);
+        }
+        
         if (maze == null) return;
         BuildMaze(mazeObj, mazeBuilder, mazePosition, maze);
         SetAgentProperties(mazeObj, mazeBuilder, endCubeObj, agentObj, mazePosition, maze);
