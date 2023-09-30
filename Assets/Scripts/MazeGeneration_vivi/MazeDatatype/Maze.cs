@@ -310,6 +310,13 @@ namespace MazeGeneration_vivi.MazeDatatype
                 MarkCellVisited(cell);
                 
                 Debug.Log("Maze is Valid: " + IsValid());
+                if (IsValid())
+                {
+                    // create shared maze
+                    var sharedMaze = new SharedMaze(7);
+                    sharedMaze.FillCubes(this);
+                    var hi = 1;
+                }
             }
         }
         

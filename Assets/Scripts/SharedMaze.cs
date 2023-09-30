@@ -5,11 +5,11 @@ using UnityEngine;
 public class SharedMaze
 {
     public Cube [,,] Cubes { get; set; }
-    public Cube StartCube { get; set; }
-    public Cube GoalCube { get; set; }
+    public int Size {get; set;}
     
     public SharedMaze(int size)
     {
+        Size = size;
         Cubes = new Cube[size, size, size];
     }
 
@@ -31,14 +31,29 @@ public class SharedMaze
                         position.y = cell.Z * 2 + 1;
                         break;
                     case ECubeFace.Back:
+                        position.z = Size - 1;
+                        position.x = cell.X * 2 + 1;
+                        position.y = cell.Z * 2 + 1;
                         break;
                     case ECubeFace.Left:
+                        position.x = 0;
+                        position.z = cell.X * 2 + 1;
+                        position.y = cell.Z * 2 + 1;
                         break;
                     case ECubeFace.Right:
+                        position.x = Size - 1;
+                        position.z = cell.X * 2 + 1;
+                        position.y = cell.Z * 2 + 1;
                         break;
                     case ECubeFace.Top:
+                        position.y = Size - 1;
+                        position.x = cell.X * 2 + 1;
+                        position.z = cell.Z * 2 + 1;
                         break;
                     case ECubeFace.Bottom:
+                        position.y = 0;
+                        position.x = cell.X * 2 + 1;
+                        position.z = cell.Z * 2 + 1;
                         break;
                     default:
                         throw new ArgumentOutOfRangeException();
@@ -46,6 +61,8 @@ public class SharedMaze
                 var cube = new Cube();
                 cube.SetPos(position.x, position.y, position.z);
                 cube.SetIsWall(false);
+                cube.SetIsStart(cell == maze.StartCell);
+                cube.SetIsGoal(cell == maze.EndCell);
                 Cubes[position.x, position.y, position.z] = cube;
 
                 // Add Wall Cubes
@@ -58,6 +75,7 @@ public class SharedMaze
                         case ECubeFace.None:
                             break;
                         case ECubeFace.Front:
+                        case ECubeFace.Back:
                             switch (i)
                             {
                                 case 0:
@@ -78,15 +96,49 @@ public class SharedMaze
                                     break;
                             }
                             break;
-                        case ECubeFace.Back:
-                            break;
                         case ECubeFace.Left:
-                            break;
                         case ECubeFace.Right:
+                            switch (i)
+                            {
+                                case 0:
+                                    wallPoition.z -= 1;
+                                    isWall = cell.HasWall(EDirection.Left);
+                                    break;
+                                case 1:
+                                    wallPoition.z += 1;
+                                    isWall = cell.HasWall(EDirection.Right);
+                                    break;
+                                case 2:
+                                    wallPoition.y -= 1;
+                                    isWall = cell.HasWall(EDirection.Bottom);
+                                    break;
+                                case 3:
+                                    wallPoition.y += 1;
+                                    isWall = cell.HasWall(EDirection.Top);
+                                    break;
+                            }
                             break;
                         case ECubeFace.Top:
-                            break;
                         case ECubeFace.Bottom:
+                            switch (i)
+                            {
+                                case 0:
+                                    wallPoition.x -= 1;
+                                    isWall = cell.HasWall(EDirection.Left);
+                                    break;
+                                case 1:
+                                    wallPoition.x += 1;
+                                    isWall = cell.HasWall(EDirection.Right);
+                                    break;
+                                case 2:
+                                    wallPoition.z -= 1;
+                                    isWall = cell.HasWall(EDirection.Left);
+                                    break;
+                                case 3:
+                                    wallPoition.z += 1;
+                                    isWall = cell.HasWall(EDirection.Right);
+                                    break; 
+                            }
                             break;
                         default:
                             throw new ArgumentOutOfRangeException();
@@ -110,6 +162,7 @@ public class SharedMaze
                         case ECubeFace.None:
                             break;
                         case ECubeFace.Front:
+                        case ECubeFace.Back:
                             switch (i)
                             {
                                 case 0:
@@ -130,15 +183,49 @@ public class SharedMaze
                                     break;
                             }
                             break;
-                        case ECubeFace.Back:
-                            break;
                         case ECubeFace.Left:
-                            break;
                         case ECubeFace.Right:
+                            switch (i)
+                            {
+                                case 0: 
+                                    cornerPoition.z -= 1;
+                                    cornerPoition.y -= 1;
+                                    break;
+                                case 1:
+                                    cornerPoition.z += 1;
+                                    cornerPoition.y -= 1;
+                                    break;
+                                case 2:
+                                    cornerPoition.z -= 1;
+                                    cornerPoition.y += 1;
+                                    break;
+                                case 3: 
+                                    cornerPoition.z += 1;
+                                    cornerPoition.y += 1;
+                                    break;
+                            }
                             break;
                         case ECubeFace.Top:
-                            break;
                         case ECubeFace.Bottom:
+                            switch (i)
+                            {
+                                case 0: 
+                                    cornerPoition.x -= 1;
+                                    cornerPoition.z -= 1;
+                                    break;
+                                case 1:
+                                    cornerPoition.x += 1;
+                                    cornerPoition.z -= 1;
+                                    break;
+                                case 2:
+                                    cornerPoition.x -= 1;
+                                    cornerPoition.z += 1;
+                                    break;
+                                case 3:
+                                    cornerPoition.x += 1;
+                                    cornerPoition.z += 1;
+                                    break;
+                            }
                             break;
                         default:
                             throw new ArgumentOutOfRangeException();
