@@ -5,6 +5,7 @@ using System.Linq;
 using MazeGeneration_vivi.MazeDatatype.Enums;
 using TMPro;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 using Random = UnityEngine.Random;
 
 namespace MazeGeneration_vivi.MazeDatatype
@@ -313,9 +314,9 @@ namespace MazeGeneration_vivi.MazeDatatype
                 if (IsValid())
                 {
                     // create shared maze
-                    var sharedMaze = new SharedMaze(7);
-                    sharedMaze.FillCubes(this);
-                    var hi = 1;
+                    SharedMaze.Size = 7;
+                    SharedMaze.FillCubes(this);
+                    SceneManager.LoadScene("MazeSolving");
                 }
             }
         }
