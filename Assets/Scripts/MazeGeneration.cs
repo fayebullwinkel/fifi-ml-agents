@@ -1,121 +1,83 @@
 using System;
 using System.Collections.Generic;
+using DefaultNamespace;
 using UnityEngine;
 using Random = UnityEngine.Random;
 
 public class MazeGeneration : ScriptableObject
 {
-    private Cube[,,] _mazeArray;
     private int _x;
     private int _y;
     private int _z;
-    private List<Cube> _cubeList;
-    private GameObject _mazeObj;
+    private Cube[,,] _cubes;
+    private List<Cube> _cutOutCubes;
     private List<Cube> _possibleNextCubes;
-    private List<Cube> _path;
-    private GameObject _startCubeObj;
-    private GameObject _endCubeObj;
-    
-    public GameObject agentPrefab;
-    public GameObject wallPrefab;
+    private List<Vector3Int> _surfaceCubePositions;
 
-    public void Generate(Vector3 position, Vector3 scale)
+    public Maze Generate(Vector3 scale)
     {
         _x = Mathf.RoundToInt(scale.x);
         _y = Mathf.RoundToInt(scale.y);
         _z = Mathf.RoundToInt(scale.z);
-        _mazeArray = new Cube[_x, _y, _z];
         _possibleNextCubes = new List<Cube>();
-        _cubeList = new List<Cube>();
-        _path = new List<Cube>();
-
-        _startCubeObj = Instantiate(agentPrefab);
-        _endCubeObj = GameObject.CreatePrimitive(PrimitiveType.Cube);
-        _endCubeObj.tag = "EndCube";
+        _cutOutCubes = new List<Cube>();
+        _cubes = new Cube[_x, _y, _x];
 
         SearchArray(0);
         PrimsAlgorithm();
-        BuildMaze(position, scale);
+        
+        var randomStartPos = ChooseRandomPosition();
+
+        var randomEndPos = ChooseRandomPosition();
+        _cubes[randomEndPos.x, randomEndPos.y, randomEndPos.z].SetIsGoalCube(true);
+
+        return new Maze(_cubes, _cubes[randomStartPos.x, randomStartPos.y, randomStartPos.z],
+            _cubes[randomEndPos.x, randomEndPos.y, randomEndPos.z]);
     }
 
-    public void BuildMaze(Vector3 position, Vector3 scale)
+    private bool IsSurfaceCube(int width, int height, int depth)
     {
-        _mazeObj = new GameObject();
-        _mazeObj.transform.position = position;
-        _mazeObj.transform.localScale = scale;
-
-        SearchArray(2);
-        GameObject mazeBase = GameObject.CreatePrimitive(PrimitiveType.Cube);
-        Destroy(mazeBase.GetComponent<BoxCollider>());
-        mazeBase.transform.parent = _mazeObj.transform;
-        mazeBase.transform.localPosition = new Vector3(0, 0, 0);
-        mazeBase.transform.localScale = new Vector3(0.9f, 0.9f, 0.9f);
-        mazeBase.GetComponent<Renderer>().material.color = new Color32(168, 119, 90, 255);
-    }
-
-    public void Delete()
-    {
-        Destroy(_mazeObj);
-    }
-
-    private bool IsBoundaryCube(int width, int height, int depth)
-    {
-        // Check if a cube is located on boundary
         return depth == 0 || height == 0 || width == 0 || depth == _z - 1 || height == _y - 1 || width == _x - 1;
     }
 
     private Cube SearchArray(int mode)
     {
         // Count valid cubes in mode 1
-        int count = 0;
+        var count = 0;
 
-        for (int width = 0; width < _x; width++)
+        for (var x = 0; x < _x; x++)
         {
-            for (int height = 0; height < _y; height++)
+            for (var y = 0; y < _y; y++)
             {
-                for (int depth = 0; depth < _z; depth++)
+                for (var z = 0; z < _z; z++)
                 {
+                    _cubes[x, y, z] ??= new Cube();
+
                     switch (mode)
                     {
                         case 0:
                             // Mode 0: Initiating all walls and setting cube properties
-                            if (IsBoundaryCube(width, height, depth))
+                            if (IsSurfaceCube(x, y, z))
                             {
                                 // Set cube properties for boundary cubes
-                                _mazeArray[width, height, depth].SetIsWall(true);
-                                _mazeArray[width, height, depth].SetIsDeletable(false);
-                                _mazeArray[width, height, depth].SetPos(width, height, depth);
-                                _mazeArray[width, height, depth].SetWeight(Random.Range(1, 199));
+                                _cubes[x, y, z].SetIsWall(true);
+                                _cubes[x, y, z].SetPos(x, y, z);
+                                _cubes[x, y, z].SetWeight(Random.Range(1, 199));
                             }
                             else
                             {
                                 // Set cube properties for non-boundary cubes
-                                _mazeArray[width, height, depth].SetIsWall(false);
-                                _mazeArray[width, height, depth].SetIsDeletable(true);
+                                _cubes[x, y, z].SetIsWall(false);
+                                _cubes[x, y, z].IsCoreCube(true);
                             }
 
                             break;
                         case 1:
                             // Mode 1: Collect valid wall cubes
-                            if (_mazeArray[width, height, depth].GetIsWall())
+                            if (_cubes[x, y, z].GetIsWall())
                             {
-                                _possibleNextCubes.Add(_mazeArray[width, height, depth]);
+                                _possibleNextCubes.Add(_cubes[x, y, z]);
                                 count++;
-                            }
-
-                            break;
-                        case 2:
-                            // Mode 2: Create walls, cubes with isWall == false make up the _path
-                            if (_mazeArray[width, height, depth].GetIsWall())
-                            {
-                                GameObject wall = Instantiate(wallPrefab);
-                                wall.transform.localScale = _endCubeObj.transform.localScale;
-                                wall.transform.parent = _mazeObj.transform;
-                                wall.transform.localPosition = _mazeArray[width, height, depth].GetCubePosition(_mazeObj.transform.localScale);
-                            }
-                            else
-                            {
-                                _path.Add(_mazeArray[width, height, depth]);
                             }
 
                             break;
@@ -130,40 +92,22 @@ public class MazeGeneration : ScriptableObject
         if (mode == 1)
         {
             // Return a random valid next cube
-            int random = Random.Range(0, count);
+            var random = Random.Range(0, count);
             return _possibleNextCubes[random];
         }
 
-        if (mode == 2)
-        {
-            // Place the start cube at the beginning of the path
-            _startCubeObj.GetComponent<Rigidbody>().isKinematic = true;
-            _startCubeObj.transform.localScale = _endCubeObj.transform.localScale;
-            PlaceCube(_startCubeObj, _path[0], Color.blue);
-
-            // Place the end cube at the end of the path
-            PlaceCube(_endCubeObj, _path[_path.Count - 1], Color.red);
-        }
-
         // Return a placeholder cube for invalid cases
-        Cube badSearch = new Cube();
+        var badSearch = new Cube();
         badSearch.SetIsWall(false);
         return badSearch;
-    }
-
-    private void PlaceCube(GameObject cubeObj, Cube cube, Color color)
-    {
-        cubeObj.transform.parent = _mazeObj.transform;
-        cubeObj.transform.localPosition = cube.GetCubePosition(_mazeObj.transform.localScale);
-        cubeObj.GetComponent<Renderer>().material.color = color;
     }
 
     private void Cutout(Cube cube)
     {
         if (cube.GetIsWall())
         {
-            _cubeList.Add(_mazeArray[cube.GetX(), cube.GetY(), cube.GetZ()]);
-            _mazeArray[cube.GetX(), cube.GetY(), cube.GetZ()].SetIsWall(false);
+            _cutOutCubes.Add(_cubes[cube.GetX(), cube.GetY(), cube.GetZ()]);
+            _cubes[cube.GetX(), cube.GetY(), cube.GetZ()].SetIsWall(false);
         }
     }
 
@@ -181,14 +125,14 @@ public class MazeGeneration : ScriptableObject
                         case 0:
                             if (IsValidNeighbor(xi, yi, zi, pointX, pointY, pointZ))
                             {
-                                if (_mazeArray[pointX + xi, pointY + yi, pointZ + zi].GetIsWall())
+                                if (_cubes[pointX + xi, pointY + yi, pointZ + zi].GetIsWall())
                                 {
                                     _possibleNextCubes.Clear();
                                     GetNeighborCubes(pointX + xi, pointY + yi, pointZ + zi, 1);
                                     if (_possibleNextCubes.Count == 1)
                                     {
                                         _possibleNextCubes.Clear();
-                                        return _mazeArray[pointX + xi, pointY + yi, pointZ + zi];
+                                        return _cubes[pointX + xi, pointY + yi, pointZ + zi];
                                     }
                                 }
                             }
@@ -199,10 +143,10 @@ public class MazeGeneration : ScriptableObject
                             if (IsValidNonDiagonalNeighbor(xi, yi, zi) &&
                                 IsValidNeighbor(xi, yi, zi, pointX, pointY, pointZ))
                             {
-                                if (!_mazeArray[pointX + xi, pointY + yi, pointZ + zi].GetIsWall() &&
-                                    !_mazeArray[pointX + xi, pointY + yi, pointZ + zi].GetIsDeletable())
+                                if (!_cubes[pointX + xi, pointY + yi, pointZ + zi].GetIsWall() &&
+                                    !_cubes[pointX + xi, pointY + yi, pointZ + zi].GetIsCoreCube())
                                 {
-                                    _possibleNextCubes.Add(_mazeArray[pointX, pointY, pointZ]);
+                                    _possibleNextCubes.Add(_cubes[pointX, pointY, pointZ]);
                                 }
                             }
 
@@ -216,7 +160,7 @@ public class MazeGeneration : ScriptableObject
         }
 
         // If no valid cube found, return a placeholder
-        Cube badSearch = new Cube();
+        var badSearch = new Cube();
         badSearch.SetWeight(999);
         return badSearch;
     }
@@ -235,21 +179,19 @@ public class MazeGeneration : ScriptableObject
                && !(xi == 0 && yi == 0 && zi == 0);
     }
 
-    private Nullable<Cube> FindBestCube()
+    private Cube FindBestCube()
     {
-        Nullable<Cube> targetCube = null;
-        float bestWeight = float.MaxValue;
+        Cube targetCube = null;
+        var bestWeight = float.MaxValue;
 
-        foreach (Cube cube in _cubeList)
+        foreach (Cube cube in _cutOutCubes)
         {
             Cube temp = GetNeighborCubes(cube.GetX(), cube.GetY(), cube.GetZ(), 0);
-            float tempWeight = _mazeArray[temp.GetX(), temp.GetY(), temp.GetZ()].GetWeight();
+            var tempWeight = _cubes[temp.GetX(), temp.GetY(), temp.GetZ()].GetWeight();
 
-            if (temp.GetIsWall() && tempWeight < bestWeight)
-            {
-                targetCube = temp;
-                bestWeight = tempWeight;
-            }
+            if (!temp.GetIsWall() || !(tempWeight < bestWeight)) continue;
+            targetCube = temp;
+            bestWeight = tempWeight;
         }
 
         return targetCube;
@@ -262,26 +204,56 @@ public class MazeGeneration : ScriptableObject
 
         while (true)
         {
-            Nullable<Cube> bestCube = FindBestCube();
-            if (!bestCube.HasValue)
+            Cube bestCube = FindBestCube();
+            if (bestCube == null)
                 break;
 
-            Cutout(bestCube.Value);
+            Cutout(bestCube);
         }
     }
 
-    public GameObject GetMazeObj()
+    private Vector3Int ChooseRandomPosition(Vector3Int excludePosition = default)
     {
-        return _mazeObj;
+        _surfaceCubePositions = FindValidSurfaceCubePositions(_cubes, excludePosition);
+
+        // Check if there are surface cubes.
+        if (_surfaceCubePositions.Count > 0)
+        {
+            // Select a random surface cube.
+            var random = Random.Range(0, _surfaceCubePositions.Count);
+            return _surfaceCubePositions[random];
+        }
+
+        throw new GenerationException("no surface cubes found. this should not happen.");
     }
 
-    public GameObject GetStartCube()
+    private List<Vector3Int> FindValidSurfaceCubePositions(Cube[,,] cubes, Vector3Int excludePosition = default)
     {
-        return _startCubeObj;
-    }
+        // Get the dimensions of the 3D array
 
-    public GameObject GetEndCube()
-    {
-        return _endCubeObj;
+        var positions = new List<Vector3Int>();
+
+        // Loop through the surface cubes
+        for (var d = 0; d < cubes.GetLength(2); d++)
+        {
+            for (var h = 0; h < cubes.GetLength(1); h++)
+            {
+                for (var w = 0; w < cubes.GetLength(0); w++)
+                {
+                    // Check if the cube is on the surface (i.e., on the outermost layer)
+                    if (d == 0 || d == cubes.GetLength(2) - 1 || h == 0 || h == cubes.GetLength(1) - 1 || w == 0 ||
+                        w == cubes.GetLength(0) - 1)
+                    {
+                        // Check if surfaceCube is not a wall
+                        if (!cubes[w, h, d].GetIsWall() && new Vector3Int(w, h, d) != excludePosition)
+                        {
+                            positions.Add(new Vector3Int(w, h, d));
+                        }
+                    }
+                }
+            }
+        }
+
+        return positions;
     }
 }

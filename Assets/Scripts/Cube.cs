@@ -1,71 +1,95 @@
 using UnityEngine;
 
-public struct Cube
+public class Cube
 {
     private float _weight;
     private bool _isWall;
-    private bool _isDeletable;
+    private bool _isCoreCube;
+    private bool _isGoalCube;
+    private bool _isStartCube;
     private GameObject _cubeObj;
     private int _x;
     private int _y;
     private int _z;
 
-    public Vector3 GetCubePosition(Vector3 localScale)
+    public Vector3 GetRelativePosition(Vector3 localScale)
     {
         return new Vector3(
-                (_x + 0.5f - (localScale.x / 2)) / localScale.x,
-                (_y + 0.5f - (localScale.y / 2)) / localScale.y,
-                (_z + 0.5f - (localScale.z / 2)) / localScale.z
-            );
+            (_x + 0.5f - (localScale.x / 2)) / localScale.x,
+            (_y + 0.5f - (localScale.y / 2)) / localScale.y,
+            (_z + 0.5f - (localScale.z / 2)) / localScale.z
+        );
     }
-    public void Generate(GameObject parent)
-    {
-        _cubeObj = GameObject.CreatePrimitive(PrimitiveType.Cube);
-        _cubeObj.transform.parent = parent.transform;
-        _cubeObj.transform.localPosition = GetCubePosition(parent.transform.localScale);
-        
-        _cubeObj.GetComponent<Renderer>().material = Resources.Load("Materials/Brick_Wall", typeof(Material)) as Material;
-    }
+
     public float GetWeight()
     {
         return _weight;
     }
+
     public void SetWeight(float weight)
     {
-        this._weight = weight;
+        _weight = weight;
     }
+
     public bool GetIsWall()
     {
         return _isWall;
     }
+
     public void SetIsWall(bool isWall)
     {
         _isWall = isWall;
     }
-    public bool GetIsDeletable()
+
+    public bool GetIsCoreCube()
     {
-        return _isDeletable;
+        return _isCoreCube;
     }
-    public void SetIsDeletable(bool toDelete)
+
+    public void IsCoreCube(bool isCoreCube)
     {
-        _isDeletable = toDelete;
+        _isCoreCube = isCoreCube;
     }
+
     public int GetX()
     {
         return _x;
     }
+
     public int GetY()
     {
         return _y;
     }
+
     public int GetZ()
     {
         return _z;
     }
+
     public void SetPos(int x, int y, int z)
     {
         _x = x;
         _y = y;
         _z = z;
+    }
+
+    public Vector3Int GetPos()
+    {
+        return new Vector3Int(_x, _y, _z);
+    }
+    
+    public void SetIsGoal(bool isGoal)
+    {
+        _isGoalCube = isGoal;
+    }
+    
+    public bool GetIsGoalCube()
+    {
+        return _isGoalCube;
+    }
+
+    public void SetIsGoalCube(bool isGoalCube)
+    {
+        _isGoalCube = isGoalCube;
     }
 }
