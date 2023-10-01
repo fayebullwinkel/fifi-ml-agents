@@ -302,26 +302,49 @@ namespace MazeGeneration_vivi.MazeDatatype
             var agentTransform = agent.transform;
             var startPosition = agentTransform.localPosition;
             var elapsedTime = 0f;
-    
-            while (elapsedTime < moveDuration)
+
+            // if the moveDuration is greater than 0, move the agent over time
+            if (moveDuration > 0)
             {
-                elapsedTime += Time.deltaTime;
-                var t = elapsedTime / moveDuration;
-                agentTransform.localPosition = Vector3.Lerp(startPosition, targetPosition, t);
-                yield return null;
+                while (elapsedTime < moveDuration)
+                {
+                    elapsedTime += Time.deltaTime;
+                    var t = elapsedTime / moveDuration;
+                
+                    // check is half of the move duration is reached
+                    if (t > 0.5f)
+                    {
+                        // destroy the wall between the current cell and the next cell
+                        if (wall != null)
+                        {
+                            wall.DestroyWall();
+                        }
+                        if (nextWall != null)
+                        {
+                            nextWall.DestroyWall();
+                        }
+                    }
+                
+                    agentTransform.localPosition = Vector3.Lerp(startPosition, targetPosition, t);
+                    yield return null;
+                }
+            }
+            else
+            {
+                // destroy the wall between the current cell and the next cell
+                if (wall != null)
+                {
+                    wall.DestroyWall();
+                }
+                if (nextWall != null)
+                {
+                    nextWall.DestroyWall();
+                }
             }
     
             // Ensure the agent is precisely at the target position
             agentTransform.localPosition = targetPosition;
             AgentIsMoving = false;
-            if(wall != null)
-            {
-                wall.DestroyWall();
-            }
-            if(nextWall != null)
-            {
-                nextWall.DestroyWall();
-            }
         }
         
         #endregion
