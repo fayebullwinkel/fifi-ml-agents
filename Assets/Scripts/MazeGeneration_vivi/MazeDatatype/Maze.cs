@@ -17,9 +17,14 @@ namespace MazeGeneration_vivi.MazeDatatype
         public bool training;
         [Space(10)]
         [Tooltip("The number of cells in vertical and horizontal direction on each face of the cube.")]
+        [Range(1, 10)]
         public int size;
         [Tooltip("The size of each cell in the maze.")]
         public float cellSize;
+
+        [Tooltip("The time it takes for the agent to move from one cell to another.")]
+        [Range(0.0f, 1.0f)]
+        public float moveDuration;
         [Space(10)]
         [Tooltip("If true, the maze requires all cells to be visited to be valid.")]
         public bool requireAllCellsToBeVisited;
@@ -297,7 +302,6 @@ namespace MazeGeneration_vivi.MazeDatatype
             var agentTransform = agent.transform;
             var startPosition = agentTransform.localPosition;
             var elapsedTime = 0f;
-            var moveDuration = 1f; // Time to move to the center of the cell
     
             while (elapsedTime < moveDuration)
             {

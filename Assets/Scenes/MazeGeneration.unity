@@ -2910,6 +2910,7 @@ MonoBehaviour:
   training: 1
   size: 3
   cellSize: 2
+  moveDuration: 0.5
   requireAllCellsToBeVisited: 0
   showPath: 1
   showVisitedCells: 1
