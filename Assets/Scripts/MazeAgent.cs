@@ -1,9 +1,11 @@
 using System;
 using System.Collections.Generic;
+using MazeSolving_Faye;
 using UnityEngine;
 using Unity.MLAgents;
 using Unity.MLAgents.Actuators;
 using Unity.MLAgents.Sensors;
+
 
 public class MazeAgent : Agent
 {
@@ -34,7 +36,7 @@ public class MazeAgent : Agent
     public override void Initialize()
     {
         base.Initialize();
-        _mazeController = GameObject.Find("MazeController").GetComponent<MazeController>();
+        _mazeController = GameObject.Find("MazeController").GetComponent<MazeSolving_Faye.MazeController>();
     }
 
     public override void OnEpisodeBegin()
@@ -240,11 +242,11 @@ public class MazeAgent : Agent
     {
         _startPos = startPos;
     }
-    public void SetMaze(Maze maze)
+    public void SetMaze(MazeSolving_Faye.Maze maze)
     {
         _maze = maze;
     }
-    public void SetMazeBuilder(MazeBuilder mazeBuilder)
+    public void SetMazeBuilder(MazeSolving_Faye.MazeBuilder mazeBuilder)
     {
         _mazeBuilder = mazeBuilder;
     }
