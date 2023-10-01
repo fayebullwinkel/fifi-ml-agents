@@ -18,6 +18,7 @@ public class MazeAgent : Agent
     private GameObject _agentObj;
     private Vector3 _mazePosition;
     private GameObject _mazeObj;
+    private bool _propertiesSet;
 
     // Heuristic
     private MovementDirection _myNextMove = MovementDirection.Nothing;
@@ -32,11 +33,11 @@ public class MazeAgent : Agent
         ZNeg,
         Nothing
     }
-
+    
     public override void Initialize()
     {
         base.Initialize();
-        _mazeController = GameObject.Find("MazeController").GetComponent<MazeSolving_Faye.MazeController>();
+        _mazeController = GameObject.Find("MazeController").GetComponent<MazeController>();
     }
 
     public override void OnEpisodeBegin()
@@ -44,9 +45,14 @@ public class MazeAgent : Agent
         Debug.Log("Epsiode begins");
         _currPos = _startPos;
     }
-
+    
     public override void OnActionReceived(ActionBuffers actionBuffers)
     {
+        if (_propertiesSet)
+        {
+            _propertiesSet = false;
+            _currPos = _startPos;
+        }
         var discreteAction = (MovementDirection)actionBuffers.DiscreteActions[0];
 
         if (IsActionLegal(discreteAction))
@@ -225,7 +231,7 @@ public class MazeAgent : Agent
                     if (z == 0 || z == cubes.GetLength(2) - 1 || y == 0 || y == cubes.GetLength(1) - 1 || x == 0 ||
                         x == cubes.GetLength(0) - 1)
                     {
-                        sensor.AddObservation(_maze.GetCube(new Vector3Int(x, y, z)).GetIsWall()); // depends on dimensions of maze, right now 5x5x5 - 3x3x3 = 98
+                        sensor.AddObservation(_maze.GetCube(new Vector3Int(x, y, z)).GetIsWall()); // depends on dimensions of maze, right now 7x7x7 - 5x5x5 = 218
                     }
                     else
                     {
@@ -235,7 +241,7 @@ public class MazeAgent : Agent
             }
         }
 
-        // 2 x Vector3 + 98 = 104
+        // 2 x Vector3 + 343 = 349
     }
 
     public void SetStartPosition(Vector3Int startPos)
@@ -246,7 +252,7 @@ public class MazeAgent : Agent
     {
         _maze = maze;
     }
-    public void SetMazeBuilder(MazeSolving_Faye.MazeBuilder mazeBuilder)
+    public void SetMazeBuilder(MazeBuilder mazeBuilder)
     {
         _mazeBuilder = mazeBuilder;
     }
@@ -265,5 +271,10 @@ public class MazeAgent : Agent
     public void SetMazeObj(GameObject mazeObj)
     {
         _mazeObj = mazeObj;
+    }
+
+    public void SetPropertiesSet(bool propertiesSet)
+    {
+        _propertiesSet = propertiesSet;
     }
 }

@@ -63,7 +63,7 @@ namespace MazeSolving_Faye
 
             if (SharedMaze.Cubes != null)
             {
-                maze = new Maze((Cube[,,])SharedMaze.Cubes, SharedMaze.StartCube, SharedMaze.EndCube);
+                maze = new Maze(SharedMaze.Cubes, SharedMaze.StartCube, SharedMaze.EndCube);
             }
             else
             {
@@ -72,7 +72,7 @@ namespace MazeSolving_Faye
 
             if (maze == null) return;
             BuildMaze(mazeObj, mazeBuilder, mazePosition, maze);
-            SetAgentProperties(mazeObj, mazeBuilder, endCubeObj, agentObj, mazePosition, maze);
+            SetAgentProperties(mazeObj, mazeBuilder, endCubeObj, agentObj, mazePosition, maze, true);
             MoveCube(mazeObj, agentObj, maze.GetStartCube(), Color.green);
             MoveCube(mazeObj, endCubeObj, maze.GetEndCube(), Color.red);
             //RotateMazeToFaceCamera(mazeObj, agentObj);
@@ -101,7 +101,7 @@ namespace MazeSolving_Faye
         }
 
         private void SetAgentProperties(GameObject mazeObj, MazeBuilder mazeBuilder, GameObject endCubeObj,
-            GameObject agentObj, Vector3 mazePosition, Maze maze)
+            GameObject agentObj, Vector3 mazePosition, Maze maze, bool propertiesSet)
         {
             var agent = agentObj.GetComponent<MazeAgent>();
             agent.SetStartPosition(maze.GetStartCube().GetPos());
@@ -111,6 +111,7 @@ namespace MazeSolving_Faye
             agent.SetAgentObj(agentObj);
             agent.SetMazePosition(mazePosition);
             agent.SetMazeObj(mazeObj);
+            agent.SetPropertiesSet(propertiesSet);
         }
 
         private void RotateMazeToFaceCamera(GameObject mazeObj, GameObject agentObj)
