@@ -97,6 +97,7 @@ GameObject:
   - component: {fileID: 8544491063056715474}
   - component: {fileID: 5475073008495398419}
   - component: {fileID: 2161572815593545142}
+  - component: {fileID: 593023963634270296}
   m_Layer: 0
   m_Name: MazeGenerationAgent
   m_TagString: MazeGenerationAgent
@@ -211,6 +212,18 @@ MonoBehaviour:
   hasUpgradedFromAgentParameters: 1
   MaxStep: 0
   Maze: {fileID: 0}
+--- !u!114 &593023963634270296
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1946312899393052249}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a919596a38ba453d86f66d22ccfd11d5, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &3936844202984733885
 GameObject:
   m_ObjectHideFlags: 0

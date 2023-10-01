@@ -13,6 +13,7 @@ namespace MazeGeneration_vivi
         public MazeDatatype.Maze Maze = null!;
         public Grid CurrentGrid {get; set;} = null!;
         public MazeCell CurrentCell {get; set;} = null!;
+        public EManualInput ManualInput {get; set;} = EManualInput.None;
         private int oldVisitedCellsCount;
         private int oldMovingDirection;
         private int newMovingDirection;
@@ -20,6 +21,7 @@ namespace MazeGeneration_vivi
         // Initialize the agent and set the maze grid every new episode
         public override void OnEpisodeBegin()
         {
+            ManualInput = EManualInput.None;
             // reset moving direction to 5 (no movement)
             oldMovingDirection = 5;
             newMovingDirection = 5;
@@ -84,6 +86,7 @@ namespace MazeGeneration_vivi
         {
             if(Maze.AgentIsMoving)
             {
+                ManualInput = EManualInput.None;
                 return;
             }
 
@@ -113,6 +116,7 @@ namespace MazeGeneration_vivi
                 case 5:
                     break;
             }
+            ManualInput = EManualInput.None;
 
             // Reward for action
             // termination condition: agent created a valid maze -> Task completed
@@ -156,28 +160,30 @@ namespace MazeGeneration_vivi
         
             // Map the keyboard input to the discrete action number
             // // 0: left, 1: right, 2: top, 3: bottom, 4: place goal
-            var value = 5;
-            if (Input.GetKey(KeyCode.A))
+            if (ManualInput == EManualInput.A)
             {
-                value = 0;
+                discreteActionsOut[0] = 0;
             }
-            else if (Input.GetKey(KeyCode.D))
+            else if (ManualInput == EManualInput.D)
             {
-                value = 1;
+                discreteActionsOut[0] = 1;
             }
-            else if (Input.GetKey(KeyCode.W))
+            else if (ManualInput == EManualInput.W)
             {
-                value = 2;
+                discreteActionsOut[0] = 2;
             }
-            else if (Input.GetKey(KeyCode.S))
+            else if (ManualInput == EManualInput.S)
             {
-                value = 3;
+                discreteActionsOut[0] = 3;
             }
-            else if (Input.GetKey(KeyCode.Space))
+            else if (ManualInput == EManualInput.Space)
             {
-                value = 4;
+                discreteActionsOut[0] = 4;
             }
-            discreteActionsOut[0] = value;
+            else if (ManualInput == EManualInput.None)
+            {
+                discreteActionsOut[0] = 5;
+            }
         }
     }
 }
