@@ -12,7 +12,7 @@ public static class SharedMaze
 
     public static void FillCubes(MazeGeneration_vivi.MazeDatatype.Maze maze)
     {
-        Cubes = new MazeSolving_Faye.Cube[Size, Size, Size];
+        Cubes = new Cube[Size, Size, Size];
         foreach (var grid in maze.Grids.Values)
         {
             var face = grid.Face;

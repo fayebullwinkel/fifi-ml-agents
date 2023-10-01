@@ -14,6 +14,8 @@ namespace MazeSolving_Faye
         private int _y;
         private int _z;
 
+        private int _visitedCounter;
+
         public Vector3 GetRelativePosition(Vector3 localScale)
         {
             return new Vector3(
@@ -21,6 +23,16 @@ namespace MazeSolving_Faye
                 (_y + 0.5f - (localScale.y / 2)) / localScale.y,
                 (_z + 0.5f - (localScale.z / 2)) / localScale.z
             );
+        }
+        
+        public void IncreaseVisitedCounter()
+        {
+            _visitedCounter++;
+        }
+
+        public int GetVisitedCounter()
+        {
+            return _visitedCounter;
         }
 
         public float GetWeight()
