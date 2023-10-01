@@ -127,7 +127,7 @@ namespace MazeGeneration_vivi
             
             // Existential penalty
             AddReward(-0.00025f);
-            if(GetCumulativeReward()  > 1.0f)
+            if(GetCumulativeReward()  < -1.0f)
             {
                 Debug.Log("Agent is stuck, ending episode");
                 EndEpisode();
