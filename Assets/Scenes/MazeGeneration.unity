@@ -214,7 +214,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!4 &71827174
 Transform:
   m_ObjectHideFlags: 0
@@ -1328,7 +1328,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 1508936989446036332, guid: fc2e1ac7a58dfd041b32309a78857f4b, type: 3}
       propertyPath: m_BrainParameters.VectorObservationSize
-      value: 19
+      value: 175
       objectReference: {fileID: 0}
     - target: {fileID: 1508936989446036332, guid: fc2e1ac7a58dfd041b32309a78857f4b, type: 3}
       propertyPath: m_BrainParameters.VectorActionSize.Array.size
@@ -2908,7 +2908,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   training: 1
-  size: 3
+  size: 1
   cellSize: 2
   moveDuration: 0
   requireAllCellsToBeVisited: 0
@@ -4397,3 +4397,19 @@ GameObject:
   m_CorrespondingSourceObject: {fileID: 1946312899393052249, guid: fc2e1ac7a58dfd041b32309a78857f4b, type: 3}
   m_PrefabInstance: {fileID: 604053538}
   m_PrefabAsset: {fileID: 0}
+--- !u!114 &2024610309
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2024610301}
+  m_Enabled: 0
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f2902496c0120472b90269f94a0aec7e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  Record: 0
+  NumStepsToRecord: 0
+  DemonstrationName: GenerationDemo
+  DemonstrationDirectory: Assets/Demonstration

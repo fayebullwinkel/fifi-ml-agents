@@ -1,8 +1,11 @@
-﻿using MazeGeneration_vivi.MazeDatatype;
+﻿using System.Linq;
+using MazeGeneration_vivi.MazeDatatype;
 using MazeGeneration_vivi.MazeDatatype.Enums;
 using Unity.MLAgents;
 using Unity.MLAgents.Actuators;
+using Unity.MLAgents.Policies;
 using Unity.MLAgents.Sensors;
+using UnityEngine;
 using Grid = MazeGeneration_vivi.MazeDatatype.Grid;
 
 namespace MazeGeneration_vivi
@@ -39,27 +42,22 @@ namespace MazeGeneration_vivi
             {
                 return;
             }
-
-            // Observe the current cell
-            AddCellObservation(sensor, CurrentCell);
             
-            // Observe each neighbour of the current cell
-            foreach (var neighbour in CurrentCell.Neighbours)
+            // set vector observation space size to Maze Cell Count * 8 (8 observations per cell)
+            var behaviorParameters = GetComponent<BehaviorParameters>();
+            behaviorParameters.BrainParameters.VectorObservationSize = Maze.GetCellCount() * 8 + 19;
+            
+            // Add observations for each cell in each grid of the maze
+            foreach (var cell in Maze.Grids.Values.SelectMany(grid => grid.Cells.Cast<MazeCell>()))
             {
-                AddCellObservation(sensor, neighbour);
-                // Observe each neighbour of the neighbour cell
-                foreach (var neighbourOfNeighbour in neighbour.Neighbours)
-                {
-                    AddCellObservation(sensor, neighbourOfNeighbour);
-                }
+                AddCellObservation(sensor, cell);
             }
 
+            // Information about the current cell
+            AddCellObservation(sensor, CurrentCell);
+
             // Information about the start cell
-            var startCell = Maze.StartCell;
-            sensor.AddObservation((int)startCell.Grid.Face);
-            sensor.AddObservation(startCell.X);
-            sensor.AddObservation(startCell.Z);
-            sensor.AddObservation(startCell.Visited);
+            AddCellObservation(sensor, Maze.StartCell);
 
             // Current Path Length in the Maze from start to current cell
             sensor.AddObservation(Maze.CurrentPath.Count);
@@ -119,16 +117,21 @@ namespace MazeGeneration_vivi
                 EndEpisode();
             }
             
-            // // Reward for finding new cells // TODO: bool for rewarding small steps
+            // // Reward for finding new cells
             // var visitedCellsCount = Maze.GetVisitedCells();
             // if (visitedCellsCount > oldVisitedCellsCount)
             // {
             //     AddReward(0.005f);
             //     oldVisitedCellsCount = visitedCellsCount;
             // }
-            //
-            // // Existential penalty
-            // AddReward(-0.00025f);
+            
+            // Existential penalty
+            AddReward(-0.00025f);
+            if(GetCumulativeReward()  > 1.0f)
+            {
+                Debug.Log("Agent is stuck, ending episode");
+                EndEpisode();
+            }
         }
     
         // Manual control of the agent
