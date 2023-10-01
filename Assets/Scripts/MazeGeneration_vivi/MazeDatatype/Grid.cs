@@ -73,7 +73,7 @@ namespace MazeGeneration_vivi.MazeDatatype
                         cell.AddNeighbour(Cells[x - 1, z]);
                     }
                     // if the cell is on the left edge, add the cell on the right edge from the left neighbour graph as a neighbour
-                    else if (x == 0 && Maze.mazeType == EMazeType.ThreeDimensional)
+                    else if (x == 0)
                     {
                         var neighbourCell = FindNeighbourCellFromNeighbourGrid(cell, EDirection.Left);
                         cell.AddNeighbour(neighbourCell);
@@ -83,7 +83,7 @@ namespace MazeGeneration_vivi.MazeDatatype
                     {
                         cell.AddNeighbour(Cells[x + 1, z]);
                     }
-                    else if (x == Size - 1 && Maze.mazeType == EMazeType.ThreeDimensional)
+                    else if (x == Size - 1)
                     {
                         var neighbourCell = FindNeighbourCellFromNeighbourGrid(cell, EDirection.Right);
                         cell.AddNeighbour(neighbourCell);
@@ -93,7 +93,7 @@ namespace MazeGeneration_vivi.MazeDatatype
                     {
                         cell.AddNeighbour(Cells[x, z - 1]);
                     }
-                    else if (z == 0 && Maze.mazeType == EMazeType.ThreeDimensional)
+                    else if (z == 0)
                     {
                         var neighbourCell = FindNeighbourCellFromNeighbourGrid(cell, EDirection.Bottom);
                         cell.AddNeighbour(neighbourCell);
@@ -103,7 +103,7 @@ namespace MazeGeneration_vivi.MazeDatatype
                     {
                         cell.AddNeighbour(Cells[x, z + 1]);
                     }
-                    else if (z == Size - 1 && Maze.mazeType == EMazeType.ThreeDimensional)
+                    else if (z == Size - 1)
                     {
                         var neighbourCell = FindNeighbourCellFromNeighbourGrid(cell, EDirection.Top);
                         cell.AddNeighbour(neighbourCell);
@@ -270,15 +270,10 @@ namespace MazeGeneration_vivi.MazeDatatype
             // check if coordinates are out of bounds
             if (x < 0 || x >= Size || z < 0 || z >= Size)
             {
-                // if the maze is three dimensional, get the neighbour cell from the neighbour graph
-                if (Maze.mazeType == EMazeType.ThreeDimensional)
-                {
-                    var neighbourGraphFace = GetNeighbourGrid(direction).Face;
-                    var neighbour = currentCell.Neighbours.Find(c => c.Grid.Face == neighbourGraphFace);
-                    return neighbour;
-                }
-                // if the maze is two dimensional, return null
-                return null;
+                // get the neighbour cell from the neighbour grid
+                var neighbourGridFace = GetNeighbourGrid(direction).Face;
+                var neighbour = currentCell.Neighbours.Find(c => c.Grid.Face == neighbourGridFace);
+                return neighbour;
             }
             var cell = Cells[x, z];
             return cell;

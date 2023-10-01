@@ -1380,7 +1380,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 1946312899393052249, guid: fc2e1ac7a58dfd041b32309a78857f4b, type: 3}
       propertyPath: m_Name
-      value: MazeGenerationAgent3D
+      value: MazeGenerationAgent
       objectReference: {fileID: 0}
     - target: {fileID: 1946312899393052249, guid: fc2e1ac7a58dfd041b32309a78857f4b, type: 3}
       propertyPath: m_IsActive
@@ -2907,7 +2907,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 44335da4a82e33c4eb160c7e5acab847, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  mazeType: 1
+  training: 1
   size: 3
   cellSize: 2
   requireAllCellsToBeVisited: 0
@@ -2916,8 +2916,7 @@ MonoBehaviour:
   debugMode: 1
   prefabCollection: {fileID: 11400000, guid: 359b609eaa96ba8459ab1390ed6a48a3, type: 2}
   mainCamera: {fileID: 63424797}
-  agent2D: {fileID: 0}
-  agent3D: {fileID: 2024610301}
+  agent: {fileID: 2024610301}
   frontView: {fileID: 1600360430}
   backView: {fileID: 1091660656}
   leftView: {fileID: 317136877}

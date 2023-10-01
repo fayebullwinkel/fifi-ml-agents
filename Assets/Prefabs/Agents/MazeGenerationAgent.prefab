@@ -98,7 +98,7 @@ GameObject:
   - component: {fileID: 5475073008495398419}
   - component: {fileID: 2161572815593545142}
   m_Layer: 0
-  m_Name: MazeGenerationAgent3D
+  m_Name: MazeGenerationAgent
   m_TagString: MazeGenerationAgent
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
