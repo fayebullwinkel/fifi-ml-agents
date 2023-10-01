@@ -49,7 +49,6 @@ namespace MazeGeneration_vivi.MazeDatatype
         {
             InitializeNeighbours();
             InitializeWalls();
-            InitializeCorners();
 
             if (Maze.debugMode)
             {
@@ -130,34 +129,228 @@ namespace MazeGeneration_vivi.MazeDatatype
                 }
             }
         }
-        
-        private void InitializeCorners()
+
+        public void InitializeCorners()
         {
-            for (var x = 0; x < Size - 1; x++)
+            // create four corners for every cell in the grid 
+            for (var i = 0; i <= Size; i++)
             {
-                for (var z = 0; z < Size - 1; z++)
+                for(var j = 0; j <= Size; j++)
                 {
-                    var cells = new List<MazeCell>
+                    // CubeCorner Corners -> only three cells
+                    if (i == 0 && j == 0)
                     {
-                        Cells[x, z],
-                        Cells[x + 1, z],
-                        Cells[x, z + 1],
-                        Cells[x + 1, z + 1]
-                    };
-                    // find all walls that are in the corner
+                        var cornerCells = new List<MazeCell>()
+                        {
+                            Cells[i, j],
+                        };
+                        cornerCells.Add(GetNeighborCell(cornerCells[0], EDirection.Bottom));
+                        cornerCells.Add(GetNeighborCell(cornerCells[0], EDirection.Left));
+                        var cornerWalls = new List<MazeWall>()
+                        {
+                            Walls.Find(x => x.Cells.Contains(cornerCells[0]) && x.Cells.Contains(cornerCells[1])),
+                            Walls.Find(x => x.Cells.Contains(cornerCells[0]) && x.Cells.Contains(cornerCells[2])),
+                        };
+                        // add walls from the neighbor grids
+                        var neighborGrid1 = cornerCells[1].Grid;
+                        cornerWalls.Add(neighborGrid1.Walls.Find(x => x.Cells.Contains(cornerCells[1]) && x.Cells.Contains(cornerCells[2])));
+                        cornerWalls.Add(neighborGrid1.Walls.Find(x => x.Cells.Contains(cornerCells[0]) && x.Cells.Contains(cornerCells[1])));
+                        var neighborGrid2 = cornerCells[2].Grid;
+                        cornerWalls.Add(neighborGrid2.Walls.Find(x => x.Cells.Contains(cornerCells[1]) && x.Cells.Contains(cornerCells[2])));
+                        cornerWalls.Add(neighborGrid2.Walls.Find(x => x.Cells.Contains(cornerCells[0]) && x.Cells.Contains(cornerCells[2])));
+
+                        var cornerCorner = new MazeCorner(cornerCells, cornerWalls);
+                        Corners.Add(cornerCorner);
+                        continue;
+                    }
+                    if (i == 0 && j == Size)
+                    {
+                        var cornerCells = new List<MazeCell>()
+                        {
+                            Cells[i, j - 1],
+                        };
+                        cornerCells.Add(GetNeighborCell(cornerCells[0], EDirection.Top));
+                        cornerCells.Add(GetNeighborCell(cornerCells[0], EDirection.Left));
+                        var cornerWalls = new List<MazeWall>()
+                        {
+                            Walls.Find(x => x.Cells.Contains(cornerCells[0]) && x.Cells.Contains(cornerCells[1])),
+                            Walls.Find(x => x.Cells.Contains(cornerCells[0]) && x.Cells.Contains(cornerCells[2])),
+                        };
+                        // add walls from the neighbor grids
+                        var neighborGrid1 = cornerCells[1].Grid;
+                        cornerWalls.Add(neighborGrid1.Walls.Find(x => x.Cells.Contains(cornerCells[1]) && x.Cells.Contains(cornerCells[2])));
+                        cornerWalls.Add(neighborGrid1.Walls.Find(x => x.Cells.Contains(cornerCells[0]) && x.Cells.Contains(cornerCells[1])));
+                        var neighborGrid2 = cornerCells[2].Grid;
+                        cornerWalls.Add(neighborGrid2.Walls.Find(x => x.Cells.Contains(cornerCells[1]) && x.Cells.Contains(cornerCells[2])));
+                        cornerWalls.Add(neighborGrid2.Walls.Find(x => x.Cells.Contains(cornerCells[0]) && x.Cells.Contains(cornerCells[2])));
+
+                        var cornerCorner = new MazeCorner(cornerCells, cornerWalls);
+                        Corners.Add(cornerCorner);
+                        continue;
+                    }
+                    if (i == Size && j == 0)
+                    {
+                        var cornerCells = new List<MazeCell>()
+                        {
+                            Cells[i - 1, j],
+                        };
+                        cornerCells.Add(GetNeighborCell(cornerCells[0], EDirection.Bottom));
+                        cornerCells.Add(GetNeighborCell(cornerCells[0], EDirection.Right));
+                        var cornerWalls = new List<MazeWall>()
+                        {
+                            Walls.Find(x => x.Cells.Contains(cornerCells[0]) && x.Cells.Contains(cornerCells[1])),
+                            Walls.Find(x => x.Cells.Contains(cornerCells[0]) && x.Cells.Contains(cornerCells[2])),
+                        };
+                        // add walls from the neighbor grids
+                        var neighborGrid1 = cornerCells[1].Grid;
+                        cornerWalls.Add(neighborGrid1.Walls.Find(x => x.Cells.Contains(cornerCells[1]) && x.Cells.Contains(cornerCells[2])));
+                        cornerWalls.Add(neighborGrid1.Walls.Find(x => x.Cells.Contains(cornerCells[0]) && x.Cells.Contains(cornerCells[1])));
+                        var neighborGrid2 = cornerCells[2].Grid;
+                        cornerWalls.Add(neighborGrid2.Walls.Find(x => x.Cells.Contains(cornerCells[1]) && x.Cells.Contains(cornerCells[2])));
+                        cornerWalls.Add(neighborGrid2.Walls.Find(x => x.Cells.Contains(cornerCells[0]) && x.Cells.Contains(cornerCells[2])));
+
+                        var cornerCorner = new MazeCorner(cornerCells, cornerWalls);
+                        Corners.Add(cornerCorner);
+                        continue;
+                    }
+                    if(i == Size && j == Size)
+                    {
+                        var cornerCells = new List<MazeCell>()
+                        {
+                            Cells[i - 1, j - 1],
+                        };
+                        cornerCells.Add(GetNeighborCell(cornerCells[0], EDirection.Top));
+                        cornerCells.Add(GetNeighborCell(cornerCells[0], EDirection.Right));
+                        var cornerWalls = new List<MazeWall>()
+                        {
+                            Walls.Find(x => x.Cells.Contains(cornerCells[0]) && x.Cells.Contains(cornerCells[1])),
+                            Walls.Find(x => x.Cells.Contains(cornerCells[0]) && x.Cells.Contains(cornerCells[2])),
+                        };
+                        // add walls from the neighbor grids
+                        var neighborGrid1 = cornerCells[1].Grid;
+                        cornerWalls.Add(neighborGrid1.Walls.Find(x => x.Cells.Contains(cornerCells[1]) && x.Cells.Contains(cornerCells[2])));
+                        cornerWalls.Add(neighborGrid1.Walls.Find(x => x.Cells.Contains(cornerCells[0]) && x.Cells.Contains(cornerCells[1])));
+                        var neighborGrid2 = cornerCells[2].Grid;
+                        cornerWalls.Add(neighborGrid2.Walls.Find(x => x.Cells.Contains(cornerCells[1]) && x.Cells.Contains(cornerCells[2])));
+                        cornerWalls.Add(neighborGrid2.Walls.Find(x => x.Cells.Contains(cornerCells[0]) && x.Cells.Contains(cornerCells[2])));
+
+                        var cornerCorner = new MazeCorner(cornerCells, cornerWalls);
+                        Corners.Add(cornerCorner);
+                        continue;
+                    }
+
+                    var cells = new List<MazeCell>();
                     var walls = new List<MazeWall>();
-                    walls.Add(Walls.Find(x => x.Cells.Contains(cells[0]) && x.Cells.Contains(cells[1])));
-                    walls.Add(Walls.Find(x => x.Cells.Contains(cells[0]) && x.Cells.Contains(cells[2])));
-                    walls.Add(Walls.Find(x => x.Cells.Contains(cells[1]) && x.Cells.Contains(cells[3])));
-                    walls.Add(Walls.Find(x => x.Cells.Contains(cells[2]) && x.Cells.Contains(cells[3])));
-                    
+                    // corner on left edge
+                    if (i == 0)
+                    {
+                        cells = new List<MazeCell>
+                        {
+                            Cells[i, j - 1],
+                            Cells[i, j]
+                        };
+                        cells.Add(GetNeighborCell(cells[0], EDirection.Left));
+                        cells.Add(GetNeighborCell(cells[1], EDirection.Left));
+                        walls = new List<MazeWall>()
+                        {
+                            Walls.Find(x => x.Cells.Contains(cells[0]) && x.Cells.Contains(cells[1])),
+                            Walls.Find(x => x.Cells.Contains(cells[0]) && x.Cells.Contains(cells[2])),
+                            Walls.Find(x => x.Cells.Contains(cells[1]) && x.Cells.Contains(cells[3])),
+                        };
+                        var neighborGrid = cells[2].Grid;
+                        walls.Add(neighborGrid.Walls.Find(x => x.Cells.Contains(cells[2]) && x.Cells.Contains(cells[3])));
+                        walls.Add(neighborGrid.Walls.Find(x => x.Cells.Contains(cells[0]) && x.Cells.Contains(cells[2])));
+                        walls.Add(neighborGrid.Walls.Find(x => x.Cells.Contains(cells[1]) && x.Cells.Contains(cells[3])));
+                    }
+                    // corner on right edge
+                    else if(i == Size)
+                    {
+                        cells = new List<MazeCell>
+                        {
+                            Cells[i - 1, j - 1],
+                            Cells[i - 1, j],
+                        };
+                        cells.Add(GetNeighborCell(cells[0], EDirection.Right));
+                        cells.Add(GetNeighborCell(cells[1], EDirection.Right));
+                        walls = new List<MazeWall>()
+                        {
+                            Walls.Find(x => x.Cells.Contains(cells[0]) && x.Cells.Contains(cells[1])),
+                            Walls.Find(x => x.Cells.Contains(cells[0]) && x.Cells.Contains(cells[2])),
+                            Walls.Find(x => x.Cells.Contains(cells[1]) && x.Cells.Contains(cells[3])),
+                        };
+                        var neighborGrid = cells[2].Grid;
+                        walls.Add(neighborGrid.Walls.Find(x => x.Cells.Contains(cells[2]) && x.Cells.Contains(cells[3])));
+                        walls.Add(neighborGrid.Walls.Find(x => x.Cells.Contains(cells[0]) && x.Cells.Contains(cells[2])));
+                        walls.Add(neighborGrid.Walls.Find(x => x.Cells.Contains(cells[1]) && x.Cells.Contains(cells[3])));
+                    }
+                    // corner on bottom edge
+                    else if (j == 0)
+                    {
+                        cells = new List<MazeCell>
+                        {
+                            Cells[i - 1, j],
+                            Cells[i, j]
+                        };
+                        cells.Add(GetNeighborCell(cells[0], EDirection.Bottom));
+                        cells.Add(GetNeighborCell(cells[1], EDirection.Bottom));
+                        walls = new List<MazeWall>()
+                        {
+                            Walls.Find(x => x.Cells.Contains(cells[0]) && x.Cells.Contains(cells[1])),
+                            Walls.Find(x => x.Cells.Contains(cells[0]) && x.Cells.Contains(cells[2])),
+                            Walls.Find(x => x.Cells.Contains(cells[1]) && x.Cells.Contains(cells[3])),
+                        };
+                        var neighborGrid = cells[2].Grid;
+                        walls.Add(neighborGrid.Walls.Find(x => x.Cells.Contains(cells[2]) && x.Cells.Contains(cells[3])));
+                        walls.Add(neighborGrid.Walls.Find(x => x.Cells.Contains(cells[0]) && x.Cells.Contains(cells[2])));
+                        walls.Add(neighborGrid.Walls.Find(x => x.Cells.Contains(cells[1]) && x.Cells.Contains(cells[3])));
+                    }
+                    // corner on top edge
+                    else if (j == Size)
+                    {
+                        cells = new List<MazeCell>
+                        {
+                            Cells[i - 1, j - 1],
+                            Cells[i, j - 1],
+                        };
+                        cells.Add(GetNeighborCell(cells[0], EDirection.Top));
+                        cells.Add(GetNeighborCell(cells[1], EDirection.Top));
+                        walls = new List<MazeWall>()
+                        {
+                            Walls.Find(x => x.Cells.Contains(cells[0]) && x.Cells.Contains(cells[1])),
+                            Walls.Find(x => x.Cells.Contains(cells[0]) && x.Cells.Contains(cells[2])),
+                            Walls.Find(x => x.Cells.Contains(cells[1]) && x.Cells.Contains(cells[3])),
+                        };
+                        var neighborGrid = cells[2].Grid;
+                        walls.Add(neighborGrid.Walls.Find(x => x.Cells.Contains(cells[2]) && x.Cells.Contains(cells[3])));
+                        walls.Add(neighborGrid.Walls.Find(x => x.Cells.Contains(cells[0]) && x.Cells.Contains(cells[2])));
+                        walls.Add(neighborGrid.Walls.Find(x => x.Cells.Contains(cells[1]) && x.Cells.Contains(cells[3])));
+                    }
+                    else
+                    {
+                        // get the four cells that are connected to the corner
+                        cells = new List<MazeCell>
+                        {
+                            Cells[i - 1, j - 1],
+                            Cells[i - 1, j],
+                            Cells[i, j - 1],
+                            Cells[i, j]
+                        };
+                        // get the four walls that are connected to the corner
+                        // the walls that connects two cells in cells are connected to the corner
+                        walls = new List<MazeWall>()
+                        {
+                            Walls.Find(x => x.Cells.Contains(cells[0]) && x.Cells.Contains(cells[1])),
+                            Walls.Find(x => x.Cells.Contains(cells[0]) && x.Cells.Contains(cells[2])),
+                            Walls.Find(x => x.Cells.Contains(cells[1]) && x.Cells.Contains(cells[3])),
+                            Walls.Find(x => x.Cells.Contains(cells[2]) && x.Cells.Contains(cells[3]))
+                        };
+                    }
                     var corner = new MazeCorner(cells, walls);
-                    Corners.Add(corner);
-                    
-                    Cells[x, z].Corners.Add(corner);
-                    Cells[x + 1, z].Corners.Add(corner);
-                    Cells[x, z + 1].Corners.Add(corner);
-                    Cells[x + 1, z + 1].Corners.Add(corner);
+                    // check if the corner is already in the list
+                    if (!Corners.Contains(corner))
+                    {
+                        Corners.Add(corner);
+                    }
                 }
             }
         }
@@ -357,16 +550,18 @@ namespace MazeGeneration_vivi.MazeDatatype
         public void RemoveWall(MazeWall wall)
         {
             Walls.Remove(wall);
+            // remove wall from every corner that contains it
+            foreach (var corner in Corners)
+            {
+                if (corner.Walls.Contains(wall))
+                {
+                    corner.Walls.Remove(wall);
+                }
+            }
             // Remove wall from cells
             foreach (var cell in wall.Cells)
             {
                 cell.Walls.Remove(wall);
-            }
-            // Remove wall from corners
-            var corner = Corners.FindAll(x => x.Walls.Contains(wall));
-            foreach (var c in corner)
-            {
-                c.Walls.Remove(wall);
             }
         }
         

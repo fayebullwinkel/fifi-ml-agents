@@ -110,6 +110,12 @@ namespace MazeGeneration_vivi.MazeDatatype
                 grid.SetupGrid();
                 PositionGrid(grid);
             }
+
+            foreach (var grid in Grids.Values)
+            {
+                // Have to be called after all grids are initialized to ensure that all walls are created
+                grid.InitializeCorners();
+            }
         }
 
         #endregion
@@ -317,10 +323,18 @@ namespace MazeGeneration_vivi.MazeDatatype
                         // destroy the wall between the current cell and the next cell
                         if (wall != null)
                         {
+                            foreach(var grid in Grids.Values)
+                            {
+                                grid.RemoveWall(wall);
+                            }
                             wall.DestroyWall();
                         }
                         if (nextWall != null)
                         {
+                            foreach(var grid in Grids.Values)
+                            {
+                                grid.RemoveWall(nextWall);
+                            }
                             nextWall.DestroyWall();
                         }
                     }
@@ -334,10 +348,18 @@ namespace MazeGeneration_vivi.MazeDatatype
                 // destroy the wall between the current cell and the next cell
                 if (wall != null)
                 {
+                    foreach(var grid in Grids.Values)
+                    {
+                        grid.RemoveWall(wall);
+                    }
                     wall.DestroyWall();
                 }
                 if (nextWall != null)
                 {
+                    foreach(var grid in Grids.Values)
+                    {
+                        grid.RemoveWall(nextWall);
+                    }
                     nextWall.DestroyWall();
                 }
             }
