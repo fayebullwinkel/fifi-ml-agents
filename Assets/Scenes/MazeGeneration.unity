@@ -1430,6 +1430,10 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 2161572815593545142, guid: fc2e1ac7a58dfd041b32309a78857f4b, type: 3}
+      propertyPath: Maze
+      value: 
+      objectReference: {fileID: 1460981386}
     - target: {fileID: 3256450761852145635, guid: fc2e1ac7a58dfd041b32309a78857f4b, type: 3}
       propertyPath: Maze
       value: 
@@ -1442,7 +1446,8 @@ PrefabInstance:
       propertyPath: TakeActionsBetweenDecisions
       value: 0
       objectReference: {fileID: 0}
-    m_RemovedComponents: []
+    m_RemovedComponents:
+    - {fileID: 3256450761852145635, guid: fc2e1ac7a58dfd041b32309a78857f4b, type: 3}
   m_SourcePrefab: {fileID: 100100000, guid: fc2e1ac7a58dfd041b32309a78857f4b, type: 3}
 --- !u!1 &683206366
 GameObject:
