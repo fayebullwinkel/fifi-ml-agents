@@ -59,12 +59,16 @@ namespace MazeGeneration_vivi.MazeDatatype
         public GameObject StartCellObject { get; private set; }
         public MazeCell EndCell { get; private set; }
         public GameObject EndCellObject { get; private set; }
+        public List<MazeCell> FinishedPath { get; private set; }
+        public List<MazeCell> CurrentPath { get; set; }
         public bool AgentIsMoving { get; set; }
         private GameObject maze;
         private GameObject cube;
 
         private void Awake()
         {
+            FinishedPath = new List<MazeCell>();
+            CurrentPath = new List<MazeCell>();
             Grids = new Dictionary<ECubeFace, Grid>();
             cube = transform.GetComponentInChildren<BoxCollider>().gameObject;
             maze = gameObject;
@@ -228,10 +232,10 @@ namespace MazeGeneration_vivi.MazeDatatype
             }
         }
         
-        public void PlaceGoal(Vector3 position)
+        public void PlaceGoal(MazeCell cell)
         {
-            var grid = agent.GetComponent<MazeGenerationAgent>().CurrentGrid;
-            var cell = grid.GetCellFromPosition(position); 
+            var grid = cell.Grid;
+            var position = grid.GetPositionFromCell(cell);
             // Goal can not be placed on the start cell
             if(cell == StartCell)
             {
@@ -297,6 +301,7 @@ namespace MazeGeneration_vivi.MazeDatatype
                 mazeAgent.CurrentGrid = nextGrid;
             }
             mazeAgent.CurrentCell = nextCell;
+            CurrentPath = FindPath(StartCell, mazeAgent.CurrentCell);
             // try find a wall between the current cell and the next cell
             var wall = currentGrid.Walls.Find(x => x.Cells.Contains(currentCell) && x.Cells.Contains(nextCell));
             var nextWall = nextGrid.Walls.Find(x => x.Cells.Contains(currentCell) && x.Cells.Contains(nextCell));
@@ -415,6 +420,8 @@ namespace MazeGeneration_vivi.MazeDatatype
             }
             StartCell = null;
             EndCell = null;
+            FinishedPath = new List<MazeCell>();
+            CurrentPath = new List<MazeCell>();
             Grids = new Dictionary<ECubeFace, Grid>();
         }
         
@@ -440,11 +447,11 @@ namespace MazeGeneration_vivi.MazeDatatype
                 return false;
             }
             // Check if there is a path from start to end cell -> maze is solvable
-            var path = FindPath(StartCell, EndCell);
-            var isSolvable = path.Count > 0 && path.First() == StartCell && path.Last() == EndCell;
+            FinishedPath = FindPath(StartCell, EndCell);
+            var isSolvable = FinishedPath.Count > 0 && FinishedPath.First() == StartCell && FinishedPath.Last() == EndCell;
             if (isSolvable)
             {
-                ShowPath(path);
+                ShowPath(FinishedPath);
             }
             return isSolvable;
         }
@@ -556,6 +563,11 @@ namespace MazeGeneration_vivi.MazeDatatype
         public float GetPercentageOfVisitedCells()
         {
             return (float) GetVisitedCells() / GetCellCount();
+        }
+        
+        public float GetPercentageOfPathLength()
+        {
+            return (float) FinishedPath.Count / GetCellCount();
         }
         
         public bool GetIsMazeEmpty() => Grids.Count == 0;

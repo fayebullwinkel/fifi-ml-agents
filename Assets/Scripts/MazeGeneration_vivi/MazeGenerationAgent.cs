@@ -3,7 +3,6 @@ using MazeGeneration_vivi.MazeDatatype.Enums;
 using Unity.MLAgents;
 using Unity.MLAgents.Actuators;
 using Unity.MLAgents.Sensors;
-using UnityEngine;
 using Grid = MazeGeneration_vivi.MazeDatatype.Grid;
 
 namespace MazeGeneration_vivi
@@ -15,16 +14,11 @@ namespace MazeGeneration_vivi
         public MazeCell CurrentCell {get; set;} = null!;
         public EManualInput ManualInput {get; set;} = EManualInput.None;
         private int oldVisitedCellsCount;
-        private int oldMovingDirection;
-        private int newMovingDirection;
         
         // Initialize the agent and set the maze grid every new episode
         public override void OnEpisodeBegin()
         {
             ManualInput = EManualInput.None;
-            // reset moving direction to 5 (no movement)
-            oldMovingDirection = 5;
-            newMovingDirection = 5;
             // reset visited cells count
             oldVisitedCellsCount = 0;
             
@@ -45,39 +39,33 @@ namespace MazeGeneration_vivi
             {
                 return;
             }
+
+            // Observe the current cell
+            AddCellObservation(sensor, CurrentCell);
             
-            // Agent position
-            sensor.AddObservation(transform.localPosition);
-            // TODO: current cell position
-            // oldMovingDirection
-            sensor.AddObservation(oldMovingDirection);
-            // newMovingDirection
-            sensor.AddObservation(newMovingDirection);
-            // TODO: path length from start to current cell
-            // -> reward based on length of path
-            // Position of the Start Cell
-            var startCell = Maze.StartCell;
-            var grid = startCell.Grid;
-            var startCellPosition = grid.GetPositionFromCell(startCell);
-            sensor.AddObservation(startCellPosition);
-            // TODO: Start cell in maze
-            // For each Neighbour of the current cell: 1 if visited, 0 if not visited
+            // Observe each neighbour of the current cell
             foreach (var neighbour in CurrentCell.Neighbours)
             {
-                sensor.AddObservation(neighbour.Visited ? 1 : 0);
+                AddCellObservation(sensor, neighbour);
+                // Observe each neighbour of the neighbour cell
+                foreach (var neighbourOfNeighbour in neighbour.Neighbours)
+                {
+                    AddCellObservation(sensor, neighbourOfNeighbour);
+                }
             }
-            // TODO: current cell visited (1) or not visited (0)
-            // The number of walls on each corner of the current cell
-            foreach (var corner in CurrentCell.Corners)
-            {
-                sensor.AddObservation(corner.Walls.Count);
-            }
-            // TODO: more!
-            // Maze percentage of visited cells: float
-            sensor.AddObservation(Maze.GetPercentageOfVisitedCells());
-            // oldVisitedCellsCount: int
-            sensor.AddObservation(oldVisitedCellsCount);
-            // newVisitedCellsCount: int
+
+            // Information about the start cell
+            var startCell = Maze.StartCell;
+            sensor.AddObservation((int)startCell.Grid.Face);
+            sensor.AddObservation(startCell.X);
+            sensor.AddObservation(startCell.Z);
+            sensor.AddObservation(startCell.Visited);
+
+            // Current Path Length in the Maze from start to current cell
+            sensor.AddObservation(Maze.CurrentPath.Count);
+            // Current Percentage of the Path Length in relation to the total number of cells in the maze
+            sensor.AddObservation(Maze.CurrentPath.Count/Maze.GetCellCount());
+            // Visited Cells in the Maze
             sensor.AddObservation(Maze.GetVisitedCells());
         }
 
@@ -91,27 +79,22 @@ namespace MazeGeneration_vivi
             }
 
             // Perform action
-            newMovingDirection = 5;
             switch (actions.DiscreteActions[0])
             {
                 case 0:
                     Maze.MoveAgent(EDirection.Left);
-                    newMovingDirection = 0;
                     break;
                 case 1:
                     Maze.MoveAgent(EDirection.Right);
-                    newMovingDirection = 1;
                     break;
                 case 2:
                     Maze.MoveAgent(EDirection.Top);
-                    newMovingDirection = 2;
                     break;
                 case 3:
                     Maze.MoveAgent(EDirection.Bottom);
-                    newMovingDirection = 3;
                     break;
                 case 4:
-                    Maze.PlaceGoal(transform.localPosition);
+                    Maze.PlaceGoal(CurrentCell);
                     break;
                 case 5:
                     break;
@@ -123,8 +106,8 @@ namespace MazeGeneration_vivi
             if (Maze.IsFinished())
             {
                 // calculate the reward based on the percentage of visited cells, should be between 0 and 1
-                var percentageOfVisitedCells = Maze.GetPercentageOfVisitedCells();
-                var reward = Maze.IsValid() ? percentageOfVisitedCells : -1.0f;
+                var percentageOfPathLength = Maze.GetPercentageOfPathLength();
+                var reward = Maze.IsValid() ? percentageOfPathLength * 10.0f : -1.0f;
                 SetReward(reward);
                 EndEpisode();
             }
@@ -136,21 +119,16 @@ namespace MazeGeneration_vivi
                 EndEpisode();
             }
             
-            // Reward for finding new cells // TODO: bool for rewarding small steps
-            var visitedCellsCount = Maze.GetVisitedCells();
-            if (visitedCellsCount > oldVisitedCellsCount)
-            {
-                AddReward(0.005f);
-                oldVisitedCellsCount = visitedCellsCount;
-                if(newMovingDirection != oldMovingDirection)
-                {
-                    AddReward(0.0025f);
-                    oldMovingDirection = newMovingDirection;
-                }
-            }
-            
-            // Existential penalty
-            AddReward(-0.00025f);
+            // // Reward for finding new cells // TODO: bool for rewarding small steps
+            // var visitedCellsCount = Maze.GetVisitedCells();
+            // if (visitedCellsCount > oldVisitedCellsCount)
+            // {
+            //     AddReward(0.005f);
+            //     oldVisitedCellsCount = visitedCellsCount;
+            // }
+            //
+            // // Existential penalty
+            // AddReward(-0.00025f);
         }
     
         // Manual control of the agent
@@ -183,6 +161,20 @@ namespace MazeGeneration_vivi
             else if (ManualInput == EManualInput.None)
             {
                 discreteActionsOut[0] = 5;
+            }
+        }
+
+        private void AddCellObservation(VectorSensor sensor, MazeCell cell)
+        {
+            // Cube Face and Cell Position and Visited Flag of the Neighbour Cell
+            sensor.AddObservation((int)cell.Grid.Face);
+            sensor.AddObservation(cell.X);
+            sensor.AddObservation(cell.Z);
+            sensor.AddObservation(cell.Visited);
+            // The number of walls on each corner of the neighbour cell
+            foreach (var corner in cell.Corners)
+            {
+                sensor.AddObservation(corner.Walls.Count);
             }
         }
     }
