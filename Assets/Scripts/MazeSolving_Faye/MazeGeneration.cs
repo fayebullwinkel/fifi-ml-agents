@@ -10,7 +10,7 @@ namespace MazeSolving_Faye
         private int _y;
         private int _z;
         private Cube[,,] _cubes;
-        private List<Cube> _cutOutCubes;
+        private List<Cube> _pathCubes;
         private List<Cube> _possibleNextCubes;
         private List<Vector3Int> _surfaceCubePositions;
 
@@ -20,7 +20,7 @@ namespace MazeSolving_Faye
             _y = Mathf.RoundToInt(scale.y);
             _z = Mathf.RoundToInt(scale.z);
             _possibleNextCubes = new List<Cube>();
-            _cutOutCubes = new List<Cube>();
+            _pathCubes = new List<Cube>();
             _cubes = new Cube[_x, _y, _x];
 
             SearchArray(0);
@@ -106,7 +106,7 @@ namespace MazeSolving_Faye
         {
             if (cube.GetIsWall())
             {
-                _cutOutCubes.Add(_cubes[cube.GetX(), cube.GetY(), cube.GetZ()]);
+                _pathCubes.Add(_cubes[cube.GetX(), cube.GetY(), cube.GetZ()]);
                 _cubes[cube.GetX(), cube.GetY(), cube.GetZ()].SetIsWall(false);
             }
         }
@@ -184,7 +184,7 @@ namespace MazeSolving_Faye
             Cube targetCube = null;
             var bestWeight = float.MaxValue;
 
-            foreach (Cube cube in _cutOutCubes)
+            foreach (Cube cube in _pathCubes)
             {
                 Cube temp = GetNeighborCubes(cube.GetX(), cube.GetY(), cube.GetZ(), 0);
                 var tempWeight = _cubes[temp.GetX(), temp.GetY(), temp.GetZ()].GetWeight();
