@@ -334,6 +334,7 @@ MonoBehaviour:
   mazeCountX: 1
   mazeCountZ: 1
   spacing: 4
+  generateNewMaze: 1
 --- !u!4 &1233207294
 Transform:
   m_ObjectHideFlags: 0

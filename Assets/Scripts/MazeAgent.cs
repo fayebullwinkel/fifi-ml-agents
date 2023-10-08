@@ -21,6 +21,8 @@ public class MazeAgent : Agent
     private bool _propertiesSet;
     private int _visitedCellCount;
 
+    private float _smallestDistance;
+
     // Heuristic
     private MovementDirection _myNextMove = MovementDirection.Nothing;
 
@@ -45,6 +47,7 @@ public class MazeAgent : Agent
     {
         Debug.Log("Epsiode begins");
         _currPos = _startPos;
+        _smallestDistance = float.MaxValue;
     }
     
     public override void OnActionReceived(ActionBuffers actionBuffers)
@@ -58,19 +61,20 @@ public class MazeAgent : Agent
 
         if (IsActionLegal(discreteAction))
         {
+            var lastPos = _currPos;
             _currPos += GetVectorToEnum(discreteAction);
             
-            PenalizeAmountVisited(_currPos);
+            // PenalizeAmountVisited(_currPos);
+            
             // convert to world coordinates
             var newPosUnity = _maze.GetCube(_currPos)
                 .GetRelativePosition(_mazeController.transform.localScale);
             transform.localPosition = newPosUnity;
-            
-            if (GetPossibleActions(_currPos).Count == 1)
-            {
-                Debug.Log("Dead end reached");
-                AddReward(-1.0f);
-            }
+
+            // PenalizeDeadEnd(_currPos);
+
+            // RewardNewCube(_currPos);
+            RewardDistance(lastPos, _currPos);
 
             if (_maze.GetCube(_currPos).GetIsGoalCube())
             {
@@ -82,16 +86,43 @@ public class MazeAgent : Agent
         }
         else
         {
-            AddReward(-1.0f);
+            AddReward(-0.05f);
         }
 
-        // negative reward for each step
+        // tiny negative reward for each step
         if (MaxStep > 0)
         {
-            AddReward(-0.1f);
+            AddReward(-1f / MaxStep);
         }
         
         actionBuffers.DiscreteActions.Array[0] = (int)MovementDirection.Nothing;
+    }
+
+    private void RewardNewCube(Vector3Int currPos)
+    {
+        _maze.GetCube(currPos).IncreaseVisitedCounter();
+        if (_maze.GetCube(currPos).GetVisitedCounter() != 1) return;
+        AddReward(0.05f);
+    }
+    
+    private void RewardDistance(Vector3Int lastPos, Vector3Int currPos)
+    {
+        if (lastPos == currPos) return;
+        _maze.GetCube(currPos).IncreaseVisitedCounter(); //TODO: delete if rewardNewCube is called
+        if (_maze.GetCube(currPos).GetVisitedCounter() > 1) return;
+        
+        var currDistance = Vector3.Distance(currPos, _maze.GetEndCube().GetPos());
+
+        if (!(currDistance < _smallestDistance)) return;
+        _smallestDistance = currDistance;
+        AddReward(0.01f);
+    }
+
+    private void PenalizeDeadEnd(Vector3Int currPos)
+    {
+        if (GetPossibleActions(currPos).Count != 1) return;
+        Debug.Log("Dead end reached");
+        AddReward(-1.0f);
     }
     
     private void PenalizeAmountVisited(Vector3Int currPos)
@@ -245,21 +276,31 @@ public class MazeAgent : Agent
             {
                 for (var x = 0; x < cubes.GetLength(0); x++)
                 {
-                    // Check if the cube is on the surface (i.e., on the outermost layer)
+                    // is cube on surface
                     if (z == 0 || z == cubes.GetLength(2) - 1 || y == 0 || y == cubes.GetLength(1) - 1 || x == 0 ||
                         x == cubes.GetLength(0) - 1)
                     {
-                        sensor.AddObservation(_maze.GetCube(new Vector3Int(x, y, z)).GetIsWall()); // depends on dimensions of maze, right now 7x7x7 - 5x5x5 = 218
+                        if(_maze.GetEndCube().GetPos() == new Vector3Int(x, y, z))
+                        {
+                            sensor.AddObservation(2f);
+                            continue;
+                        }
+                        if(_currPos == new Vector3Int(x, y, z))
+                        {
+                            sensor.AddObservation(3f);
+                            continue;
+                        }
+                        sensor.AddObservation(_maze.GetCube(new Vector3Int(x, y, z)).GetIsWall() ? 1f : 0f); // depends on dimensions of maze, right now 7x7x7 - 5x5x5 = 218
                     }
                     else
                     {
-                        sensor.AddObservation(true); // observe inner cubes for consistent data
+                        sensor.AddObservation(1f); // observe inner cubes for consistent data
                     }
                 }
             }
         }
         
-        sensor.AddObservation(_visitedCellCount);
+        //sensor.AddObservation(_visitedCellCount);
 
         // 2 x Vector3 + 343 + 1 = 350
         

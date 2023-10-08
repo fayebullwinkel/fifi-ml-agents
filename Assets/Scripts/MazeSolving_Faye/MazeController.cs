@@ -10,7 +10,9 @@ namespace MazeSolving_Faye
         public int mazeCountZ = 1;
         public int spacing = 4;
 
-        private bool _firstRound;
+        public bool generateNewMaze;
+        
+        private Maze _maze;
 
         private void Start()
         {
@@ -59,22 +61,16 @@ namespace MazeSolving_Faye
                 }
             }
 
-            Maze maze;
-
-            if (SharedMaze.Cubes != null)
+            if (generateNewMaze || _maze == null)
             {
-                maze = new Maze(SharedMaze.Cubes, SharedMaze.StartCube, SharedMaze.EndCube);
+                _maze = SharedMaze.Cubes != null ? new Maze(SharedMaze.Cubes, SharedMaze.StartCube, SharedMaze.EndCube) : GenerateMaze(mazeObj, mazeBuilder, endCubeObj, agentObj, mazePosition);
             }
-            else
-            {
-                maze = GenerateMaze(mazeObj, mazeBuilder, endCubeObj, agentObj, mazePosition);
-            }
-
-            if (maze == null) return;
-            BuildMaze(mazeObj, mazeBuilder, mazePosition, maze);
-            SetAgentProperties(mazeObj, mazeBuilder, endCubeObj, agentObj, mazePosition, maze, true);
-            MoveCube(mazeObj, agentObj, maze.GetStartCube(), Color.green);
-            MoveCube(mazeObj, endCubeObj, maze.GetEndCube(), Color.red);
+            
+            if (_maze == null) return;
+            BuildMaze(mazeObj, mazeBuilder, mazePosition, _maze);
+            SetAgentProperties(mazeObj, mazeBuilder, endCubeObj, agentObj, mazePosition, _maze, true);
+            MoveCube(mazeObj, agentObj, _maze.GetStartCube(), Color.green);
+            MoveCube(mazeObj, endCubeObj, _maze.GetEndCube(), Color.red);
             //RotateMazeToFaceCamera(mazeObj, agentObj);
         }
 
