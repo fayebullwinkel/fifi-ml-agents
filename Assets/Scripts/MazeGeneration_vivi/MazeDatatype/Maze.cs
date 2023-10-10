@@ -263,7 +263,7 @@ namespace MazeGeneration_vivi.MazeDatatype
                 }
                 MarkCellVisited(cell);
                 
-                Debug.Log("Maze is Valid: " + IsValid() + " Reward: " + GetPercentageOfPathLength());
+                Debug.Log("Maze is Valid: " + IsValid() + "\nPercentage of Path Length: " + GetPercentageOfPathLength() * 100f + " %" + "\nPercentage of Visited Cells: " + GetPercentageOfVisitedCells() * 100f + " %");
                 
                 // if maze is valid and not in training mode, load the maze solving scene
                 if (IsValid() && !training && GetPercentageOfPathLength() > requiredPathLength)
