@@ -6,7 +6,6 @@ using MazeGeneration_vivi.MazeDatatype.Enums;
 using TMPro;
 using UnityEngine;
 using UnityEngine.SceneManagement;
-using UnityEngine.Serialization;
 using Random = UnityEngine.Random;
 
 namespace MazeGeneration_vivi.MazeDatatype
@@ -264,10 +263,10 @@ namespace MazeGeneration_vivi.MazeDatatype
                 Debug.Log("Maze is Valid: " + IsValid() + " Reward: " + GetPercentageOfPathLength());
                 
                 // if maze is valid and not in training mode, load the maze solving scene
-                if (IsValid() && !training)
+                if (IsValid() && !training && GetPercentageOfPathLength() > 0.3f)
                 {
                     // create shared maze
-                    SharedMaze.Size = 7;
+                    SharedMaze.Size = size * 2 + 1;
                     SharedMaze.FillCubes(this);
                     SceneManager.LoadScene("MazeSolving");
                 }
