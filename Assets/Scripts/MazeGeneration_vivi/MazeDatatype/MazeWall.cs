@@ -44,7 +44,7 @@ namespace MazeGeneration_vivi.MazeDatatype
 
             if (!Maze.MeetsRequirements())
             {
-                Debug.Log("Maze Meets Requirements: " + Maze.MeetsRequirements());
+                // Debug.Log("Maze Meets Requirements: " + Maze.MeetsRequirements());
             }
             
             Destroy(gameObject);

@@ -6,6 +6,7 @@ using MazeGeneration_vivi.MazeDatatype.Enums;
 using TMPro;
 using UnityEngine;
 using UnityEngine.SceneManagement;
+using UnityEngine.Serialization;
 using Random = UnityEngine.Random;
 
 namespace MazeGeneration_vivi.MazeDatatype
@@ -32,8 +33,8 @@ namespace MazeGeneration_vivi.MazeDatatype
         public bool showPath;
         [Tooltip("If true, the visited cells will be shown.")]
         public bool showVisitedCells;
-        [Tooltip("If true, multiple debug things will be shown.")]
-        public bool debugMode;
+        [Tooltip("If true, the coordinates of each cell will be shown on the cube.")]
+        public bool showCellCoordinates;
 
         [Header("Resources")]
         public PrefabCollection prefabCollection = null!;
@@ -260,7 +261,7 @@ namespace MazeGeneration_vivi.MazeDatatype
                 }
                 MarkCellVisited(cell);
                 
-                Debug.Log("Maze is Valid: " + IsValid());
+                Debug.Log("Maze is Valid: " + IsValid() + " Reward: " + GetPercentageOfPathLength());
                 
                 // if maze is valid and not in training mode, load the maze solving scene
                 if (IsValid() && !training)
@@ -465,6 +466,11 @@ namespace MazeGeneration_vivi.MazeDatatype
             }
             // TODO: add more requirements
             return true;
+        }
+
+        public bool HasWalls()
+        {
+            return Grids.Values.Any(grid => grid.Walls.Count > 0);
         }
         
         #endregion

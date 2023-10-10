@@ -1321,14 +1321,14 @@ PrefabInstance:
     - target: {fileID: 1508936989446036332, guid: fc2e1ac7a58dfd041b32309a78857f4b, type: 3}
       propertyPath: m_Model
       value: 
-      objectReference: {fileID: 5022602860645237092, guid: fd4cd5a2d97c9e24e834aa85bcd0ffd3, type: 3}
+      objectReference: {fileID: 5022602860645237092, guid: 4abee5185bb45724cb8d8ff1aa1b5fe5, type: 3}
     - target: {fileID: 1508936989446036332, guid: fc2e1ac7a58dfd041b32309a78857f4b, type: 3}
       propertyPath: m_BehaviorType
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 1508936989446036332, guid: fc2e1ac7a58dfd041b32309a78857f4b, type: 3}
       propertyPath: m_BrainParameters.VectorObservationSize
-      value: 451
+      value: 63
       objectReference: {fileID: 0}
     - target: {fileID: 1508936989446036332, guid: fc2e1ac7a58dfd041b32309a78857f4b, type: 3}
       propertyPath: m_BrainParameters.VectorActionSize.Array.size
@@ -2907,14 +2907,14 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 44335da4a82e33c4eb160c7e5acab847, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  training: 1
+  training: 0
   size: 3
   cellSize: 2
-  moveDuration: 0
+  moveDuration: 0.214
   requireAllCellsToBeVisited: 0
   showPath: 1
   showVisitedCells: 1
-  debugMode: 1
+  showCellCoordinates: 1
   prefabCollection: {fileID: 11400000, guid: 359b609eaa96ba8459ab1390ed6a48a3, type: 2}
   mainCamera: {fileID: 63424797}
   agent: {fileID: 2024610301}

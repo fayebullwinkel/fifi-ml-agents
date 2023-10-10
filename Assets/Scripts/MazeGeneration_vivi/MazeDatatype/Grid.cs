@@ -50,7 +50,7 @@ namespace MazeGeneration_vivi.MazeDatatype
             InitializeNeighbours();
             InitializeWalls();
 
-            if (Maze.debugMode)
+            if (Maze.showCellCoordinates)
             {
                 //PrintAllCells();
                 ShowAllCells();

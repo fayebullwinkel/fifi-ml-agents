@@ -16,14 +16,18 @@ namespace MazeGeneration_vivi
         public Grid CurrentGrid {get; set;} = null!;
         public MazeCell CurrentCell {get; set;} = null!;
         public EManualInput ManualInput {get; set;} = EManualInput.None;
-        private int oldVisitedCellsCount;
+
+        private void Awake()
+        {
+            // set vector observation space size to Maze Cell Count * 8 (8 observations per cell)
+            var behaviorParameters = GetComponent<BehaviorParameters>();
+            behaviorParameters.BrainParameters.VectorObservationSize = Maze.GetCellCount() * 1 + 9;
+        }
         
         // Initialize the agent and set the maze grid every new episode
         public override void OnEpisodeBegin()
         {
             ManualInput = EManualInput.None;
-            // reset visited cells count
-            oldVisitedCellsCount = 0;
             
             // clear old maze, generate new maze grid and place agent
             if (!Maze.GetIsMazeEmpty())
@@ -42,15 +46,12 @@ namespace MazeGeneration_vivi
             {
                 return;
             }
-            
-            // set vector observation space size to Maze Cell Count * 8 (8 observations per cell)
-            var behaviorParameters = GetComponent<BehaviorParameters>();
-            behaviorParameters.BrainParameters.VectorObservationSize = Maze.GetCellCount() * 8 + 19;
-            
+
             // Add observations for each cell in each grid of the maze
             foreach (var cell in Maze.Grids.Values.SelectMany(grid => grid.Cells.Cast<MazeCell>()))
             {
-                AddCellObservation(sensor, cell);
+                // AddCellObservation(sensor, cell);
+                sensor.AddObservation(cell.Visited);
             }
 
             // Information about the current cell
@@ -111,7 +112,7 @@ namespace MazeGeneration_vivi
             }
 
             // termination condition: agent has removed too many walls -> Task failed
-            if (!Maze.MeetsRequirements())
+            if (!Maze.HasWalls())
             {
                 SetReward(-1.0f);
                 EndEpisode();
@@ -173,12 +174,12 @@ namespace MazeGeneration_vivi
             sensor.AddObservation((int)cell.Grid.Face);
             sensor.AddObservation(cell.X);
             sensor.AddObservation(cell.Z);
-            sensor.AddObservation(cell.Visited);
-            // The number of walls on each corner of the neighbour cell
-            foreach (var corner in cell.Corners)
-            {
-                sensor.AddObservation(corner.Walls.Count);
-            }
+            // sensor.AddObservation(cell.Visited);
+            // // The number of walls on each corner of the neighbour cell
+            // foreach (var corner in cell.Corners)
+            // {
+            //     sensor.AddObservation(corner.Walls.Count);
+            // }
         }
     }
 }
