@@ -10,13 +10,13 @@ In collaboration, Faye Bullwinkel and Vivienne Drongowski approached the challen
 
 - Vivienne Drongowski's part of the project focuses on the creation of an agent capable of generating complex mazes.
 - Explore the Maze Generation code in [Maze Generation folder](/Assets/Scripts/MazeGeneration_vivi).
-- Find more detailed information in [Project report].
+- Find more detailed information in [Project report](/Reports/Vivienne_Drongowski_Independent_Coursework_01.pdf).
 
 ### Maze Solving
 
 - Faye Bullwinkel's contribution involves an agent that attempts to solve mazes.
-- Find the Maze Solving code in [Maze Solving folder](/MazeSolving).
-- Read about further information in [Project report].
+- Find the Maze Solving code in [Maze Solving folder](/Assets/Scripts/MazeSolving_Faye).
+- Read about further information in [Project report](/Reports/Faye_Bullwinkel_Independent_Coursework_01.pdf).
 
 ## Getting Started
 
