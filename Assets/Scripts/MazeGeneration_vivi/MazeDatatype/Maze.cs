@@ -25,6 +25,9 @@ namespace MazeGeneration_vivi.MazeDatatype
         [Tooltip("The time it takes for the agent to move from one cell to another.")]
         [Range(0.0f, 1.0f)]
         public float moveDuration;
+        [Tooltip("The percentage of the path length in relation to the total number of cells in the maze that is required to be valid.")]
+        [Range(0.0f, 1.0f)]
+        public float requiredPathLength;
         [Space(10)]
         [Tooltip("If true, the maze requires all cells to be visited to be valid.")]
         public bool requireAllCellsToBeVisited;
@@ -263,7 +266,7 @@ namespace MazeGeneration_vivi.MazeDatatype
                 Debug.Log("Maze is Valid: " + IsValid() + " Reward: " + GetPercentageOfPathLength());
                 
                 // if maze is valid and not in training mode, load the maze solving scene
-                if (IsValid() && !training && GetPercentageOfPathLength() > 0.3f)
+                if (IsValid() && !training && GetPercentageOfPathLength() > requiredPathLength)
                 {
                     // create shared maze
                     SharedMaze.Size = size * 2 + 1;
