@@ -64,16 +64,11 @@ public class MazeAgent : Agent
             var lastPos = _currPos;
             _currPos += GetVectorToEnum(discreteAction);
             
-            // PenalizeAmountVisited(_currPos);
-            
             // convert to world coordinates
             var newPosUnity = _maze.GetCube(_currPos)
                 .GetRelativePosition(_mazeController.transform.localScale);
             transform.localPosition = newPosUnity;
 
-            // PenalizeDeadEnd(_currPos);
-
-            // RewardNewCube(_currPos);
             RewardDistance(lastPos, _currPos);
 
             if (_maze.GetCube(_currPos).GetIsGoalCube())
@@ -84,10 +79,6 @@ public class MazeAgent : Agent
                 EndEpisode();
             }
         }
-        /*else
-        {
-            AddReward(-0.05f);
-        }*/
 
         // tiny negative reward for each step
         if (MaxStep > 0)
