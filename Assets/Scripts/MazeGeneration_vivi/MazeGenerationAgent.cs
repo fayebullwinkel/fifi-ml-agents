@@ -1,5 +1,9 @@
-﻿using MazeGeneration_vivi.MazeDatatype;
+﻿using System.Linq;
+using MazeGeneration_vivi.MazeDatatype;
+using MazeGeneration_vivi.MazeDatatype.Enums;
 using Unity.MLAgents;
+using Unity.MLAgents.Actuators;
+using Unity.MLAgents.Policies;
 using Unity.MLAgents.Sensors;
 using UnityEngine;
 using Grid = MazeGeneration_vivi.MazeDatatype.Grid;
@@ -11,12 +15,21 @@ namespace MazeGeneration_vivi
         public MazeDatatype.Maze Maze = null!;
         public Grid CurrentGrid {get; set;} = null!;
         public MazeCell CurrentCell {get; set;} = null!;
-        private int oldVisitedCellsCount;
+        public EManualInput ManualInput {get; set;} = EManualInput.None;
 
-        protected void SetupMaze()
+        private void Awake()
         {
-            oldVisitedCellsCount = 0;
-            // generate new maze grid and place agent
+            // set vector observation space size to Maze Cell Count * 8 (8 observations per cell)
+            var behaviorParameters = GetComponent<BehaviorParameters>();
+            behaviorParameters.BrainParameters.VectorObservationSize = Maze.GetCellCount() * 1 + 9;
+        }
+        
+        // Initialize the agent and set the maze grid every new episode
+        public override void OnEpisodeBegin()
+        {
+            ManualInput = EManualInput.None;
+            
+            // clear old maze, generate new maze grid and place agent
             if (!Maze.GetIsMazeEmpty())
             {
                 Maze.ClearMaze();
@@ -26,64 +39,147 @@ namespace MazeGeneration_vivi
             Maze.PlaceAgent();
         }
 
-        protected void AddMazeObservations(VectorSensor sensor)
+        // Collect observations used by the neural network to make decisions
+        public override void CollectObservations(VectorSensor sensor)
         {
             if (Maze == null)
             {
                 return;
             }
-            
-            // Position of the Start Cell
-            var startCell = Maze.StartCell;
-            var grid = startCell.Grid;
-            var startCellPosition = grid.GetPositionFromCell(startCell);
-            sensor.AddObservation(startCellPosition);
-            // For each Neighbour of the current cell: 1 if visited, 0 if not visited
-            foreach (var neighbour in CurrentCell.Neighbours)
+
+            // Add observations for each cell in each grid of the maze
+            foreach (var cell in Maze.Grids.Values.SelectMany(grid => grid.Cells.Cast<MazeCell>()))
             {
-                sensor.AddObservation(neighbour.Visited ? 1 : 0);
+                // AddCellObservation(sensor, cell);
+                sensor.AddObservation(cell.Visited);
             }
-            // The number of walls on each corner of the current cell
-            foreach (var corner in CurrentCell.Corners)
-            {
-                sensor.AddObservation(corner.Walls.Count);
-            }
-            // Maze percentage of visited cells: float
-            sensor.AddObservation(Maze.GetPercentageOfVisitedCells());
-            // oldVisitedCellsCount: int
-            sensor.AddObservation(oldVisitedCellsCount);
-            // newVisitedCellsCount: int
+
+            // Information about the current cell
+            AddCellObservation(sensor, CurrentCell);
+
+            // Information about the start cell
+            AddCellObservation(sensor, Maze.StartCell);
+
+            // Current Path Length in the Maze from start to current cell
+            sensor.AddObservation(Maze.CurrentPath.Count);
+            // Current Percentage of the Path Length in relation to the total number of cells in the maze
+            sensor.AddObservation(Maze.CurrentPath.Count/Maze.GetCellCount());
+            // Visited Cells in the Maze
             sensor.AddObservation(Maze.GetVisitedCells());
         }
 
-        protected void GrantReward()
+        // Perform actions based on the decision of the neural network and reward the agent
+        public override void OnActionReceived(ActionBuffers actions)
         {
+            if(Maze.AgentIsMoving)
+            {
+                ManualInput = EManualInput.None;
+                return;
+            }
+
+            // Perform action
+            switch (actions.DiscreteActions[0])
+            {
+                case 0:
+                    Maze.MoveAgent(EDirection.Left);
+                    break;
+                case 1:
+                    Maze.MoveAgent(EDirection.Right);
+                    break;
+                case 2:
+                    Maze.MoveAgent(EDirection.Top);
+                    break;
+                case 3:
+                    Maze.MoveAgent(EDirection.Bottom);
+                    break;
+                case 4:
+                    Maze.PlaceGoal(CurrentCell);
+                    break;
+                case 5:
+                    break;
+            }
+            ManualInput = EManualInput.None;
+
+            // Reward for action
+            // termination condition: agent created a valid maze -> Task completed
             if (Maze.IsFinished())
             {
                 // calculate the reward based on the percentage of visited cells, should be between 0 and 1
-                var percentageOfVisitedCells = Maze.GetPercentageOfVisitedCells();
-                var reward = Maze.IsValid() ? percentageOfVisitedCells : -1.0f;
+                var percentageOfPathLength = Maze.GetPercentageOfPathLength();
+                var reward = Maze.IsValid() ? percentageOfPathLength * 10.0f : -1.0f;
                 SetReward(reward);
                 EndEpisode();
             }
 
-            if (!Maze.MeetsRequirements())
+            // termination condition: agent has removed too many walls -> Task failed
+            if (!Maze.HasWalls())
             {
                 SetReward(-1.0f);
                 EndEpisode();
             }
             
-            // Reward for finding new cells
-            var visitedCellsCount = Maze.GetVisitedCells();
-            if (visitedCellsCount > oldVisitedCellsCount)
+            // // Reward for finding new cells
+            // var visitedCellsCount = Maze.GetVisitedCells();
+            // if (visitedCellsCount > oldVisitedCellsCount)
+            // {
+            //     AddReward(0.005f);
+            //     oldVisitedCellsCount = visitedCellsCount;
+            // }
+            
+            // Existential penalty
+            AddReward(-0.00025f);
+            if(GetCumulativeReward()  < -1.0f)
             {
-                AddReward(0.005f);
-                oldVisitedCellsCount = visitedCellsCount;
+                Debug.Log("Agent is stuck, ending episode");
+                EndEpisode();
             }
-            else
+        }
+    
+        // Manual control of the agent
+        public override void Heuristic(in ActionBuffers actionsOut)
+        {
+            var discreteActionsOut = actionsOut.DiscreteActions;
+        
+            // Map the keyboard input to the discrete action number
+            // // 0: left, 1: right, 2: top, 3: bottom, 4: place goal
+            if (ManualInput == EManualInput.A)
             {
-                AddReward(-0.0025f);
+                discreteActionsOut[0] = 0;
             }
+            else if (ManualInput == EManualInput.D)
+            {
+                discreteActionsOut[0] = 1;
+            }
+            else if (ManualInput == EManualInput.W)
+            {
+                discreteActionsOut[0] = 2;
+            }
+            else if (ManualInput == EManualInput.S)
+            {
+                discreteActionsOut[0] = 3;
+            }
+            else if (ManualInput == EManualInput.Space)
+            {
+                discreteActionsOut[0] = 4;
+            }
+            else if (ManualInput == EManualInput.None)
+            {
+                discreteActionsOut[0] = 5;
+            }
+        }
+
+        private void AddCellObservation(VectorSensor sensor, MazeCell cell)
+        {
+            // Cube Face and Cell Position and Visited Flag of the Neighbour Cell
+            sensor.AddObservation((int)cell.Grid.Face);
+            sensor.AddObservation(cell.X);
+            sensor.AddObservation(cell.Z);
+            // sensor.AddObservation(cell.Visited);
+            // // The number of walls on each corner of the neighbour cell
+            // foreach (var corner in cell.Corners)
+            // {
+            //     sensor.AddObservation(corner.Walls.Count);
+            // }
         }
     }
 }

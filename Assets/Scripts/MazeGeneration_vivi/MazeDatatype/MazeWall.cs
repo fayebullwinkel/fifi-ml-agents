@@ -24,33 +24,30 @@ namespace MazeGeneration_vivi.MazeDatatype
             Type = type;
             Cells = cells;
         }
-        
-        public void AddCell(MazeCell cell)
-        {
-            Cells.Add(cell);
-        }
 
         public void DestroyWall()
         {
             Grid.RemoveWall(this);
+            foreach (var corner in Grid.Corners)
+            {
+                if (corner.Walls.Contains(this))
+                {
+                    corner.Walls.Remove(this);
+                }
+            }
 
             // Mark all cells that this wall was connected to as visited
             foreach (var cell in Cells.Where(cell => !cell.Visited))
             {
                 Maze.MarkCellVisited(cell);
             }
-            
-            Debug.Log("Maze Meets Requirements: " + Maze.MeetsRequirements());
+
+            if (!Maze.MeetsRequirements())
+            {
+                // Debug.Log("Maze Meets Requirements: " + Maze.MeetsRequirements());
+            }
             
             Destroy(gameObject);
-        }
-
-        private void OnTriggerEnter(Collider other)
-        {
-            if (other.gameObject.CompareTag("MazeGenerationAgent"))
-            {
-                DestroyWall();
-            }
         }
     }
 }

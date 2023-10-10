@@ -6,6 +6,7 @@ using MazeGeneration_vivi.MazeDatatype.Enums;
 using TMPro;
 using UnityEngine;
 using UnityEngine.SceneManagement;
+using UnityEngine.Serialization;
 using Random = UnityEngine.Random;
 
 namespace MazeGeneration_vivi.MazeDatatype
@@ -13,29 +14,34 @@ namespace MazeGeneration_vivi.MazeDatatype
     public class Maze : MonoBehaviour
     {
         [Header("Maze Settings")]
-        [Tooltip("If TwoDimensional, the maze will be generated on a plane. If ThreeDimensional, the maze will be generated on a cube.")]
-        public EMazeType mazeType;
+        [Tooltip("If true, the agent will be reset and the maze will be generated every new episode. If false, the new scene for maze solving will be loaded with the generated maze.")]
+        public bool training;
+        [Space(10)]
         [Tooltip("The number of cells in vertical and horizontal direction on each face of the cube.")]
+        [Range(1, 10)]
         public int size;
         [Tooltip("The size of each cell in the maze.")]
         public float cellSize;
+
+        [Tooltip("The time it takes for the agent to move from one cell to another.")]
+        [Range(0.0f, 1.0f)]
+        public float moveDuration;
+        [Space(10)]
         [Tooltip("If true, the maze requires all cells to be visited to be valid.")]
         public bool requireAllCellsToBeVisited;
         [Tooltip("If true, the path from start to goal will be shown.")]
         public bool showPath;
         [Tooltip("If true, the visited cells will be shown.")]
         public bool showVisitedCells;
-        [Tooltip("If true, multiple debug things will be shown.")]
-        public bool debugMode;
+        [Tooltip("If true, the coordinates of each cell will be shown on the cube.")]
+        public bool showCellCoordinates;
 
         [Header("Resources")]
         public PrefabCollection prefabCollection = null!;
         [SerializeField]
         private GameObject mainCamera = null!;
         [SerializeField]
-        private GameObject agent2D = null!;
-        [SerializeField]
-        private GameObject agent3D = null!;
+        private GameObject agent = null!;
         [SerializeField]
         private GameObject frontView = null!;
         [SerializeField]
@@ -54,63 +60,25 @@ namespace MazeGeneration_vivi.MazeDatatype
         public GameObject StartCellObject { get; private set; }
         public MazeCell EndCell { get; private set; }
         public GameObject EndCellObject { get; private set; }
+        public List<MazeCell> FinishedPath { get; private set; }
+        public List<MazeCell> CurrentPath { get; set; }
         public bool AgentIsMoving { get; set; }
         private GameObject maze;
         private GameObject cube;
-        private GameObject agent;
 
         private void Awake()
         {
+            FinishedPath = new List<MazeCell>();
+            CurrentPath = new List<MazeCell>();
             Grids = new Dictionary<ECubeFace, Grid>();
             cube = transform.GetComponentInChildren<BoxCollider>().gameObject;
             maze = gameObject;
-            agent = mazeType == EMazeType.ThreeDimensional ? agent3D : agent2D;
-            agent.SetActive(true);
-            // var otherAgent = mazeType == EMazeType.ThreeDimensional ? agent2D : agent3D;
-            // otherAgent.SetActive(false);
-            
-            SetCameraPosition();
-
-            // GenerateMaze();
-            // PlaceAgent();
+            SetCameras();
         }
 
         #region GenerateMethods
 
         public void GenerateMaze()
-        {
-            switch (mazeType)
-            {
-                case EMazeType.TwoDimensional:
-                    Generate2DMaze();
-                    break;
-                case EMazeType.ThreeDimensional:
-                    Generate3DMaze();
-                    break;
-                default:
-                    throw new ArgumentOutOfRangeException();
-            }
-        }
-
-        private void Generate2DMaze()
-        {
-            // Position and scale the cube
-            cube.transform.localScale = new Vector3(size * cellSize, 0.001f, size * cellSize);
-            
-            // Generate a grid
-            var gridParent = new GameObject("Grid");
-            gridParent.transform.SetParent(maze.transform);
-            gridParent.tag = "Grid";
-            var grid = new Grid(this, size, gridParent);
-            Grids.Add(ECubeFace.None, grid);
-            
-            grid.SetupGrid();
-            PositionGrid(grid);
-
-            SetOuterWalls();
-        }
-        
-        private void Generate3DMaze()
         {
             // Position and scale the cube
             cube.transform.localScale = new Vector3(size * cellSize, size * cellSize, size * cellSize);
@@ -147,8 +115,14 @@ namespace MazeGeneration_vivi.MazeDatatype
                 grid.SetupGrid();
                 PositionGrid(grid);
             }
+
+            foreach (var grid in Grids.Values)
+            {
+                // Have to be called after all grids are initialized to ensure that all walls are created
+                grid.InitializeCorners();
+            }
         }
-        
+
         #endregion
 
         #region GeneralMethods
@@ -190,43 +164,23 @@ namespace MazeGeneration_vivi.MazeDatatype
             }
         }
 
-        private void SetOuterWalls()
-        {
-            var outerWalls = Instantiate(prefabCollection.mazeBoundsPrefab, maze.transform);
-            var scale = outerWalls.transform.localScale;
-            scale = new Vector3(scale.x * cellSize * size, scale.y, scale.z * cellSize * size);
-            outerWalls.transform.localScale = scale;
-            var position = outerWalls.transform.localPosition;
-            outerWalls.transform.localPosition = position;
-        }
-
-        private void SetCameraPosition()
+        private void SetCameras()
         {
             var pos = mainCamera.transform.localPosition;
             pos.x = size - 1;
             pos.y *= size * cellSize / 2;
             pos.z *= size * cellSize / 2 + 1;
             mainCamera.transform.localPosition = pos;
-            switch (mazeType)
+            var cams = GameObject.FindGameObjectsWithTag("CubeViewCamera");
+            foreach (var cam in cams)
             {
-                case EMazeType.TwoDimensional:
-                    // mainCamera.transform.localPosition = new Vector3(size - cellSize / 2, (size - cellSize / 2) * 2, -cellSize / 2);
-                    break;
-                case EMazeType.ThreeDimensional:
-                    var cams = GameObject.FindGameObjectsWithTag("CubeViewCamera");
-                    foreach (var cam in cams)
-                    {
-                        var position = cam.transform.localPosition;
-                        position.x *= size * cellSize / 2;
-                        position.y *= size * cellSize / 2;
-                        position.z *= size * cellSize / 2;
-                        cam.transform.localPosition = position;
-                        var c = cam.GetComponent<Camera>();
-                        c.orthographicSize = size * cellSize / 2;
-                    }
-                    break;
-                default:
-                    throw new ArgumentOutOfRangeException();
+                var position = cam.transform.localPosition;
+                position.x *= size * cellSize / 2;
+                position.y *= size * cellSize / 2;
+                position.z *= size * cellSize / 2;
+                cam.transform.localPosition = position;
+                var c = cam.GetComponent<Camera>();
+                c.orthographicSize = size * cellSize / 2;
             }
         }
         
@@ -237,13 +191,10 @@ namespace MazeGeneration_vivi.MazeDatatype
         public void PlaceAgent()
         {
             // get random grid from Grids
-            var gridIndex = mazeType == EMazeType.ThreeDimensional
-                ? Random.Range(1, Enum.GetValues(typeof(ECubeFace)).Length)
-                : 0;
-
+            var gridIndex = Random.Range(1, Enum.GetValues(typeof(ECubeFace)).Length);
             var cubeFace = (ECubeFace)gridIndex;
-            
             var grid = Grids[cubeFace];
+            
             var randomX = Random.Range(0, size);
             var randomZ = Random.Range(0, size);
             var randomCell = grid.Cells[randomX, randomZ];
@@ -282,10 +233,10 @@ namespace MazeGeneration_vivi.MazeDatatype
             }
         }
         
-        public void PlaceGoal(Vector3 position)
+        public void PlaceGoal(MazeCell cell)
         {
-            var grid = agent.GetComponent<MazeGenerationAgent>().CurrentGrid;
-            var cell = grid.GetCellFromPosition(position); 
+            var grid = cell.Grid;
+            var position = grid.GetPositionFromCell(cell);
             // Goal can not be placed on the start cell
             if(cell == StartCell)
             {
@@ -310,8 +261,10 @@ namespace MazeGeneration_vivi.MazeDatatype
                 }
                 MarkCellVisited(cell);
                 
-                Debug.Log("Maze is Valid: " + IsValid());
-                if (IsValid())
+                Debug.Log("Maze is Valid: " + IsValid() + " Reward: " + GetPercentageOfPathLength());
+                
+                // if maze is valid and not in training mode, load the maze solving scene
+                if (IsValid() && !training)
                 {
                     // create shared maze
                     SharedMaze.Size = 7;
@@ -349,6 +302,7 @@ namespace MazeGeneration_vivi.MazeDatatype
                 mazeAgent.CurrentGrid = nextGrid;
             }
             mazeAgent.CurrentCell = nextCell;
+            CurrentPath = FindPath(StartCell, mazeAgent.CurrentCell);
             // try find a wall between the current cell and the next cell
             var wall = currentGrid.Walls.Find(x => x.Cells.Contains(currentCell) && x.Cells.Contains(nextCell));
             var nextWall = nextGrid.Walls.Find(x => x.Cells.Contains(currentCell) && x.Cells.Contains(nextCell));
@@ -360,27 +314,65 @@ namespace MazeGeneration_vivi.MazeDatatype
             var agentTransform = agent.transform;
             var startPosition = agentTransform.localPosition;
             var elapsedTime = 0f;
-            var moveDuration = 1f; // Time to move to the center of the cell
-    
-            while (elapsedTime < moveDuration)
+
+            // if the moveDuration is greater than 0, move the agent over time
+            if (moveDuration > 0)
             {
-                elapsedTime += Time.deltaTime;
-                var t = elapsedTime / moveDuration;
-                agentTransform.localPosition = Vector3.Lerp(startPosition, targetPosition, t);
-                yield return null;
+                while (elapsedTime < moveDuration)
+                {
+                    elapsedTime += Time.deltaTime;
+                    var t = elapsedTime / moveDuration;
+                
+                    // check is half of the move duration is reached
+                    if (t > 0.5f)
+                    {
+                        // destroy the wall between the current cell and the next cell
+                        if (wall != null)
+                        {
+                            foreach(var grid in Grids.Values)
+                            {
+                                grid.RemoveWall(wall);
+                            }
+                            wall.DestroyWall();
+                        }
+                        if (nextWall != null)
+                        {
+                            foreach(var grid in Grids.Values)
+                            {
+                                grid.RemoveWall(nextWall);
+                            }
+                            nextWall.DestroyWall();
+                        }
+                    }
+                
+                    agentTransform.localPosition = Vector3.Lerp(startPosition, targetPosition, t);
+                    yield return null;
+                }
+            }
+            else
+            {
+                // destroy the wall between the current cell and the next cell
+                if (wall != null)
+                {
+                    foreach(var grid in Grids.Values)
+                    {
+                        grid.RemoveWall(wall);
+                    }
+                    wall.DestroyWall();
+                }
+                if (nextWall != null)
+                {
+                    foreach(var grid in Grids.Values)
+                    {
+                        grid.RemoveWall(nextWall);
+                    }
+                    nextWall.DestroyWall();
+                }
             }
     
             // Ensure the agent is precisely at the target position
             agentTransform.localPosition = targetPosition;
             AgentIsMoving = false;
-            if(wall != null)
-            {
-                wall.DestroyWall();
-            }
-            if(nextWall != null)
-            {
-                nextWall.DestroyWall();
-            }
         }
         
         #endregion
@@ -429,6 +421,8 @@ namespace MazeGeneration_vivi.MazeDatatype
             }
             StartCell = null;
             EndCell = null;
+            FinishedPath = new List<MazeCell>();
+            CurrentPath = new List<MazeCell>();
             Grids = new Dictionary<ECubeFace, Grid>();
         }
         
@@ -454,11 +448,11 @@ namespace MazeGeneration_vivi.MazeDatatype
                 return false;
             }
             // Check if there is a path from start to end cell -> maze is solvable
-            var path = FindPath(StartCell, EndCell);
-            var isSolvable = path.Count > 0 && path.First() == StartCell && path.Last() == EndCell;
+            FinishedPath = FindPath(StartCell, EndCell);
+            var isSolvable = FinishedPath.Count > 0 && FinishedPath.First() == StartCell && FinishedPath.Last() == EndCell;
             if (isSolvable)
             {
-                ShowPath(path);
+                ShowPath(FinishedPath);
             }
             return isSolvable;
         }
@@ -472,6 +466,11 @@ namespace MazeGeneration_vivi.MazeDatatype
             }
             // TODO: add more requirements
             return true;
+        }
+
+        public bool HasWalls()
+        {
+            return Grids.Values.Any(grid => grid.Walls.Count > 0);
         }
         
         #endregion
@@ -570,6 +569,11 @@ namespace MazeGeneration_vivi.MazeDatatype
         public float GetPercentageOfVisitedCells()
         {
             return (float) GetVisitedCells() / GetCellCount();
+        }
+        
+        public float GetPercentageOfPathLength()
+        {
+            return (float) FinishedPath.Count / GetCellCount();
         }
         
         public bool GetIsMazeEmpty() => Grids.Count == 0;

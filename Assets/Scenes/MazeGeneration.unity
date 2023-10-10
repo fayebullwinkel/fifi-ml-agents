@@ -214,7 +214,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!4 &71827174
 Transform:
   m_ObjectHideFlags: 0
@@ -1321,14 +1321,14 @@ PrefabInstance:
     - target: {fileID: 1508936989446036332, guid: fc2e1ac7a58dfd041b32309a78857f4b, type: 3}
       propertyPath: m_Model
       value: 
-      objectReference: {fileID: 0}
+      objectReference: {fileID: 5022602860645237092, guid: 4abee5185bb45724cb8d8ff1aa1b5fe5, type: 3}
     - target: {fileID: 1508936989446036332, guid: fc2e1ac7a58dfd041b32309a78857f4b, type: 3}
       propertyPath: m_BehaviorType
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 1508936989446036332, guid: fc2e1ac7a58dfd041b32309a78857f4b, type: 3}
       propertyPath: m_BrainParameters.VectorObservationSize
-      value: 19
+      value: 63
       objectReference: {fileID: 0}
     - target: {fileID: 1508936989446036332, guid: fc2e1ac7a58dfd041b32309a78857f4b, type: 3}
       propertyPath: m_BrainParameters.VectorActionSize.Array.size
@@ -1336,7 +1336,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 1508936989446036332, guid: fc2e1ac7a58dfd041b32309a78857f4b, type: 3}
       propertyPath: m_BrainParameters.VectorActionSize.Array.data[0]
-      value: 6
+      value: 5
       objectReference: {fileID: 0}
     - target: {fileID: 1508936989446036332, guid: fc2e1ac7a58dfd041b32309a78857f4b, type: 3}
       propertyPath: m_BrainParameters.VectorActionSize.Array.data[1]
@@ -1360,7 +1360,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 1508936989446036332, guid: fc2e1ac7a58dfd041b32309a78857f4b, type: 3}
       propertyPath: m_BrainParameters.m_ActionSpec.BranchSizes.Array.data[0]
-      value: 6
+      value: 5
       objectReference: {fileID: 0}
     - target: {fileID: 1508936989446036332, guid: fc2e1ac7a58dfd041b32309a78857f4b, type: 3}
       propertyPath: m_BrainParameters.m_ActionSpec.BranchSizes.Array.data[1]
@@ -1380,7 +1380,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 1946312899393052249, guid: fc2e1ac7a58dfd041b32309a78857f4b, type: 3}
       propertyPath: m_Name
-      value: MazeGenerationAgent3D
+      value: MazeGenerationAgent
       objectReference: {fileID: 0}
     - target: {fileID: 1946312899393052249, guid: fc2e1ac7a58dfd041b32309a78857f4b, type: 3}
       propertyPath: m_IsActive
@@ -1430,6 +1430,10 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 2161572815593545142, guid: fc2e1ac7a58dfd041b32309a78857f4b, type: 3}
+      propertyPath: Maze
+      value: 
+      objectReference: {fileID: 1460981386}
     - target: {fileID: 3256450761852145635, guid: fc2e1ac7a58dfd041b32309a78857f4b, type: 3}
       propertyPath: Maze
       value: 
@@ -1442,7 +1446,8 @@ PrefabInstance:
       propertyPath: TakeActionsBetweenDecisions
       value: 0
       objectReference: {fileID: 0}
-    m_RemovedComponents: []
+    m_RemovedComponents:
+    - {fileID: 3256450761852145635, guid: fc2e1ac7a58dfd041b32309a78857f4b, type: 3}
   m_SourcePrefab: {fileID: 100100000, guid: fc2e1ac7a58dfd041b32309a78857f4b, type: 3}
 --- !u!1 &683206366
 GameObject:
@@ -2902,17 +2907,17 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 44335da4a82e33c4eb160c7e5acab847, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  mazeType: 1
+  training: 0
   size: 3
   cellSize: 2
+  moveDuration: 0.214
   requireAllCellsToBeVisited: 0
   showPath: 1
   showVisitedCells: 1
-  debugMode: 1
+  showCellCoordinates: 1
   prefabCollection: {fileID: 11400000, guid: 359b609eaa96ba8459ab1390ed6a48a3, type: 2}
   mainCamera: {fileID: 63424797}
-  agent2D: {fileID: 0}
-  agent3D: {fileID: 2024610301}
+  agent: {fileID: 2024610301}
   frontView: {fileID: 1600360430}
   backView: {fileID: 1091660656}
   leftView: {fileID: 317136877}
@@ -4392,3 +4397,19 @@ GameObject:
   m_CorrespondingSourceObject: {fileID: 1946312899393052249, guid: fc2e1ac7a58dfd041b32309a78857f4b, type: 3}
   m_PrefabInstance: {fileID: 604053538}
   m_PrefabAsset: {fileID: 0}
+--- !u!114 &2024610309
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2024610301}
+  m_Enabled: 0
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f2902496c0120472b90269f94a0aec7e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  Record: 0
+  NumStepsToRecord: 0
+  DemonstrationName: GenerationDemo
+  DemonstrationDirectory: Assets/Demonstration
