@@ -84,10 +84,10 @@ public class MazeAgent : Agent
                 EndEpisode();
             }
         }
-        else
+        /*else
         {
             AddReward(-0.05f);
-        }
+        }*/
 
         // tiny negative reward for each step
         if (MaxStep > 0)
