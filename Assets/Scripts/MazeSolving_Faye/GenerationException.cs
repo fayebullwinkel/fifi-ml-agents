@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace DefaultNamespace
+namespace MazeSolving_Faye
 {
     public class GenerationException: Exception
     {

@@ -1,6 +1,7 @@
 ﻿using System;
 using MazeGeneration_vivi.MazeDatatype.Enums;
 using UnityEngine;
+using MazeSolving_Faye;
 
 public static class SharedMaze
 {
