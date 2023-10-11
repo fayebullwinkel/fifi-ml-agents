@@ -6,6 +6,7 @@ using MazeGeneration_vivi.MazeDatatype.Enums;
 using TMPro;
 using UnityEngine;
 using UnityEngine.SceneManagement;
+using UnityEngine.Serialization;
 using Random = UnityEngine.Random;
 
 namespace MazeGeneration_vivi.MazeDatatype
@@ -28,6 +29,11 @@ namespace MazeGeneration_vivi.MazeDatatype
         [Tooltip("The percentage of the path length in relation to the total number of cells in the maze that is required to be valid.")]
         [Range(0.0f, 1.0f)]
         public float requiredPathLength;
+        [Tooltip("The time it takes to load the maze solving scene.")]
+        [Range(0.0f, 5.0f)]
+        public float sceneLoadDelay;
+        [FormerlySerializedAs("mazeSolvingSceneName")] [Tooltip("The name of the scene to load. (Default:\"MazeSolving\")")]
+        public string sceneToLoad = "MazeSolving";
         [Space(10)]
         [Tooltip("If true, the maze requires all cells to be visited to be valid.")]
         public bool requireAllCellsToBeVisited;
@@ -65,6 +71,7 @@ namespace MazeGeneration_vivi.MazeDatatype
         public List<MazeCell> FinishedPath { get; private set; }
         public List<MazeCell> CurrentPath { get; set; }
         public bool AgentIsMoving { get; set; }
+        public bool ShowedPath { get; set; }
         private GameObject maze;
         private GameObject cube;
 
@@ -263,19 +270,29 @@ namespace MazeGeneration_vivi.MazeDatatype
                 }
                 MarkCellVisited(cell);
                 
-                Debug.Log("Maze is Valid: " + IsValid() + "\nPercentage of Path Length: " + GetPercentageOfPathLength() * 100f + " %" + "\nPercentage of Visited Cells: " + GetPercentageOfVisitedCells() * 100f + " %");
+                Debug.Log("Maze is Valid: " + IsValid() + 
+                          "\nPercentage of Path Length: " + GetPercentageOfPathLength() * 100f + 
+                          " % of required " + requiredPathLength * 100f + " %" + 
+                          "\nPercentage of Visited Cells: " + GetPercentageOfVisitedCells() * 100f + " %");
                 
                 // if maze is valid and not in training mode, load the maze solving scene
-                if (IsValid() && !training && GetPercentageOfPathLength() > requiredPathLength)
+                if (IsValid() && !training)
                 {
+                    agent.SetActive(false); // disable agent
                     // create shared maze
                     SharedMaze.Size = size * 2 + 1;
                     SharedMaze.FillCubes(this);
-                    SceneManager.LoadScene("MazeSolving");
+                    StartCoroutine(LoadSceneWithDelay(sceneToLoad, sceneLoadDelay));
                 }
             }
         }
-        
+
+        private IEnumerator LoadSceneWithDelay(string sceneName, float delay)
+        {
+            yield return new WaitForSeconds(delay);
+            SceneManager.LoadScene(sceneName);
+        }
+
         #endregion
 
         #region MovementMethods
@@ -426,6 +443,7 @@ namespace MazeGeneration_vivi.MazeDatatype
             FinishedPath = new List<MazeCell>();
             CurrentPath = new List<MazeCell>();
             Grids = new Dictionary<ECubeFace, Grid>();
+            ShowedPath = false;
         }
         
         #endregion
@@ -451,6 +469,10 @@ namespace MazeGeneration_vivi.MazeDatatype
             }
             // Check if there is a path from start to end cell -> maze is solvable
             FinishedPath = FindPath(StartCell, EndCell);
+            if(GetPercentageOfPathLength() < requiredPathLength && !training)
+            {
+                return false;
+            }
             var isSolvable = FinishedPath.Count > 0 && FinishedPath.First() == StartCell && FinishedPath.Last() == EndCell;
             if (isSolvable)
             {
@@ -532,10 +554,11 @@ namespace MazeGeneration_vivi.MazeDatatype
 
         private void ShowPath(List<MazeCell> path)
         {
-            if (!showPath)
+            if (!showPath || ShowedPath)
             {
                 return;
             }
+            ShowedPath = true;
             // delete all visited cells from every grid
             foreach (var grid in Grids.Values)
             {

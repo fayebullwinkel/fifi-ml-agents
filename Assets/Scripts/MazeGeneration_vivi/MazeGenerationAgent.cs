@@ -27,6 +27,10 @@ namespace MazeGeneration_vivi
         // Initialize the agent and set the maze grid every new episode
         public override void OnEpisodeBegin()
         {
+            if (Maze.IsValid() && !Maze.training)
+            {
+                return;
+            }
             ManualInput = EManualInput.None;
             
             // clear old maze, generate new maze grid and place agent
@@ -43,6 +47,11 @@ namespace MazeGeneration_vivi
         public override void CollectObservations(VectorSensor sensor)
         {
             if (Maze == null)
+            {
+                return;
+            }
+            
+            if (Maze.IsValid() && !Maze.training)
             {
                 return;
             }
@@ -71,6 +80,10 @@ namespace MazeGeneration_vivi
         // Perform actions based on the decision of the neural network and reward the agent
         public override void OnActionReceived(ActionBuffers actions)
         {
+            if (Maze.IsValid() && !Maze.training)
+            {
+                return;
+            }
             if(Maze.AgentIsMoving)
             {
                 ManualInput = EManualInput.None;
@@ -138,6 +151,10 @@ namespace MazeGeneration_vivi
         // Manual control of the agent
         public override void Heuristic(in ActionBuffers actionsOut)
         {
+            if (Maze.IsValid() && !Maze.training)
+            {
+                return;
+            }
             var discreteActionsOut = actionsOut.DiscreteActions;
         
             // Map the keyboard input to the discrete action number
